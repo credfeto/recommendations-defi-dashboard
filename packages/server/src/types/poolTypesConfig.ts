@@ -3,24 +3,22 @@ import { PoolTypeConfig } from './poolTypeConfig';
 export const POOL_TYPES: Record<string, PoolTypeConfig> = {
   ETH: {
     id: 'ETH',
-    name: 'ETH-Based Pools',
-    description: 'Pools featuring ETH or ETH derivative tokens',
-    predicate: (pool) => pool.symbol.toUpperCase().includes('ETH'),
+    name: 'Ethereum & Liquid Staking',
+    description: 'Pools featuring ETH, ETH derivative tokens, and liquid staking tokens',
+    predicate: (pool) => {
+      const symbolUpper = pool.symbol.toUpperCase();
+      // Include ETH-based pools
+      if (symbolUpper.includes('ETH')) return true;
+      // Include liquid staking tokens
+      const lstSymbols = ['STETH', 'RETH', 'CBETH', 'SWELL', 'LSETH'];
+      return lstSymbols.some((s) => symbolUpper.includes(s));
+    },
   },
   STABLES: {
     id: 'STABLES',
     name: 'Stablecoin Pools',
     description: 'Pools featuring stablecoin tokens',
     predicate: (pool) => pool.stablecoin === true,
-  },
-  LST: {
-    id: 'LST',
-    name: 'Liquid Staking Tokens',
-    description: 'Pools featuring liquid staking tokens (stETH, rETH, etc)',
-    predicate: (pool) => {
-      const symbols = ['STETH', 'RETH', 'CBETH', 'SWELL', 'LSETH'];
-      return symbols.some((s) => pool.symbol.toUpperCase().includes(s));
-    },
   },
   HIGH_YIELD: {
     id: 'HIGH_YIELD',
