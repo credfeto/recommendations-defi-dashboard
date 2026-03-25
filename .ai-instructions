@@ -13,6 +13,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 
 ### Data Sources ###
 - https://yields.llama.fi/pools
+- https://app.pendle.finance/trade/pools
 
 
 ### Language ###
@@ -33,8 +34,8 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
 - **Build Tool**: react-scripts
-- **Key Component**: `src/client/FetchPools.tsx` - Main view component that fetches and displays pool data
-- **Types**: `src/shared/types/pools.ts` - TypeScript interfaces for API responses
+- **Key Component**: `packages/client/src/client/FetchPools.tsx` - Main view component that fetches and displays pool data
+- **Types**: `packages/client/src/shared/types/pools.ts` - TypeScript interfaces for API responses
 - **Port**: 3000 (development)
 - Should display the content in a nice way where the output is pleasing.
 - Should have a tab for each {PoolName} in the UI
@@ -45,7 +46,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Endpoint**: `GET /api/pools/{PoolName}` - Caches and proxies Llama API
 - **Caching**: On-disk cache with 1-hour TTL
 - **Port**: 5000
-- **Location**: `src/server/server-fastify.ts` (server entry point) and `src/server/server.ts` (filtering logic)
+- **Location**: `packages/server/src/server/server-fastify.ts` (server entry point) and `packages/server/src/server/server.ts` (filtering logic)
 - Serve the front end from the same server to avoid CORS issues
 
 ### External API
@@ -130,31 +131,52 @@ npm run build
 - Cache API responses server-side (1-hour TTL minimum)
 
 ## File Structure
+
 ```
-src/
-├── client/                 # React frontend application
-│   ├── App.tsx            # Main App component
-│   ├── App.css            # App styling
-│   ├── FetchPools.tsx     # Pool dashboard component
-│   ├── FetchPools.css     # Pool dashboard styling
-│   ├── index.tsx          # React entry point (runs ReactDOM.render)
-│   ├── index.css          # Global CSS
-│   ├── reportWebVitals.ts # Performance monitoring
-│   ├── setupTests.ts      # Test configuration
-│   └── react-app-env.d.ts # React type definitions
-├── server/                 # Fastify backend server
-│   ├── server.ts          # Filtering logic and exported functions
-│   ├── server-fastify.ts  # Fastify server setup and routing
-│   └── __tests__/
-│       └── server.test.ts # Unit tests (26 tests, 100% coverage)
-├── shared/                 # Shared types and configuration
-│   └── types/
-│       ├── pools.ts       # Pool and PoolsResponse TypeScript interfaces
-│       └── poolTypes.ts   # Pool type configuration and predicates
-├── index.tsx              # Root entry point (re-exports from App)
-├── App.tsx                # Root wrapper (re-exports from client/App)
-├── index.css              # Root CSS (imports from client)
-└── react-app-env.d.ts     # Root type definitions
+.
+├── package.json                        # Root workspace configuration
+├── packages/
+│   ├── client/                         # React frontend application
+│   │   ├── package.json               # Client-specific dependencies
+│   │   ├── tsconfig.json              # TypeScript configuration
+│   │   ├── public/                    # Static assets
+│   │   └── src/
+│   │       ├── client/                # React components
+│   │       │   ├── App.tsx            # Main App component
+│   │       │   ├── App.css            # App styling
+│   │       │   ├── FetchPools.tsx     # Pool dashboard component
+│   │       │   ├── FetchPools.css     # Pool dashboard styling
+│   │       │   ├── index.tsx          # React entry point
+│   │       │   ├── index.css          # Global CSS
+│   │       │   ├── reportWebVitals.ts # Performance monitoring
+│   │       │   ├── setupTests.ts      # Test configuration
+│   │       │   ├── react-app-env.d.ts # React type definitions
+│   │       │   ├── App.test.tsx       # App component tests
+│   │       │   ├── logo.svg           # Logo asset
+│   │       │   └── public/            # Public files
+│   │       └── shared/                # Shared types
+│   │           └── types/
+│   │               ├── pools.ts       # Pool TypeScript interfaces
+│   │               └── poolTypes.ts   # Pool type configuration
+│   │
+│   └── server/                         # Fastify backend server
+│       ├── package.json               # Server-specific dependencies
+│       ├── tsconfig.json              # TypeScript configuration
+│       ├── jest.config.js             # Jest test configuration
+│       └── src/
+│           ├── server/                # Server code
+│           │   ├── server.ts          # Filtering logic and exports
+│           │   ├── server-fastify.ts  # Fastify setup and routing
+│           │   └── __tests__/
+│           │       └── server.test.ts # Unit tests (26 tests, 100% coverage)
+│           └── shared/                # Shared types
+│               └── types/
+│                   ├── pools.ts       # Pool TypeScript interfaces
+│                   └── poolTypes.ts   # Pool type configuration
+│
+├── docs/                              # Documentation
+├── CHANGELOG.md                       # Version history
+└── README.md                          # Project overview
 ```
 
 ## Important Constraints
@@ -176,21 +198,21 @@ src/
 ## When Making Changes
 
 ### Adding New Filters
-1. Add condition to `filterPools()` function in `src/server/server.ts`
+1. Add condition to `filterPools()` function in `packages/server/src/server/server.ts`
 2. Update documentation here
 3. Ensure filters make business sense (TVL, APY, risk)
 
 ### Adding New Pool Categories
-1. Edit `src/shared/types/poolTypes.ts` - add new pool type configuration
+1. Edit `packages/server/src/shared/types/poolTypes.ts` - add new pool type configuration
 2. The API endpoint, UI button, and data fetching are automatically created
 
 ### Modifying API Response
-1. Update `Pool` interface in `src/shared/types/pools.ts`
+1. Update `Pool` interface in `packages/server/src/shared/types/pools.ts` AND `packages/client/src/shared/types/pools.ts` (or create shared package)
 2. Run TypeScript check: `npm run build`
 3. Test with actual API response
 
 ### Changing Cache Duration
-1. Update `CACHE_TTL_MS` in `src/server/server-fastify.ts`
+1. Update `CACHE_TTL_MS` in `packages/server/src/server/server-fastify.ts`
 2. Test cache invalidation behavior
 3. Document rationale
 
