@@ -140,6 +140,60 @@ npm start
 npm run build
 ```
 
+### Build Optimization Rules
+
+**IMPORTANT:** All built artifacts must be optimized for production. These optimizations are automatically applied by the build tools, but verify them on every build:
+
+#### JavaScript Optimization
+- ✅ **Minification**: All JavaScript is minified (removes whitespace, shortens variable names)
+- ✅ **Tree Shaking**: Unused code is removed via `create-react-app` webpack config
+- ✅ **Code Splitting**: Large bundles are automatically split into chunks
+- ✅ **Dynamic Imports**: Use `React.lazy()` for route-based code splitting if bundle size grows
+- ✓ Verify bundle size is acceptable: `npm run build` reports final sizes
+- ✓ Never import entire libraries when you only need specific functions (tree shaking won't help)
+
+#### CSS Optimization
+- ✅ **Minification**: All CSS is minified (removes whitespace, shortens selectors)
+- ✅ **Dead Code Elimination**: Unused styles are removed via `create-react-app`
+- ✅ **Autoprefixing**: Browser-specific prefixes are added automatically
+- ✓ Use CSS modules or scoped styles to avoid accidental global conflicts
+- ✓ Use CSS variables for theming instead of duplicate declarations
+
+#### Image Optimization
+- **Icons/Small Images (<100KB)**:
+  - ✅ Convert PNG/JPG to WebP format (smaller file size)
+  - ✅ Use SVG for icons and logos (scalable, compressible)
+  - ✅ Optimize with tools: `imagemin`, `svgo`, or online tools like `tinypng.com`
+  
+- **Fonts**:
+  - ✅ Use system fonts or web fonts sparingly
+  - ✅ Load only the font weights/variants you use
+  - ✅ Use WOFF2 format (better compression than TTF)
+  - ✅ Implement font-display: swap to avoid invisible text
+
+- **Sprites/Atlases**:
+  - For multiple small images: Consider combining into a sprite sheet (reduces HTTP requests)
+  - For icons: Use SVG icon fonts or inline SVG (better control, smaller)
+
+#### Build Verification Checklist
+After running `npm run build`, verify:
+```bash
+# Check bundle sizes
+ls -lh packages/client/build/static/js/*.js
+ls -lh packages/client/build/static/css/*.css
+
+# Should see:
+# ✓ JavaScript files are <50KB (gzipped)
+# ✓ CSS files are <10KB (gzipped)
+# ✓ Total bundle <100KB (gzipped)
+```
+
+#### Performance Metrics
+- **First Contentful Paint (FCP)**: < 1.5s on 4G
+- **Largest Contentful Paint (LCP)**: < 2.5s on 4G
+- **Cumulative Layout Shift (CLS)**: < 0.1
+- Run: `npm run build` and check "Build succeeds" output for warnings
+
 ### Server Endpoint Testing Rule
 
 **IMPORTANT:** Whenever adding or removing a server endpoint/route:
