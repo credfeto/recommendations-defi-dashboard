@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-03-25
-
 ### Added
 
 #### Core Features
@@ -97,7 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Migration Notes
+## Setup & Development
 
 ### For New Developers
 1. Clone the repository
@@ -113,9 +111,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - `description`: Type description
    - `predicate`: Function to identify pools
 3. Save and rebuild - API endpoint, UI button, and filtering automatically created
-
-### Breaking Changes
-None - initial release, no breaking changes applicable.
 
 ---
 
@@ -143,6 +138,3 @@ None - initial release, no breaking changes applicable.
 - [Repository](https://github.com/markr/recommendations-defi-dashboard)
 - [Issues](https://github.com/markr/recommendations-defi-dashboard/issues)
 - [Documentation](./docs/)
-
-[Unreleased]: https://github.com/markr/recommendations-defi-dashboard/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/markr/recommendations-defi-dashboard/releases/tag/v1.0.0
