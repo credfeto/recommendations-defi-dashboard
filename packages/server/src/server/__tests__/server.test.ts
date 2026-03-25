@@ -1,5 +1,5 @@
 import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../server';
-import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '../../types/poolTypesMetadata';
+import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared/poolTypesMetadata';
 
 interface MockPool {
   chain: string;
