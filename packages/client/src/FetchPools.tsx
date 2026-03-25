@@ -14,6 +14,9 @@ export const FetchPools: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [poolTypes] = useState<PoolTypeConfig[]>(getAvailablePoolTypes());
+  const [isDarkMode, setIsDarkMode] = useState(
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
 
   useEffect(() => {
     const fetchPools = async () => {
@@ -42,6 +45,17 @@ export const FetchPools: React.FC = () => {
 
     fetchPools();
   }, [poolTypes]);
+
+  const handleThemeToggle = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    
+    if (newMode) {
+      document.documentElement.style.colorScheme = 'dark';
+    } else {
+      document.documentElement.style.colorScheme = 'light';
+    }
+  };
 
   if (loading) return <div className="loading">Loading pools...</div>;
   if (error) return <div className="error-message">{error}</div>;
@@ -152,6 +166,16 @@ export const FetchPools: React.FC = () => {
           )}
         </main>
       </div>
+
+      {/* Theme Toggle Button */}
+      <button
+        className="theme-toggle"
+        onClick={handleThemeToggle}
+        title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+        aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDarkMode ? '☀️' : '🌙'}
+      </button>
     </div>
   );
 };
