@@ -49,6 +49,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Push the branch to origin on each incremental change - e.g. `git push origin feature/my-change`
  - and merge to main when complete.
 - Use best practices for git commit messages
+- Always include the user's original prompt verbatim in the commit description (body), prefixed with `Prompt: `. Do not include it in the commit title.
 - Use the following format for commit messages:
   - **feat**: A new feature
   - **fix**: A bug fix

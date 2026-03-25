@@ -16,7 +16,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Changed
 
-- Sorting by APY decending then TVL
+- Sorting by APY descending then TVL
 
 ### Removed
 
