@@ -1,7 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import axios from 'axios';
-import { filterPools, getPoolsByType } from './server';
+import { filterPools, getPoolsByType, getAvailableTypes } from './server';
 import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -49,8 +49,11 @@ export const start = async (): Promise<void> => {
   fastify.get('/api/pools/:poolName', async (request: any, reply: any) => {
     const { poolName } = request.params as { poolName: string };
 
-    if (!['ETH', 'STABLES'].includes(poolName.toUpperCase())) {
-      return reply.code(400).send({ error: 'Invalid pool name. Use ETH or STABLES' });
+    const validPoolTypes = getAvailableTypes().map((pt) => pt.id);
+    if (!validPoolTypes.includes(poolName.toUpperCase())) {
+      return reply.code(400).send({
+        error: `Invalid pool name. Valid options: ${validPoolTypes.join(', ')}`,
+      });
     }
 
     try {

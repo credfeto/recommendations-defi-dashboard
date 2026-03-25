@@ -129,6 +129,88 @@ npm start
 npm run build
 ```
 
+### Server Endpoint Testing Rule
+
+**IMPORTANT:** Whenever adding or removing a server endpoint/route:
+1. Start the server: `npm --workspace=@defi-dashboard/server start`
+2. Test ALL existing endpoints using curl or similar
+3. Verify response status codes, data structure, and business logic
+4. Document any changes in this section
+
+**Available Endpoints:**
+
+```bash
+# Discovery endpoint - list available pool types
+GET /api/pools
+curl http://localhost:5000/api/pools
+
+# Pool data by type - returns filtered pools for the given type
+GET /api/pools/:poolName
+curl http://localhost:5000/api/pools/ETH
+curl http://localhost:5000/api/pools/STABLES
+curl http://localhost:5000/api/pools/LST
+curl http://localhost:5000/api/pools/HIGH_YIELD
+curl http://localhost:5000/api/pools/LOW_TVL
+curl http://localhost:5000/api/pools/BLUE_CHIP
+
+# Invalid pool type - should return 400
+curl http://localhost:5000/api/pools/INVALID
+```
+
+**Expected Responses:**
+
+```json
+// GET /api/pools (success)
+{
+  "status": "ok",
+  "data": [
+    { "name": "ETH", "displayName": "Ethereum" },
+    { "name": "STABLES", "displayName": "Stablecoins" },
+    { "name": "LST", "displayName": "Liquid Staking" },
+    { "name": "HIGH_YIELD", "displayName": "High Yield" },
+    { "name": "LOW_TVL", "displayName": "Emerging Pools" },
+    { "name": "BLUE_CHIP", "displayName": "Blue Chip" }
+  ]
+}
+
+// GET /api/pools/ETH (success)
+{
+  "status": "ok",
+  "data": [
+    {
+      "chain": "ethereum",
+      "project": "Uniswap V3",
+      "symbol": "ETH/USDC",
+      "tvlUsd": 1500000,
+      "apy": 0.15,
+      // ... other pool fields
+    }
+    // ... more pools
+  ]
+}
+
+// GET /api/pools/INVALID (error)
+{
+  "error": "Invalid pool name. Use ETH or STABLES",
+  "statusCode": 400
+}
+```
+
+**Quick Test Script (after starting server):**
+```bash
+echo "Testing GET /api/pools..."
+curl -s http://localhost:5000/api/pools | grep -q '"status":"ok"' && echo "✓ PASS" || echo "✗ FAIL"
+
+echo "Testing GET /api/pools/ETH..."
+curl -s http://localhost:5000/api/pools/ETH | grep -q '"status":"ok"' && echo "✓ PASS" || echo "✗ FAIL"
+
+echo "Testing GET /api/pools/STABLES..."
+curl -s http://localhost:5000/api/pools/STABLES | grep -q '"status":"ok"' && echo "✓ PASS" || echo "✗ FAIL"
+
+echo "Testing GET /api/pools/INVALID (should fail)..."
+curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && echo "✓ PASS" || echo "✗ FAIL"
+```
+
 ## Code Style & Best Practices
 
 ### TypeScript
