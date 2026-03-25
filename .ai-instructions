@@ -1,0 +1,191 @@
+# AI Instructions - DeFi Dashboard Project
+
+## Project Overview
+This is a React-based DeFi (Decentralized Finance) dashboard that displays liquidity pools from the Llama Yields API. It filters pools by type (ETH-based and stablecoins) with quality metrics.
+
+## Architecture
+
+### Frontend (React)
+- **Framework**: React 19.2.4 with TypeScript
+- **Build Tool**: react-scripts
+- **Key Component**: `src/fetchPools.tsx` - Main view component that fetches and displays pool data
+- **Types**: `src/types/pools.ts` - TypeScript interfaces for API responses
+- **Port**: 3000 (development)
+
+### Backend (Fastify)
+- **Framework**: Fastify 5.8.4 with @fastify/cors
+- **Runtime**: Node.js (TypeScript via ts-node)
+- **Endpoint**: `GET /api/pools` - Caches and proxies Llama API
+- **Caching**: In-memory cache with 1-hour TTL
+- **Port**: 5000
+- **Location**: `src/server.ts`
+
+### External API
+- **Provider**: Llama Yields (https://yields.llama.fi/pools)
+- **Response**: Cached via backend to reduce external calls
+
+## Key Patterns & Conventions
+
+### Data Flow
+1. React component calls `http://localhost:5000/api/pools`
+2. Fastify backend checks in-memory cache
+3. If cache miss or expired (>1 hour), fetches from Llama API
+4. Response is cached and returned to frontend
+5. React component filters and displays data in tables
+
+### Filtering Rules
+Pools must pass ALL filters to be displayed:
+- `ilRisk === 'no'` (no impermanent loss risk)
+- `tvlUsd >= 1,000,000` (minimum $1M TVL)
+- `apy > 0` (positive yield)
+
+### Pool Categorization
+- **ETH-Based**: Pools with "ETH" in symbol (STETH, WETH, WSTETH, WEETH, etc.)
+- **Stablecoins**: Pools marked as stablecoin (USDC, USDT, SUSDE, etc.)
+
+### Component Structure
+- Single component `FetchPools` handles:
+  - Data fetching with loading/error states
+  - Filtering logic
+  - Table rendering for both categories
+  - Proper TypeScript typing
+
+## Development Setup
+
+### Install Dependencies
+```bash
+npm install
+```
+
+### Run Development Server (Both Frontend + Backend)
+```bash
+npm run dev
+```
+
+### Run Only Backend
+```bash
+npm run server
+```
+
+### Run Only Frontend
+```bash
+npm start
+```
+
+### Build for Production
+```bash
+npm run build
+```
+
+## Code Style & Best Practices
+
+### TypeScript
+- Always use strict typing, avoid `any` where possible
+- Create interfaces in `src/types/` for API responses
+- Use discriminated unions for complex data structures
+
+### React Components
+- Use functional components with hooks (no class components)
+- Place data fetching in `useEffect`
+- Separate concerns: fetching, filtering, rendering
+- Add loading and error states for all async operations
+
+### Naming Conventions
+- Files: kebab-case (e.g., `fetch-pools.tsx`)
+- Components: PascalCase (e.g., `FetchPools`)
+- Functions/variables: camelCase
+- Constants: UPPER_SNAKE_CASE
+
+### Performance
+- Component memoization via React.FC when beneficial
+- Avoid unnecessary re-renders
+- Cache API responses server-side (1-hour TTL minimum)
+
+## File Structure
+```
+src/
+├── fetchPools.tsx          # Main React component
+├── server.ts               # Fastify backend
+├── types/
+│   └── pools.ts            # TypeScript interfaces for API
+├── utils/
+│   └── cacheManager.ts     # Deprecated - use server cache instead
+├── App.tsx
+├── index.tsx
+└── ... (standard CRA files)
+```
+
+## Important Constraints
+
+### Cache Duration
+- Backend cache: 1 hour (3,600,000ms)
+- Do NOT reduce without database support
+- In-memory cache is lost on server restart
+
+### API Rate Limiting
+- Llama API may have rate limits
+- Current caching mitigates this
+- Monitor if cache misses spike
+
+### CORS
+- Backend CORS: `{ origin: true }` (allows all origins)
+- Only for development; add whitelist for production
+
+## When Making Changes
+
+### Adding New Filters
+1. Add condition to `filterPools()` function
+2. Update documentation here
+3. Ensure filters make business sense (TVL, APY, risk)
+
+### Adding New Pool Categories
+1. Create new filter function
+2. Add new `renderTable()` call in return
+3. Update UI labels accordingly
+
+### Modifying API Response
+1. Update `Pool` interface in `src/types/pools.ts`
+2. Run TypeScript check: `npm run build`
+3. Test with actual API response
+
+### Changing Cache Duration
+1. Update `CACHE_TTL_MS` in `src/server.ts`
+2. Test cache invalidation behavior
+3. Document rationale
+
+## Testing
+- No current automated tests
+- Manual testing: `npm run dev` then check `http://localhost:3000`
+- Verify both table sections display correctly
+- Test cache expiration by running backend past 1 hour
+
+## Deployment Notes
+- Environment variable: `PORT` (defaults to 5000 for backend)
+- Backend must run before or alongside frontend
+- Use production build: `npm run build`
+- Consider Docker for containerization
+- Add persistent cache (Redis) before scaling to multiple instances
+
+## Common Issues
+
+### "Failed to fetch pool data"
+- Check backend is running on port 5000
+- Verify CORS is enabled
+- Check Llama API availability
+
+### Empty tables
+- Verify filters aren't too strict
+- Check if API returned data
+- Log pool count to debug
+
+### Stale cache
+- Cache lasts 1 hour; restart backend to clear
+- Consider adding cache clear endpoint for admin
+
+## Future Enhancements
+- [ ] Persist cache to database (Redis/PostgreSQL)
+- [ ] Add more filter options (APY range, chain selector)
+- [ ] Sort and pagination for tables
+- [ ] Real-time updates (WebSocket)
+- [ ] Historical data tracking
+- [ ] Performance metrics dashboard
