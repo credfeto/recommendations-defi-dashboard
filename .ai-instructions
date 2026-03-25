@@ -5,15 +5,27 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 
 ## Architecture
 
+### Documentation ###
+
+- Keep the README.md in the project update with how the project is supposed to be used and developed.
+- Maintain a CHANGELOG.md in [KeepAChangeLog](https://keepachangelog.com/en/1.0.0/) format to track changes and updates to the project
+- Documentation and architecture diagrams other than the README.md and CHANGELOG.md should be in the /docs folder
+
+
 ### Language ###
 - All development should be in typescript
 - If there is a backend database it should use sqllite or something similar. The runtime database files itself should never be committed.
 - Unit tests should be written at each step for both frontend and backend
-- When all tests pass then commit to the repository and push upstream.  Create a branch for each feature and merge to main when complete.  Do not commit directly to main.
 - The latest versions of all packages should be used
 - Avoid packages that have outstanding security issues
 - Optimize everything for performance where possible
 - Use a functional style where all objects are immutable
+
+### Committing ###
+- Create a branch for each feature and merge to main when complete.  Do not commit directly to main.
+- When all tests pass then commit to the repository and push upstream.
+- Use best practices for git commit messages
+
 
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
