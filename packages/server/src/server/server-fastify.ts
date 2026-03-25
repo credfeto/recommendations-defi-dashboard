@@ -51,9 +51,7 @@ export const start = async (): Promise<void> => {
 
     const validPoolTypes = getAvailableTypes().map((pt) => pt.id);
     if (!validPoolTypes.includes(poolName.toUpperCase())) {
-      return reply.code(400).send({
-        error: `Invalid pool name. Valid options: ${validPoolTypes.join(', ')}`,
-      });
+      return reply.code(400).send({ error: `Invalid pool name. Valid options: ${validPoolTypes.join(', ')}` });
     }
 
     try {
