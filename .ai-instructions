@@ -8,7 +8,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 ### Documentation ###
 
 - Keep the README.md in the project update with how the project is supposed to be used and developed.
-- Maintain a CHANGELOG.md in [KeepAChangeLog](https://keepachangelog.com/en/1.0.0/) format to track changes and updates to the project
+- Maintain a CHANGELOG.md in [KeepAChangeLog](https://keepachangelog.com/en/1.0.0/) format to track changes and updates to the project.  use the dotnet tool credfeto.changelog.cmd to add new entries to the changelog. Purely documentation changes should not be added to the changelog.
 - Documentation and architecture diagrams other than the README.md and CHANGELOG.md should be in the /docs folder
 
 ### Data Sources ###
