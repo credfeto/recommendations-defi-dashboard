@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Pool, PoolsResponse } from './types/pools';
-import { PoolTypeConfig, getAvailablePoolTypes } from './types/poolTypes';
+import { Pool, PoolsResponse } from '../shared/types/pools';
+import { PoolTypeConfig, getAvailablePoolTypes } from '../shared/types/poolTypes';
 import './FetchPools.css';
 
 interface PoolsByType {
@@ -53,7 +53,7 @@ export const FetchPools: React.FC = () => {
     <div className="pools-container">
       <header className="pools-header">
         <h1>🏊‍♂️ DeFi Pools Dashboard</h1>
-        <p className="subtitle">Filtered pools with no IL risk, >$1M TVL, and positive APY</p>
+        <p className="subtitle">Filtered pools with no IL risk, greater than $1M TVL, and positive APY</p>
       </header>
 
       <div className="pools-content">

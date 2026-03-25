@@ -33,8 +33,8 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
 - **Build Tool**: react-scripts
-- **Key Component**: `src/fetchPools.tsx` - Main view component that fetches and displays pool data
-- **Types**: `src/types/pools.ts` - TypeScript interfaces for API responses
+- **Key Component**: `src/client/FetchPools.tsx` - Main view component that fetches and displays pool data
+- **Types**: `src/shared/types/pools.ts` - TypeScript interfaces for API responses
 - **Port**: 3000 (development)
 - Should display the content in a nice way where the output is pleasing.
 - Should have a tab for each {PoolName} in the UI
@@ -45,7 +45,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Endpoint**: `GET /api/pools/{PoolName}` - Caches and proxies Llama API
 - **Caching**: On-disk cache with 1-hour TTL
 - **Port**: 5000
-- **Location**: `src/server.ts`
+- **Location**: `src/server/server-fastify.ts` (server entry point) and `src/server/server.ts` (filtering logic)
 - Serve the front end from the same server to avoid CORS issues
 
 ### External API
@@ -132,15 +132,29 @@ npm run build
 ## File Structure
 ```
 src/
-├── fetchPools.tsx          # Main React component
-├── server.ts               # Fastify backend
-├── types/
-│   └── pools.ts            # TypeScript interfaces for API
-├── utils/
-│   └── cacheManager.ts     # Deprecated - use server cache instead
-├── App.tsx
-├── index.tsx
-└── ... (standard CRA files)
+├── client/                 # React frontend application
+│   ├── App.tsx            # Main App component
+│   ├── App.css            # App styling
+│   ├── FetchPools.tsx     # Pool dashboard component
+│   ├── FetchPools.css     # Pool dashboard styling
+│   ├── index.tsx          # React entry point (runs ReactDOM.render)
+│   ├── index.css          # Global CSS
+│   ├── reportWebVitals.ts # Performance monitoring
+│   ├── setupTests.ts      # Test configuration
+│   └── react-app-env.d.ts # React type definitions
+├── server/                 # Fastify backend server
+│   ├── server.ts          # Filtering logic and exported functions
+│   ├── server-fastify.ts  # Fastify server setup and routing
+│   └── __tests__/
+│       └── server.test.ts # Unit tests (26 tests, 100% coverage)
+├── shared/                 # Shared types and configuration
+│   └── types/
+│       ├── pools.ts       # Pool and PoolsResponse TypeScript interfaces
+│       └── poolTypes.ts   # Pool type configuration and predicates
+├── index.tsx              # Root entry point (re-exports from App)
+├── App.tsx                # Root wrapper (re-exports from client/App)
+├── index.css              # Root CSS (imports from client)
+└── react-app-env.d.ts     # Root type definitions
 ```
 
 ## Important Constraints
@@ -162,22 +176,21 @@ src/
 ## When Making Changes
 
 ### Adding New Filters
-1. Add condition to `filterPools()` function
+1. Add condition to `filterPools()` function in `src/server/server.ts`
 2. Update documentation here
 3. Ensure filters make business sense (TVL, APY, risk)
 
 ### Adding New Pool Categories
-1. Create new filter function
-2. Add new `renderTable()` call in return
-3. Update UI labels accordingly
+1. Edit `src/shared/types/poolTypes.ts` - add new pool type configuration
+2. The API endpoint, UI button, and data fetching are automatically created
 
 ### Modifying API Response
-1. Update `Pool` interface in `src/types/pools.ts`
+1. Update `Pool` interface in `src/shared/types/pools.ts`
 2. Run TypeScript check: `npm run build`
 3. Test with actual API response
 
 ### Changing Cache Duration
-1. Update `CACHE_TTL_MS` in `src/server.ts`
+1. Update `CACHE_TTL_MS` in `src/server/server-fastify.ts`
 2. Test cache invalidation behavior
 3. Document rationale
 

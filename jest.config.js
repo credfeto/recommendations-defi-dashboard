@@ -2,9 +2,9 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
-  testMatch: ['<rootDir>/src/__tests__/**/*.test.ts'],
+  testMatch: ['<rootDir>/src/server/__tests__/**/*.test.ts'],
   collectCoverageFrom: [
-    'src/server.ts',
+    'src/server/server.ts',
   ],
   coverageReporters: ['text', 'text-summary', 'html'],
   coverageThreshold: {

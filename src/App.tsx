@@ -1,17 +1,3 @@
-import React from 'react';
-import { FetchPools } from './fetchPools';
-
-function App() {
-  return (
-      <div className="App">
-        <header>
-          <h1>Yield Pools Dashboard</h1>
-        </header>
-        <main>
-            <FetchPools />
-        </main>
-      </div>
-  );
-}
-
-export default App;
+// This file is required by react-scripts
+// It re-exports the actual client component
+export { default } from './client/App';
