@@ -6,7 +6,7 @@ function App() {
   return (
     <HelmetProvider>
       <Helmet>
-        <title>DeFi Pools Dashboard</title>
+        <title>DeFI Yields</title>
       </Helmet>
       <div className='App'>
         <main>

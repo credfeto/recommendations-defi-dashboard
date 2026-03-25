@@ -80,7 +80,7 @@ export const FetchPools: React.FC = () => {
   return (
     <div className='pools-container'>
       <header className='pools-header'>
-        <h1>🏊‍♂️ DeFi Pools Dashboard</h1>
+        <h1>DeFI Yields</h1>
         <p className='subtitle'>Filtered pools with no IL risk, greater than $1M TVL, and positive APY</p>
       </header>
 
