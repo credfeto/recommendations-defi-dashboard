@@ -7,7 +7,9 @@
     "packages/server"
   ],
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
+    "prettier": "^3.8.1"
   },
   "scripts": {
     "start": "npm --workspace=@defi-dashboard/client start",
@@ -16,6 +18,7 @@
     "build": "npm --workspace=@defi-dashboard/client run build",
     "test": "npm --workspace=@defi-dashboard/server test",
     "test:coverage": "npm --workspace=@defi-dashboard/server run test:coverage",
-    "test:watch": "npm --workspace=@defi-dashboard/server run test:watch"
+    "test:watch": "npm --workspace=@defi-dashboard/server run test:watch",
+    "prepare": "husky"
   }
 }
