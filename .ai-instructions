@@ -7,9 +7,12 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 
 ### Language ###
 - All development should be in typescript
-- If there is a backend database it should use sqllite or something similar
+- If there is a backend database it should use sqllite or something similar. The runtime database files itself should never be committed.
 - Unit tests should be written at each step for both frontend and backend
 - When all tests pass then commit to the repository
+- The latest versions of all packages should be used
+- Avoid packages that have outstanding security issues
+-
 
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
