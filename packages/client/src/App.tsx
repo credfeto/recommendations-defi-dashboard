@@ -1,13 +1,19 @@
 import React from 'react';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { FetchPools } from './FetchPools';
 
 function App() {
   return (
-    <div className='App'>
-      <main>
-        <FetchPools />
-      </main>
-    </div>
+    <HelmetProvider>
+      <Helmet>
+        <title>DeFi Pools Dashboard</title>
+      </Helmet>
+      <div className='App'>
+        <main>
+          <FetchPools />
+        </main>
+      </div>
+    </HelmetProvider>
   );
 }
 
