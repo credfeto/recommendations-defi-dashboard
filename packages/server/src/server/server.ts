@@ -1,6 +1,6 @@
-import { PoolTypeConfig } from '../types/poolTypeConfig';
-import { getPoolTypeById } from '../types/getPoolTypeById';
-import { getAvailablePoolTypes } from '../types/getAvailablePoolTypes';
+import {PoolTypeConfig} from '../types/poolTypeConfig';
+import {getPoolTypeById} from '../types/getPoolTypeById';
+import {getAvailablePoolTypes} from '../types/getAvailablePoolTypes';
 
 interface PoolData {
   symbol: string;
@@ -20,17 +20,17 @@ const MIN_TVL = 1_000_000;
 
 // Add chain names here (case-insensitive) to exclude them from all responses
 const EXCLUDED_CHAINS: string[] = [
-  'Tron',
-  'Sui',
-  'Avalanche',
   'Aptos',
-  'FileCoin',
+  'Avalanche',
   'Cardano',
-  'Ton',
-  'Icp',
+  'FileCoin',
   'Flare',
   'Flow',
+  'Icp',
   'Stellar',
+  'Sui',
+  'Ton',
+  'Tron',
   'Venom',
 ];
 
