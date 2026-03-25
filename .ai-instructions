@@ -16,9 +16,10 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Framework**: Fastify 5.8.4 with @fastify/cors
 - **Runtime**: Node.js (TypeScript via ts-node)
 - **Endpoint**: `GET /api/pools` - Caches and proxies Llama API
-- **Caching**: In-memory cache with 1-hour TTL
+- **Caching**: On-disk cache with 1-hour TTL
 - **Port**: 5000
 - **Location**: `src/server.ts`
+- serve the front end from the same server to avoid CORS issues
 
 ### External API
 - **Provider**: Llama Yields (https://yields.llama.fi/pools)
