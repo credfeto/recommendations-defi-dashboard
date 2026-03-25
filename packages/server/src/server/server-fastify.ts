@@ -65,16 +65,12 @@ export const start = async (): Promise<void> => {
   await fastify.listen({ port: PORT, host: '0.0.0.0' });
 };
 
-// Only start if this is the main module
-const isMainModule = process.argv[1]?.endsWith('server-fastify.ts') || process.argv[1]?.endsWith('server-fastify.js');
-
-if (isMainModule) {
-  start()
-    .then(() => {
-      console.log(`Server listening on port ${PORT}`);
-    })
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
-    });
-}
+// Always start the server
+start()
+  .then(() => {
+    console.log(`Server listening on port ${PORT}`);
+  })
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

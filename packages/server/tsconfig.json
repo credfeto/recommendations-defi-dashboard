@@ -5,5 +5,11 @@
     "paths": { "@shared": ["../shared/src"], "@shared/*": ["../shared/src/*"] },
     "outDir": "./dist"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }
