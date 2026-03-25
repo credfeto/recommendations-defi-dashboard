@@ -5,6 +5,11 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 
 ## Architecture
 
+### Language ###
+- All development should be in typescript
+- If there is a backend database it should use sqllite or something similar
+
+
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
 - **Build Tool**: react-scripts
@@ -15,7 +20,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 ### Backend (Fastify)
 - **Framework**: Fastify 5.8.4 with @fastify/cors
 - **Runtime**: Node.js (TypeScript via ts-node)
-- **Endpoint**: `GET /api/pools` - Caches and proxies Llama API
+- **Endpoint**: `GET /api/pools/{PoolName}` - Caches and proxies Llama API
 - **Caching**: On-disk cache with 1-hour TTL
 - **Port**: 5000
 - **Location**: `src/server.ts`
