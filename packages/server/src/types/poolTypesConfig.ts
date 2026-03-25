@@ -10,7 +10,7 @@ export const POOL_TYPES: Record<string, PoolTypeConfig> = {
       // Include ETH-based pools
       if (symbolUpper.includes('ETH')) return true;
       // Include liquid staking tokens
-      const lstSymbols = ['STETH', 'RETH', 'CBETH', 'SWELL', 'LSETH'];
+      const lstSymbols = ['STETH', 'WSTETH', 'RETH', 'CBETH', 'SWETH', 'LSETH', 'EETH', 'WEETH'];
       return lstSymbols.some((s) => symbolUpper.includes(s));
     },
   },

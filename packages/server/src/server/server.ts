@@ -19,7 +19,20 @@ interface PoolData {
 const MIN_TVL = 1_000_000;
 
 // Add chain names here (case-insensitive) to exclude them from all responses
-const EXCLUDED_CHAINS: string[] = ['Tron', 'Sui'];
+const EXCLUDED_CHAINS: string[] = [
+  'Tron',
+  'Sui',
+  'Avalanche',
+  'Aptos',
+  'FileCoin',
+  'Cardano',
+  'Ton',
+  'Icp',
+  'Flare',
+  'Flow',
+  'Stellar',
+  'Venom',
+];
 
 export const applyBaseFilters = (poolData: PoolData[]): PoolData[] => {
   const excludedLower = EXCLUDED_CHAINS.map((c) => c.toLowerCase());
@@ -29,6 +42,7 @@ export const applyBaseFilters = (poolData: PoolData[]): PoolData[] => {
         pool.ilRisk === 'no' &&
         pool.tvlUsd >= MIN_TVL &&
         pool.apy > 0 &&
+        pool.apy < 100 &&
         !excludedLower.includes(pool.chain.toLowerCase()),
     )
     .sort((a, b) => b.apy - a.apy || b.tvlUsd - a.tvlUsd);
