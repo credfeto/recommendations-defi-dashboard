@@ -96,9 +96,7 @@ curl http://localhost:5000/api/pools/HIGH_YIELD
 **Body:**
 
 ```json
-{
-  "error": "Invalid pool name. Use ETH or STABLES"
-}
+{ "error": "Invalid pool name. Use ETH or STABLES" }
 ```
 
 **Error Response (Server Error):**
@@ -108,9 +106,7 @@ curl http://localhost:5000/api/pools/HIGH_YIELD
 **Body:**
 
 ```json
-{
-  "error": "Failed to fetch pools"
-}
+{ "error": "Failed to fetch pools" }
 ```
 
 ## Response Schema

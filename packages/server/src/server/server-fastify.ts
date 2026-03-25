@@ -32,9 +32,7 @@ const getCachedPools = async (): Promise<any[]> => {
 };
 
 export const start = async (): Promise<void> => {
-  const fastify: any = Fastify({
-    logger: true,
-  });
+  const fastify: any = Fastify({ logger: true });
 
   await fastify.register(cors, { origin: true });
 
@@ -42,9 +40,7 @@ export const start = async (): Promise<void> => {
     const { poolName } = request.params as { poolName: string };
 
     if (!['ETH', 'STABLES'].includes(poolName.toUpperCase())) {
-      return reply.code(400).send({
-        error: 'Invalid pool name. Use ETH or STABLES',
-      });
+      return reply.code(400).send({ error: 'Invalid pool name. Use ETH or STABLES' });
     }
 
     try {
@@ -52,9 +48,7 @@ export const start = async (): Promise<void> => {
       const pools = getPoolsByType(allPools, poolName);
       return { status: 'ok', data: pools };
     } catch (error) {
-      return reply.code(500).send({
-        error: 'Failed to fetch pools',
-      });
+      return reply.code(500).send({ error: 'Failed to fetch pools' });
     }
   });
 
@@ -62,8 +56,7 @@ export const start = async (): Promise<void> => {
 };
 
 // Only start if this is the main module
-const isMainModule =
-  process.argv[1]?.endsWith('server-fastify.ts') || process.argv[1]?.endsWith('server-fastify.js');
+const isMainModule = process.argv[1]?.endsWith('server-fastify.ts') || process.argv[1]?.endsWith('server-fastify.js');
 
 if (isMainModule) {
   start()

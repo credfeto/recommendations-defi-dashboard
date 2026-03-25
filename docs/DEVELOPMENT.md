@@ -280,7 +280,7 @@ export const applyBaseFilters = (poolData: PoolData[]): PoolData[] => {
   return poolData.filter(
     (pool) =>
       // Modify filter criteria here
-      pool.ilRisk === 'no' && pool.tvlUsd >= MIN_TVL && pool.apy > 0
+      pool.ilRisk === 'no' && pool.tvlUsd >= MIN_TVL && pool.apy > 0,
   );
 };
 ```

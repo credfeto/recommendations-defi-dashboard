@@ -186,9 +186,7 @@ GET /api/pools/:poolName
 **Error Response:**
 
 ```json
-{
-  "error": "Invalid pool name. Use ETH or STABLES"
-}
+{ "error": "Invalid pool name. Use ETH or STABLES" }
 ```
 
 ## Cache Management

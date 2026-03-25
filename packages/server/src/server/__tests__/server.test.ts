@@ -114,14 +114,7 @@ describe('Server API Tests', () => {
     test('combines all filters correctly', () => {
       const filtered = filterPools(mockPoolData);
       expect(filtered.length).toBe(6);
-      expect(filtered.map((p) => p.symbol)).toEqual([
-        'STETH',
-        'USDC',
-        'USDT',
-        'WEETH',
-        'RETH',
-        'CBETH',
-      ]);
+      expect(filtered.map((p) => p.symbol)).toEqual(['STETH', 'USDC', 'USDT', 'WEETH', 'RETH', 'CBETH']);
     });
   });
 
@@ -153,13 +146,7 @@ describe('Server API Tests', () => {
     test('identifies blue chip pools (>$100M TVL)', () => {
       const blueChipPools = filterPoolsByType(mockPoolData, 'BLUE_CHIP');
       expect(blueChipPools.length).toBe(5);
-      expect(blueChipPools.map((p) => p.symbol)).toEqual([
-        'STETH',
-        'USDC',
-        'WEETH',
-        'RETH',
-        'CBETH',
-      ]);
+      expect(blueChipPools.map((p) => p.symbol)).toEqual(['STETH', 'USDC', 'WEETH', 'RETH', 'CBETH']);
     });
 
     test('filters ETH pools with all criteria', () => {

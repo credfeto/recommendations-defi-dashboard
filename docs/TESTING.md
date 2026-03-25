@@ -174,13 +174,7 @@ The test suite uses `mockPoolData` array with 8 sample pools:
 
 ```typescript
 const mockPoolData = [
-  {
-    symbol: 'STETH',
-    tvlUsd: 20000000000,
-    apy: 2.5,
-    ilRisk: 'no',
-    stablecoin: false,
-  },
+  { symbol: 'STETH', tvlUsd: 20000000000, apy: 2.5, ilRisk: 'no', stablecoin: false },
   // ... 7 more pools
 ];
 ```
@@ -375,11 +369,7 @@ When API response structure changes, update `mockPoolData` in tests.
 Extract common test setup into helper functions:
 
 ```typescript
-const createMockPool = (overrides) => ({
-  symbol: 'TEST',
-  apy: 2.5,
-  ...overrides,
-});
+const createMockPool = (overrides) => ({ symbol: 'TEST', apy: 2.5, ...overrides });
 ```
 
 ### Review Coverage Reports
