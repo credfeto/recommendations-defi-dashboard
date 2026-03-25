@@ -25,22 +25,26 @@ npm run dev
 ```
 
 This runs concurrently:
+
 - **Frontend**: React dev server on `http://localhost:3000`
 - **Backend**: Fastify on `http://localhost:5000`
 
 ### 3. Individual Commands
 
 **Frontend only:**
+
 ```bash
 npm start
 ```
 
 **Backend only:**
+
 ```bash
 npm run server
 ```
 
 **Tests:**
+
 ```bash
 npm test
 npm test -- --coverage
@@ -48,6 +52,7 @@ npm test -- --watch
 ```
 
 **Build:**
+
 ```bash
 npm run build
 ```
@@ -120,6 +125,7 @@ npm test -- server.test.ts
 ## Code Style
 
 The project uses:
+
 - **TypeScript** for type safety
 - **Prettier** for code formatting (via React Scripts)
 - **ESLint** for linting (via React Scripts)
@@ -257,6 +263,7 @@ npm test -- --verbose
 ### Modify Table Columns
 
 Edit `src/FetchPools.tsx`:
+
 - Add/remove `<th>` in table header
 - Add/remove `<td>` in table rows
 
@@ -270,11 +277,10 @@ Edit `src/server.ts` function `applyBaseFilters()`:
 
 ```typescript
 export const applyBaseFilters = (poolData: PoolData[]): PoolData[] => {
-  return poolData.filter(pool => 
-    // Modify filter criteria here
-    pool.ilRisk === 'no' &&
-    pool.tvlUsd >= MIN_TVL &&
-    pool.apy > 0
+  return poolData.filter(
+    (pool) =>
+      // Modify filter criteria here
+      pool.ilRisk === 'no' && pool.tvlUsd >= MIN_TVL && pool.apy > 0
   );
 };
 ```

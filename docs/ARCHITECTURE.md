@@ -80,17 +80,20 @@ The DeFi Pools Dashboard is a full-stack TypeScript application that displays li
 ### Frontend Modules
 
 **src/FetchPools.tsx**
+
 - Main React component
 - Manages pool type selection state
 - Fetches data from backend
 - Renders sidebar and table
 
 **src/types/poolTypes.ts**
+
 - Pool type configuration
 - 6 built-in pool types
 - Helper functions for type discovery
 
 **src/FetchPools.css**
+
 - Component styling
 - CSS Grid layout
 - Responsive design
@@ -98,12 +101,14 @@ The DeFi Pools Dashboard is a full-stack TypeScript application that displays li
 ### Backend Modules
 
 **src/server-fastify.ts**
+
 - Fastify server setup
 - Route handlers
 - CORS middleware
 - Request logging
 
 **src/server.ts**
+
 - Pool filtering logic
 - Cache management
 - Filter functions:
@@ -113,13 +118,15 @@ The DeFi Pools Dashboard is a full-stack TypeScript application that displays li
   - `getFilteredPools()` - Wrapper function
 
 **src/types/poolTypes.ts**
+
 - Shared type definitions
 - Pool type configuration
 - Type predicates
 
 ### Testing
 
-**src/__tests__/server.test.ts**
+**src/**tests**/server.test.ts**
+
 - 26 comprehensive unit tests
 - 100% code coverage
 - Tests for all pool types
@@ -135,14 +142,14 @@ All pool types automatically apply these criteria:
 
 ## Built-in Pool Types
 
-| Type | Filter | Use Case |
-|------|--------|----------|
-| ETH | Symbol contains "ETH" | Ethereum-based yields |
-| STABLES | stablecoin = true | Stablecoin pools |
-| LST | stETH, rETH, cbETH, etc. | Liquid staking yields |
-| HIGH_YIELD | APY > 5% | Aggressive yield seeking |
-| LOW_TVL | TVL < $10M | Early stage opportunities |
-| BLUE_CHIP | TVL > $100M | Conservative, safe pools |
+| Type       | Filter                   | Use Case                  |
+| ---------- | ------------------------ | ------------------------- |
+| ETH        | Symbol contains "ETH"    | Ethereum-based yields     |
+| STABLES    | stablecoin = true        | Stablecoin pools          |
+| LST        | stETH, rETH, cbETH, etc. | Liquid staking yields     |
+| HIGH_YIELD | APY > 5%                 | Aggressive yield seeking  |
+| LOW_TVL    | TVL < $10M               | Early stage opportunities |
+| BLUE_CHIP  | TVL > $100M              | Conservative, safe pools  |
 
 ## API Endpoints
 
@@ -153,9 +160,11 @@ GET /api/pools/:poolName
 ```
 
 **Parameters:**
+
 - `poolName` (string): Pool type ID (ETH, STABLES, LST, HIGH_YIELD, LOW_TVL, BLUE_CHIP)
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -175,6 +184,7 @@ GET /api/pools/:poolName
 ```
 
 **Error Response:**
+
 ```json
 {
   "error": "Invalid pool name. Use ETH or STABLES"
@@ -196,6 +206,7 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 ## Deployment Architecture
 
 ### Development
+
 ```
 npm run dev
 ├─ npm run server    (Fastify on port 5000)
@@ -203,6 +214,7 @@ npm run dev
 ```
 
 ### Production
+
 ```
 Build frontend:  npm run build     → ./build/
 Run backend:     npm run server    (Production mode)
@@ -212,18 +224,21 @@ Serve frontend:  Static hosting (Vercel, Netlify, etc.)
 ## Technology Stack
 
 ### Frontend
+
 - React 19.2.4
 - TypeScript 4.9.5
 - Axios 1.13.6
 - CSS Grid
 
 ### Backend
+
 - Fastify 5.8.4
 - @fastify/cors 11.2.0
 - TypeScript 4.9.5
 - Node.js runtime
 
 ### Testing
+
 - Jest 30.3.0
 - ts-jest 29.4.6
 - 26 tests, 100% coverage

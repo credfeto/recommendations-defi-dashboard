@@ -1,6 +1,6 @@
 /**
  * Example: How to Add New Pool Types
- * 
+ *
  * This file demonstrates how easy it is to extend the pool system.
  * Copy these examples to src/types/poolTypes.ts in the POOL_TYPES object.
  */
@@ -12,7 +12,7 @@ export const BITCOIN_POOL_TYPE = {
   description: 'Pools featuring BTC or wrapped Bitcoin tokens',
   predicate: (pool: any) => {
     const btcSymbols = ['WBTC', 'BTC', 'BTCB', 'RENBTC', 'SBTC', 'XBTC'];
-    return btcSymbols.some(s => pool.symbol.toUpperCase().includes(s));
+    return btcSymbols.some((s) => pool.symbol.toUpperCase().includes(s));
   },
 };
 
@@ -70,7 +70,7 @@ export const DERIVATIVES_POOL_TYPE = {
   description: 'Pools for leveraged and perpetual trading',
   predicate: (pool: any) => {
     const derivativeProjects = ['AAVE', 'COMPOUND', 'DYDX', 'PERP'];
-    return derivativeProjects.some(p => pool.project.toUpperCase().includes(p));
+    return derivativeProjects.some((p) => pool.project.toUpperCase().includes(p));
   },
 };
 
@@ -81,16 +81,16 @@ export const CROSS_CHAIN_POOL_TYPE = {
   description: 'Pools that facilitate cross-chain liquidity',
   predicate: (pool: any) => {
     const bridges = ['BRIDGE', 'WRAP', 'CROSS'];
-    return bridges.some(b => pool.project.toUpperCase().includes(b));
+    return bridges.some((b) => pool.project.toUpperCase().includes(b));
   },
 };
 
 /**
  * TO ADD THESE TO THE SYSTEM:
- * 
+ *
  * 1. Open src/types/poolTypes.ts
  * 2. Add to the POOL_TYPES object:
- * 
+ *
  *    export const POOL_TYPES: Record<string, PoolTypeConfig> = {
  *      ETH: { ... },
  *      STABLES: { ... },
@@ -99,11 +99,11 @@ export const CROSS_CHAIN_POOL_TYPE = {
  *      POLYGON: POLYGON_POOL_TYPE,
  *      // etc.
  *    };
- * 
+ *
  * 3. The system automatically creates:
  *    - API endpoint: GET /api/pools/BITCOIN
  *    - UI button with pool count
  *    - Data fetching for the new type
- * 
+ *
  * That's it! No other changes needed.
  */

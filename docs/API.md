@@ -11,6 +11,7 @@ http://localhost:5000
 ### Get Pools by Type
 
 **Endpoint:**
+
 ```
 GET /api/pools/:poolName
 ```
@@ -20,20 +21,20 @@ Retrieve filtered pools of a specific type, with base filters applied (IL risk =
 
 **Parameters:**
 
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| poolName | string | Yes | Pool type identifier (see Pool Types table below) |
+| Name     | Type   | Required | Description                                       |
+| -------- | ------ | -------- | ------------------------------------------------- |
+| poolName | string | Yes      | Pool type identifier (see Pool Types table below) |
 
 **Pool Types:**
 
-| Type | ID | Description |
-|------|----|----|
-| ETH-Based Pools | ETH | Pools containing ETH or ETH derivatives |
-| Stablecoin Pools | STABLES | Pools for stablecoin tokens |
-| Liquid Staking | LST | Pools with staking tokens (stETH, rETH, cbETH) |
-| High Yield | HIGH_YIELD | Pools with APY > 5% |
-| Emerging Pools | LOW_TVL | Pools with TVL < $10M |
-| Blue Chip Pools | BLUE_CHIP | Pools with TVL > $100M |
+| Type             | ID         | Description                                    |
+| ---------------- | ---------- | ---------------------------------------------- |
+| ETH-Based Pools  | ETH        | Pools containing ETH or ETH derivatives        |
+| Stablecoin Pools | STABLES    | Pools for stablecoin tokens                    |
+| Liquid Staking   | LST        | Pools with staking tokens (stETH, rETH, cbETH) |
+| High Yield       | HIGH_YIELD | Pools with APY > 5%                            |
+| Emerging Pools   | LOW_TVL    | Pools with TVL < $10M                          |
+| Blue Chip Pools  | BLUE_CHIP  | Pools with TVL > $100M                         |
 
 **Example Requests:**
 
@@ -53,6 +54,7 @@ curl http://localhost:5000/api/pools/HIGH_YIELD
 **Status Code:** 200 OK
 
 **Body:**
+
 ```json
 {
   "status": "ok",
@@ -92,6 +94,7 @@ curl http://localhost:5000/api/pools/HIGH_YIELD
 **Status Code:** 400 Bad Request
 
 **Body:**
+
 ```json
 {
   "error": "Invalid pool name. Use ETH or STABLES"
@@ -103,6 +106,7 @@ curl http://localhost:5000/api/pools/HIGH_YIELD
 **Status Code:** 500 Internal Server Error
 
 **Body:**
+
 ```json
 {
   "error": "Failed to fetch pools"
@@ -115,18 +119,18 @@ curl http://localhost:5000/api/pools/HIGH_YIELD
 
 ```typescript
 interface Pool {
-  symbol: string;           // Token symbol (e.g., "STETH")
-  chain: string;            // Blockchain name (e.g., "Ethereum")
-  project: string;          // Protocol name (e.g., "lido")
-  tvlUsd: number;          // Total Value Locked in USD
-  apy: number;             // Annual Percentage Yield
-  apyBase: number | null;  // Base APY component
+  symbol: string; // Token symbol (e.g., "STETH")
+  chain: string; // Blockchain name (e.g., "Ethereum")
+  project: string; // Protocol name (e.g., "lido")
+  tvlUsd: number; // Total Value Locked in USD
+  apy: number; // Annual Percentage Yield
+  apyBase: number | null; // Base APY component
   apyReward: number | null; // Reward APY component
-  ilRisk: string;          // Impermanent Loss risk ("no", "yes")
-  stablecoin: boolean;     // Is stablecoin pool
-  pool: string;            // Unique pool identifier (UUID)
-  exposure: string;        // Exposure type ("single", "multi")
-  [key: string]: any;      // Additional fields from API
+  ilRisk: string; // Impermanent Loss risk ("no", "yes")
+  stablecoin: boolean; // Is stablecoin pool
+  pool: string; // Unique pool identifier (UUID)
+  exposure: string; // Exposure type ("single", "multi")
+  [key: string]: any; // Additional fields from API
 }
 ```
 
@@ -134,12 +138,12 @@ interface Pool {
 
 ```typescript
 interface ApiResponse {
-  status: string;      // "ok" for success
-  data: Pool[];        // Array of filtered pools
+  status: string; // "ok" for success
+  data: Pool[]; // Array of filtered pools
 }
 
 interface ErrorResponse {
-  error: string;       // Error message
+  error: string; // Error message
 }
 ```
 
@@ -202,7 +206,7 @@ interface PoolsResponse {
 const response = await axios.get<PoolsResponse>('http://localhost:5000/api/pools/ETH');
 
 if (response.data.status === 'ok') {
-  response.data.data.forEach(pool => {
+  response.data.data.forEach((pool) => {
     console.log(`${pool.symbol}: ${pool.apy}% APY`);
   });
 }
@@ -248,7 +252,8 @@ for pool in pools:
 
 **Cause**: Cannot fetch from upstream API or internal error
 
-**Solution**: 
+**Solution**:
+
 1. Check that the server is running (`npm run server`)
 2. Verify internet connection
 3. Check server logs for details

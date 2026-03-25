@@ -14,7 +14,9 @@
   background: var(--bg-primary);
   border-radius: 12px;
   box-shadow: 0 2px 8px var(--shadow);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .pools-header h1 {
@@ -44,7 +46,9 @@
   height: fit-content;
   position: sticky;
   top: 20px;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .pool-types-sidebar h3 {
@@ -116,7 +120,9 @@
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 2px 8px var(--shadow);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .pool-type-header {
@@ -259,7 +265,9 @@
   background: var(--bg-primary);
   border-radius: 12px;
   color: var(--text-secondary);
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
 .error-message {

@@ -21,15 +21,16 @@ export const FetchPools: React.FC = () => {
   useEffect(() => {
     const fetchPools = async () => {
       try {
-        const requests = poolTypes.map(type =>
-          axios.get<PoolsResponse>(`http://localhost:5000/api/pools/${type.id}`)
-            .then(res => ({ typeId: type.id, data: res.data.data || [] }))
+        const requests = poolTypes.map((type) =>
+          axios
+            .get<PoolsResponse>(`http://localhost:5000/api/pools/${type.id}`)
+            .then((res) => ({ typeId: type.id, data: res.data.data || [] }))
             .catch(() => ({ typeId: type.id, data: [] }))
         );
 
         const results = await Promise.all(requests);
         const pools: PoolsByType = {};
-        
+
         results.forEach(({ typeId, data }) => {
           pools[typeId] = data;
         });
@@ -49,7 +50,7 @@ export const FetchPools: React.FC = () => {
   const handleThemeToggle = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    
+
     if (newMode) {
       document.documentElement.style.colorScheme = 'dark';
     } else {
@@ -60,14 +61,16 @@ export const FetchPools: React.FC = () => {
   if (loading) return <div className="loading">Loading pools...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
-  const currentType = poolTypes.find(t => t.id === selectedType);
+  const currentType = poolTypes.find((t) => t.id === selectedType);
   const currentPools = poolsByType[selectedType] || [];
 
   return (
     <div className="pools-container">
       <header className="pools-header">
         <h1>🏊‍♂️ DeFi Pools Dashboard</h1>
-        <p className="subtitle">Filtered pools with no IL risk, greater than $1M TVL, and positive APY</p>
+        <p className="subtitle">
+          Filtered pools with no IL risk, greater than $1M TVL, and positive APY
+        </p>
       </header>
 
       <div className="pools-content">
@@ -75,7 +78,7 @@ export const FetchPools: React.FC = () => {
         <aside className="pool-types-sidebar">
           <h3>Pool Types</h3>
           <nav className="pool-types-nav">
-            {poolTypes.map(type => (
+            {poolTypes.map((type) => (
               <button
                 key={type.id}
                 className={`pool-type-btn ${selectedType === type.id ? 'active' : ''}`}
@@ -124,7 +127,9 @@ export const FetchPools: React.FC = () => {
                           <td className="symbol">{pool.symbol}</td>
                           <td>{pool.chain}</td>
                           <td>{pool.project}</td>
-                          <td className="tvl">${pool.tvlUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+                          <td className="tvl">
+                            ${pool.tvlUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                          </td>
                           <td className="apy">{pool.apy.toFixed(2)}%</td>
                           <td>{pool.apyBase !== null ? pool.apyBase.toFixed(2) : '-'}%</td>
                           <td>{pool.apyReward !== null ? pool.apyReward.toFixed(2) : '-'}%</td>
@@ -144,19 +149,26 @@ export const FetchPools: React.FC = () => {
                     <div className="summary-stat">
                       <span className="stat-label">Total TVL:</span>
                       <span className="stat-value">
-                        ${(currentPools.reduce((sum, p) => sum + p.tvlUsd, 0) / 1_000_000_000).toFixed(2)}B
+                        $
+                        {(
+                          currentPools.reduce((sum, p) => sum + p.tvlUsd, 0) / 1_000_000_000
+                        ).toFixed(2)}
+                        B
                       </span>
                     </div>
                     <div className="summary-stat">
                       <span className="stat-label">Avg APY:</span>
                       <span className="stat-value">
-                        {(currentPools.reduce((sum, p) => sum + p.apy, 0) / currentPools.length).toFixed(2)}%
+                        {(
+                          currentPools.reduce((sum, p) => sum + p.apy, 0) / currentPools.length
+                        ).toFixed(2)}
+                        %
                       </span>
                     </div>
                     <div className="summary-stat">
                       <span className="stat-label">Max APY:</span>
                       <span className="stat-value">
-                        {Math.max(...currentPools.map(p => p.apy)).toFixed(2)}%
+                        {Math.max(...currentPools.map((p) => p.apy)).toFixed(2)}%
                       </span>
                     </div>
                   </div>

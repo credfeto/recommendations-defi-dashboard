@@ -29,7 +29,7 @@ export const POOL_TYPES: Record<string, PoolTypeConfig> = {
     description: 'Pools featuring liquid staking tokens (stETH, rETH, etc)',
     predicate: (pool) => {
       const symbols = ['STETH', 'RETH', 'CBETH', 'SWELL', 'LSETH'];
-      return symbols.some(s => pool.symbol.toUpperCase().includes(s));
+      return symbols.some((s) => pool.symbol.toUpperCase().includes(s));
     },
   },
   HIGH_YIELD: {

@@ -5,6 +5,7 @@ A production-ready full-stack application for exploring and filtering liquidity 
 ## Features
 
 ✨ **Core Features:**
+
 - 🔍 Browse liquidity pools from [Llama Yields API](https://yields.llama.fi/)
 - 🏷️ Filter pools by type: ETH, Stablecoins, Liquid Staking Tokens (LST), High-Yield, Blue Chip, and Low TVL
 - 🎯 Advanced filtering: exclude impermanent loss, minimum $1M TVL, positive APY only
@@ -13,6 +14,7 @@ A production-ready full-stack application for exploring and filtering liquidity 
 - 🎨 Modern, intuitive UI with dynamic navigation
 
 🛠️ **Technical Features:**
+
 - **100% TypeScript** - Full type safety across frontend and backend
 - **100% Test Coverage** - 26 unit tests with comprehensive coverage
 - **Fastify Backend** - High-performance server with CORS support
@@ -95,6 +97,7 @@ GET /api/pools/:poolName
 ```
 
 Supported pool types:
+
 - `ETH` - Ethereum-based pools (ETH, STETH, RETH, WEETH, etc.)
 - `STABLES` - Stablecoin pools (USDC, USDT, DAI, etc.)
 - `LST` - Liquid Staking Tokens (stETH, rETH, cbETH, etc.)
@@ -103,6 +106,7 @@ Supported pool types:
 - `LOW_TVL` - Emerging opportunities ($1M-$10M TVL)
 
 **Example:**
+
 ```bash
 curl http://localhost:5000/api/pools/ETH
 ```
@@ -112,6 +116,7 @@ See [API.md](./docs/API.md) for full documentation.
 ## Filtering Logic
 
 All pools automatically filter by:
+
 - ✅ **No Impermanent Loss Risk** (`ilRisk === 'no'`)
 - ✅ **Minimum $1M TVL** (`tvlUsd >= 1,000,000`)
 - ✅ **Positive APY** (`apy > 0`)
@@ -149,6 +154,7 @@ export const POOL_TYPES: Record<string, PoolTypeConfig> = {
 ```
 
 The system automatically creates:
+
 - API endpoint: `/api/pools/YOUR_TYPE`
 - UI button in the sidebar
 - Data fetching and display
@@ -210,6 +216,7 @@ For detailed development instructions, see [DEVELOPMENT.md](./docs/DEVELOPMENT.m
 ### Frontend
 
 Deploy the `build/` folder to any static hosting:
+
 - Vercel
 - Netlify
 - GitHub Pages
@@ -218,6 +225,7 @@ Deploy the `build/` folder to any static hosting:
 ### Backend
 
 Deploy `src/server-fastify.ts` to any Node.js hosting:
+
 - Heroku
 - AWS Lambda
 - DigitalOcean
@@ -249,17 +257,20 @@ MIT License - See LICENSE file for details
 ## Troubleshooting
 
 **Port already in use?**
+
 ```bash
 lsof -ti:5000 | xargs kill -9
 ```
 
 **Dependencies issues?**
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 **Tests failing?**
+
 ```bash
 npm test -- --clearCache
 npm test -- --verbose

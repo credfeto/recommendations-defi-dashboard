@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Core Features
+
 - **Full-stack DeFi pool dashboard** using React frontend and Fastify backend
 - **Pool filtering system** with 6 configurable pool types:
   - ETH-based pools (STETH, RETH, WEETH, CBETH, etc.)
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Real-time pool data** from Llama Yields API (https://yields.llama.fi/pools)
 
 #### Technical Implementation
+
 - **100% TypeScript** - Full type safety across entire codebase
 - **Extensible pool type system** - Add new pool types in ~5 minutes by editing configuration
 - **100% unit test coverage** - 26 tests covering all filtering logic
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Jest testing framework** with ts-jest for TypeScript support
 
 #### Documentation
+
 - **Comprehensive README.md** with features, quick start, and API overview
 - **Architecture.md** documenting system design and data flow
 - **API.md** with endpoint reference and response schemas
@@ -47,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **.ai-instructions** with project guidelines and conventions
 
 #### Project Structure
+
 - Organized into `src/client/` (React UI), `src/server/` (Fastify API), and `src/shared/types/` (TypeScript models)
 - Clear separation of concerns for scalability and maintainability
 
@@ -66,17 +70,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 
 #### Performance Optimizations
+
 - Server-side caching reduces external API calls by ~99%
 - API response times consistently under 100ms
 - Optimized production build with tree-shaking and code splitting
 - CSS Grid responsive layout for all screen sizes
 
 #### Data Model
+
 - `Pool` interface with 14+ properties (symbol, chain, project, tvl, apy, etc.)
 - `PoolTypeConfig` interface for extensible type definitions
 - TypeScript strict mode enabled throughout
 
 #### Testing
+
 - 26 unit tests covering:
   - Pool filtering by criteria (IL risk, TVL, APY)
   - Pool type categorization (ETH, STABLES, LST, HIGH_YIELD, BLUE_CHIP, LOW_TVL)
@@ -98,12 +105,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Setup & Development
 
 ### For New Developers
+
 1. Clone the repository
 2. Run `npm install` to install dependencies
 3. Run `npm run dev` to start both frontend (port 3000) and backend (port 5000)
 4. Navigate to http://localhost:3000 to view the dashboard
 
 ### For Adding New Pool Types
+
 1. Edit `src/shared/types/poolTypes.ts`
 2. Add new entry to `POOL_TYPES` object with:
    - `id`: Unique identifier
@@ -135,6 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 **Links:**
+
 - [Repository](https://github.com/markr/recommendations-defi-dashboard)
 - [Issues](https://github.com/markr/recommendations-defi-dashboard/issues)
 - [Documentation](./docs/)

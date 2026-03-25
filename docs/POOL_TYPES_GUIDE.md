@@ -67,6 +67,7 @@ const poolTypes = getAvailablePoolTypes();
 ```
 
 The component will:
+
 1. Display a button for each pool type in the sidebar
 2. Fetch data for all types on load
 3. Show pool details when a type is selected
@@ -77,16 +78,17 @@ The component will:
 
 ```typescript
 interface PoolTypeConfig {
-  id: string;                          // Unique identifier (used in API)
-  name: string;                        // Display name for UI
-  description: string;                 // Tooltip text
-  predicate: (pool: any) => boolean;   // Function to identify matching pools
+  id: string; // Unique identifier (used in API)
+  name: string; // Display name for UI
+  description: string; // Tooltip text
+  predicate: (pool: any) => boolean; // Function to identify matching pools
 }
 ```
 
 ### Base Filters
 
 All pool types automatically apply these base filters:
+
 - IL Risk = "no" (no impermanent loss)
 - TVL ≥ $1,000,000 (minimum liquidity)
 - APY > 0 (positive yields)

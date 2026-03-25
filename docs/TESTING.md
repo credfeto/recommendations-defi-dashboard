@@ -26,6 +26,7 @@ npm test -- --coverage
 ```
 
 Output shows:
+
 - Coverage percentage by type (statements, branches, functions, lines)
 - Files and line numbers with uncovered code
 
@@ -67,13 +68,14 @@ Tests the base filtering logic applied to all pool types.
 describe('Pool Filtering', () => {
   test('filters pools with no IL risk', () => {
     const filtered = filterPools(mockPoolData);
-    expect(filtered.every(p => p.ilRisk === 'no')).toBe(true);
+    expect(filtered.every((p) => p.ilRisk === 'no')).toBe(true);
   });
   // ... more tests
 });
 ```
 
 **What's tested:**
+
 - IL Risk filter (`ilRisk === 'no'`)
 - TVL filter (`tvlUsd >= $1,000,000`)
 - APY filter (`apy > 0`)
@@ -88,13 +90,14 @@ describe('Pool Type Categorization', () => {
   test('identifies ETH-based pools correctly', () => {
     const ethPools = getPoolsByType(mockPoolData, 'ETH');
     expect(ethPools.length).toBe(4);
-    expect(ethPools.map(p => p.symbol)).toEqual(['STETH', 'WEETH', 'RETH', 'CBETH']);
+    expect(ethPools.map((p) => p.symbol)).toEqual(['STETH', 'WEETH', 'RETH', 'CBETH']);
   });
   // ... more tests for each type
 });
 ```
 
 **What's tested:**
+
 - ETH-based pools
 - Stablecoin pools
 - Liquid staking tokens
@@ -117,6 +120,7 @@ describe('Edge Cases', () => {
 ```
 
 **What's tested:**
+
 - Empty lists
 - Zero TVL pools
 - Zero APY pools
@@ -144,7 +148,7 @@ test('getAvailableTypes returns all pool type configs', () => {
   const { getAvailableTypes } = require('../server');
   const types = getAvailableTypes();
   expect(Array.isArray(types)).toBe(true);
-  expect(types.some(t => t.id === 'ETH')).toBe(true);
+  expect(types.some((t) => t.id === 'ETH')).toBe(true);
 });
 ```
 
@@ -156,7 +160,7 @@ Tests that pool data has correct types.
 describe('Data Types', () => {
   test('TVL is a number', () => {
     const filtered = filterPools(mockPoolData);
-    filtered.forEach(pool => {
+    filtered.forEach((pool) => {
       expect(typeof pool.tvlUsd).toBe('number');
     });
   });
@@ -182,6 +186,7 @@ const mockPoolData = [
 ```
 
 Pools are designed to test different scenarios:
+
 - High TVL (STETH: $20B)
 - Low TVL (WETH: $500K)
 - IL Risk Yes/No
@@ -197,10 +202,10 @@ describe('New Feature', () => {
   test('should do something', () => {
     // Arrange
     const input = mockPoolData;
-    
+
     // Act
     const result = yourFunction(input);
-    
+
     // Assert
     expect(result).toBeDefined();
   });
@@ -224,6 +229,7 @@ Coverage must remain at 100%.
 ## Coverage Thresholds
 
 The project enforces 100% coverage for:
+
 - **Statements**: All code paths executed
 - **Branches**: All if/else branches taken
 - **Functions**: All functions called
@@ -238,6 +244,7 @@ npm test -- --coverage
 ```
 
 Then either:
+
 1. Add tests for uncovered code
 2. Add `/* istanbul ignore */` comments for untestable code
 3. Refactor code to be testable
@@ -251,7 +258,7 @@ test('processes array correctly', () => {
   const input = [item1, item2, item3];
   const result = yourFunction(input);
   expect(result).toHaveLength(3);
-  expect(result.every(r => r.property > 0)).toBe(true);
+  expect(result.every((r) => r.property > 0)).toBe(true);
 });
 ```
 
@@ -259,8 +266,8 @@ test('processes array correctly', () => {
 
 ```typescript
 test('filters by criteria', () => {
-  const filtered = pools.filter(p => p.apy > 5);
-  expect(filtered.every(p => p.apy > 5)).toBe(true);
+  const filtered = pools.filter((p) => p.apy > 5);
+  expect(filtered.every((p) => p.apy > 5)).toBe(true);
 });
 ```
 
@@ -279,13 +286,13 @@ test('matches pool type predicate', () => {
 Common matchers used in tests:
 
 ```typescript
-expect(value).toBe(expected);           // Exact equality
-expect(value).toEqual(expected);        // Deep equality
-expect(value).toBeDefined();            // Not undefined
-expect(array).toHaveLength(5);          // Array length
-expect(array.every(x => x > 0)).toBe(true);  // All items match
-expect(string).toContain('text');       // String contains
-expect(() => fn()).toThrow();           // Function throws
+expect(value).toBe(expected); // Exact equality
+expect(value).toEqual(expected); // Deep equality
+expect(value).toBeDefined(); // Not undefined
+expect(array).toHaveLength(5); // Array length
+expect(array.every((x) => x > 0)).toBe(true); // All items match
+expect(string).toContain('text'); // String contains
+expect(() => fn()).toThrow(); // Function throws
 ```
 
 ## Debugging Tests
@@ -378,6 +385,7 @@ const createMockPool = (overrides) => ({
 ### Review Coverage Reports
 
 Regular review of coverage reports helps identify:
+
 - Dead code
 - Overly complex logic
 - Missing edge cases

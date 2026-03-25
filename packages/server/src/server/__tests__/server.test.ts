@@ -98,23 +98,30 @@ describe('Server API Tests', () => {
   describe('Pool Filtering', () => {
     test('filters pools with no IL risk', () => {
       const filtered = filterPools(mockPoolData);
-      expect(filtered.every(p => p.ilRisk === 'no')).toBe(true);
+      expect(filtered.every((p) => p.ilRisk === 'no')).toBe(true);
     });
 
     test('filters pools with sufficient TVL', () => {
       const filtered = filterPools(mockPoolData);
-      expect(filtered.every(p => p.tvlUsd >= 1000000)).toBe(true);
+      expect(filtered.every((p) => p.tvlUsd >= 1000000)).toBe(true);
     });
 
     test('filters pools with positive APY', () => {
       const filtered = filterPools(mockPoolData);
-      expect(filtered.every(p => p.apy > 0)).toBe(true);
+      expect(filtered.every((p) => p.apy > 0)).toBe(true);
     });
 
     test('combines all filters correctly', () => {
       const filtered = filterPools(mockPoolData);
       expect(filtered.length).toBe(6);
-      expect(filtered.map(p => p.symbol)).toEqual(['STETH', 'USDC', 'USDT', 'WEETH', 'RETH', 'CBETH']);
+      expect(filtered.map((p) => p.symbol)).toEqual([
+        'STETH',
+        'USDC',
+        'USDT',
+        'WEETH',
+        'RETH',
+        'CBETH',
+      ]);
     });
   });
 
@@ -122,47 +129,53 @@ describe('Server API Tests', () => {
     test('identifies ETH-based pools correctly', () => {
       const ethPools = getPoolsByType(mockPoolData, 'ETH');
       expect(ethPools.length).toBe(4);
-      expect(ethPools.map(p => p.symbol)).toEqual(['STETH', 'WEETH', 'RETH', 'CBETH']);
+      expect(ethPools.map((p) => p.symbol)).toEqual(['STETH', 'WEETH', 'RETH', 'CBETH']);
     });
 
     test('identifies stablecoin pools correctly', () => {
       const stablePools = getPoolsByType(mockPoolData, 'STABLES');
       expect(stablePools.length).toBe(2);
-      expect(stablePools.map(p => p.symbol)).toEqual(['USDC', 'USDT']);
+      expect(stablePools.map((p) => p.symbol)).toEqual(['USDC', 'USDT']);
     });
 
     test('identifies liquid staking tokens (LST)', () => {
       const lstPools = filterPoolsByType(mockPoolData, 'LST');
       expect(lstPools.length).toBe(3);
-      expect(lstPools.map(p => p.symbol)).toEqual(['STETH', 'RETH', 'CBETH']);
+      expect(lstPools.map((p) => p.symbol)).toEqual(['STETH', 'RETH', 'CBETH']);
     });
 
     test('identifies high yield pools (>5% APY)', () => {
       const highYieldPools = filterPoolsByType(mockPoolData, 'HIGH_YIELD');
       expect(highYieldPools.length).toBe(2);
-      expect(highYieldPools.map(p => p.symbol)).toEqual(['RETH', 'CBETH']);
+      expect(highYieldPools.map((p) => p.symbol)).toEqual(['RETH', 'CBETH']);
     });
 
     test('identifies blue chip pools (>$100M TVL)', () => {
       const blueChipPools = filterPoolsByType(mockPoolData, 'BLUE_CHIP');
       expect(blueChipPools.length).toBe(5);
-      expect(blueChipPools.map(p => p.symbol)).toEqual(['STETH', 'USDC', 'WEETH', 'RETH', 'CBETH']);
+      expect(blueChipPools.map((p) => p.symbol)).toEqual([
+        'STETH',
+        'USDC',
+        'WEETH',
+        'RETH',
+        'CBETH',
+      ]);
     });
 
     test('filters ETH pools with all criteria', () => {
       const ethPools = getPoolsByType(mockPoolData, 'ETH');
-      expect(ethPools.every(p => p.symbol.toUpperCase().includes('ETH'))).toBe(true);
-      expect(ethPools.every(p => p.ilRisk === 'no')).toBe(true);
-      expect(ethPools.every(p => p.tvlUsd >= 1000000)).toBe(true);
-      expect(ethPools.every(p => p.apy > 0)).toBe(true);
+      expect(ethPools.every((p) => p.symbol.toUpperCase().includes('ETH'))).toBe(true);
+      expect(ethPools.every((p) => p.ilRisk === 'no')).toBe(true);
+      expect(ethPools.every((p) => p.tvlUsd >= 1000000)).toBe(true);
+      expect(ethPools.every((p) => p.apy > 0)).toBe(true);
     });
 
     test('filters stablecoin pools with all criteria', () => {
       const stablePools = getPoolsByType(mockPoolData, 'STABLES');
-      expect(stablePools.every(p => p.stablecoin === true)).toBe(true);
-      expect(stablePools.every(p => p.ilRisk === 'no')).toBe(true);
-      expect(stablePools.every(p => p.tvlUsd >= 1000000)).toBe(true);
-      expect(stablePools.every(p => p.apy > 0)).toBe(true);
+      expect(stablePools.every((p) => p.stablecoin === true)).toBe(true);
+      expect(stablePools.every((p) => p.ilRisk === 'no')).toBe(true);
+      expect(stablePools.every((p) => p.tvlUsd >= 1000000)).toBe(true);
+      expect(stablePools.every((p) => p.apy > 0)).toBe(true);
     });
   });
 
@@ -173,17 +186,13 @@ describe('Server API Tests', () => {
     });
 
     test('handles pools with zero TVL', () => {
-      const poolsWithZeroTVL = [
-        { ...mockPoolData[0], tvlUsd: 0 },
-      ];
+      const poolsWithZeroTVL = [{ ...mockPoolData[0], tvlUsd: 0 }];
       const filtered = filterPools(poolsWithZeroTVL);
       expect(filtered).toEqual([]);
     });
 
     test('handles pools with zero APY', () => {
-      const poolsWithZeroAPY = [
-        { ...mockPoolData[0], apy: 0 },
-      ];
+      const poolsWithZeroAPY = [{ ...mockPoolData[0], apy: 0 }];
       const filtered = filterPools(poolsWithZeroAPY);
       expect(filtered).toEqual([]);
     });
@@ -193,7 +202,7 @@ describe('Server API Tests', () => {
       const ethUpper = getPoolsByType(mockPoolData, 'ETH');
       const stableLower = getPoolsByType(mockPoolData, 'stables');
       const stableUpper = getPoolsByType(mockPoolData, 'STABLES');
-      
+
       expect(ethLower).toEqual(ethUpper);
       expect(stableLower).toEqual(stableUpper);
     });
@@ -220,7 +229,7 @@ describe('Server API Tests', () => {
 
     test('pool object has all required fields', () => {
       const filtered = filterPools(mockPoolData);
-      filtered.forEach(pool => {
+      filtered.forEach((pool) => {
         expect(pool).toHaveProperty('symbol');
         expect(pool).toHaveProperty('tvlUsd');
         expect(pool).toHaveProperty('apy');
@@ -236,8 +245,8 @@ describe('Server API Tests', () => {
       const types = getAvailableTypes();
       expect(Array.isArray(types)).toBe(true);
       expect(types.length).toBeGreaterThan(0);
-      expect(types.some(t => t.id === 'ETH')).toBe(true);
-      expect(types.some(t => t.id === 'STABLES')).toBe(true);
+      expect(types.some((t) => t.id === 'ETH')).toBe(true);
+      expect(types.some((t) => t.id === 'STABLES')).toBe(true);
     });
 
     test('getFilteredPools wrapper function works', () => {
@@ -245,45 +254,44 @@ describe('Server API Tests', () => {
       const pools = getFilteredPools(mockPoolData, 'ETH');
       expect(Array.isArray(pools)).toBe(true);
       expect(pools.length).toBeGreaterThan(0);
-      expect(pools.every(p => p.symbol.toUpperCase().includes('ETH'))).toBe(true);
+      expect(pools.every((p) => p.symbol.toUpperCase().includes('ETH'))).toBe(true);
     });
   });
 
   describe('Data Types', () => {
     test('TVL is a number', () => {
       const filtered = filterPools(mockPoolData);
-      filtered.forEach(pool => {
+      filtered.forEach((pool) => {
         expect(typeof pool.tvlUsd).toBe('number');
       });
     });
 
     test('APY is a number', () => {
       const filtered = filterPools(mockPoolData);
-      filtered.forEach(pool => {
+      filtered.forEach((pool) => {
         expect(typeof pool.apy).toBe('number');
       });
     });
 
     test('symbol is a string', () => {
       const filtered = filterPools(mockPoolData);
-      filtered.forEach(pool => {
+      filtered.forEach((pool) => {
         expect(typeof pool.symbol).toBe('string');
       });
     });
 
     test('stablecoin is a boolean', () => {
       const filtered = filterPools(mockPoolData);
-      filtered.forEach(pool => {
+      filtered.forEach((pool) => {
         expect(typeof pool.stablecoin).toBe('boolean');
       });
     });
 
     test('ilRisk is a string', () => {
       const filtered = filterPools(mockPoolData);
-      filtered.forEach(pool => {
+      filtered.forEach((pool) => {
         expect(typeof pool.ilRisk).toBe('string');
       });
     });
   });
 });
-

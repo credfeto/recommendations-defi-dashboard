@@ -3,9 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   testMatch: ['<rootDir>/src/server/__tests__/**/*.test.ts'],
-  collectCoverageFrom: [
-    'src/server/server.ts',
-  ],
+  collectCoverageFrom: ['src/server/server.ts'],
   coverageReporters: ['text', 'text-summary', 'html'],
   coverageThreshold: {
     global: {
