@@ -5,12 +5,7 @@ const PENDLE_API_BASE = 'https://api-v2.pendle.finance/core/v1';
 // Add chain IDs here to include additional networks
 const PENDLE_CHAIN_IDS: number[] = [1, 42161, 8453, 56];
 
-const CHAIN_ID_TO_NAME: Record<number, string> = {
-  1: 'Ethereum',
-  42161: 'Arbitrum',
-  8453: 'Base',
-  56: 'BSC',
-};
+const CHAIN_ID_TO_NAME: Record<number, string> = { 1: 'Ethereum', 42161: 'Arbitrum', 8453: 'Base', 56: 'BSC' };
 
 interface PendleMarket {
   address: string;
@@ -68,11 +63,7 @@ const fetchMarketsForChain = async (chainId: number): Promise<PendleMarket[]> =>
 export const normalizePendleMarket = (market: PendleMarket): PendlePoolData => {
   const chain = CHAIN_ID_TO_NAME[market.chainId] ?? String(market.chainId);
   const expiry = market.expiry
-    ? new Date(market.expiry).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
+    ? new Date(market.expiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
     : null;
 
   return {
@@ -94,7 +85,5 @@ export const normalizePendleMarket = (market: PendleMarket): PendlePoolData => {
 export const fetchPendlePools = async (): Promise<PendlePoolData[]> => {
   const results = await Promise.allSettled(PENDLE_CHAIN_IDS.map(fetchMarketsForChain));
 
-  return results
-    .flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
-    .map(normalizePendleMarket);
+  return results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])).map(normalizePendleMarket);
 };

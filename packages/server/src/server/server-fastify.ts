@@ -49,10 +49,7 @@ const getCachedPendlePools = async (): Promise<any[]> => {
 };
 
 const getAllPools = async (): Promise<any[]> => {
-  const [llamaPools, pendlePools] = await Promise.all([
-    getCachedLlamaPools(),
-    getCachedPendlePools(),
-  ]);
+  const [llamaPools, pendlePools] = await Promise.all([getCachedLlamaPools(), getCachedPendlePools()]);
   return [...llamaPools, ...pendlePools];
 };
 
