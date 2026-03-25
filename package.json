@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "server": "node src/server-fastify.js",
+    "server": "ts-node -O '{\"module\": \"commonjs\"}' src/server-fastify.ts",
     "dev": "concurrently \"npm run server\" \"npm start\"",
     "build": "react-scripts build",
     "test": "jest",

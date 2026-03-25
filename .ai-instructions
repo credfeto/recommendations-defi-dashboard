@@ -9,10 +9,11 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - All development should be in typescript
 - If there is a backend database it should use sqllite or something similar. The runtime database files itself should never be committed.
 - Unit tests should be written at each step for both frontend and backend
-- When all tests pass then commit to the repository
+- When all tests pass then commit to the repository and push upstream.  Create a branch for each feature and merge to main when complete.  Do not commit directly to main.
 - The latest versions of all packages should be used
 - Avoid packages that have outstanding security issues
--
+- Optimize everything for performance where possible
+- Use a functional style where all objects are immutable
 
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
@@ -20,6 +21,8 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Key Component**: `src/fetchPools.tsx` - Main view component that fetches and displays pool data
 - **Types**: `src/types/pools.ts` - TypeScript interfaces for API responses
 - **Port**: 3000 (development)
+- Should display the content in a nice way where the output is pleasing.
+- Should have a tab for each {PoolName} in the UI
 
 ### Backend (Fastify)
 - **Framework**: Fastify 5.8.4 with @fastify/cors
