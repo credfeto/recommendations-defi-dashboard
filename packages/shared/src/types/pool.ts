@@ -22,7 +22,7 @@ export interface Pool {
   sigma: number;
   count: number;
   outlier: boolean;
-  underlyingTokens: string[];
+  underlyingTokens: string[] | null;
   il7d: number | null;
   apyBase7d: number | null;
   apyMean30d: number;
