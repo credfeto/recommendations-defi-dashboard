@@ -1,4 +1,5 @@
 import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../server';
+import { normalizePendleMarket } from '../pendleService';
 import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared';
 
 interface MockPool {
@@ -310,6 +311,82 @@ describe('Server API Tests', () => {
         expect(type.displayName.length > 0).toBe(true);
         expect(typeof type.displayName).toBe('string');
       });
+    });
+  });
+
+  describe('Pendle Normalizer', () => {
+    const mockPendleMarket = {
+      address: '0xabc123',
+      chainId: 1,
+      simpleSymbol: 'sUSDe',
+      expiry: '2026-06-26T00:00:00.000Z',
+      isActive: true,
+      categoryIds: ['stables', 'ethena'],
+      liquidity: { usd: 50_000_000 },
+      aggregatedApy: 0.082,
+      underlyingApy: 0.07,
+      pendleApy: 0.006,
+      lpRewardApy: 0.004,
+      swapFeeApy: 0.001,
+      tradingVolume: { usd: 1_200_000 },
+    };
+
+    test('converts decimal APY to percentage', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.apy).toBeCloseTo(8.2, 5);
+      expect(pool.apyBase).toBeCloseTo(7.0, 5);
+    });
+
+    test('maps liquidity.usd to tvlUsd', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.tvlUsd).toBe(50_000_000);
+    });
+
+    test('detects stablecoin from categoryIds', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.stablecoin).toBe(true);
+    });
+
+    test('non-stablecoin pool sets stablecoin to false', () => {
+      const pool = normalizePendleMarket({ ...mockPendleMarket, categoryIds: ['eth', 'lsd'] });
+      expect(pool.stablecoin).toBe(false);
+    });
+
+    test('maps chainId to chain name', () => {
+      expect(normalizePendleMarket({ ...mockPendleMarket, chainId: 1 }).chain).toBe('Ethereum');
+      expect(normalizePendleMarket({ ...mockPendleMarket, chainId: 42161 }).chain).toBe('Arbitrum');
+      expect(normalizePendleMarket({ ...mockPendleMarket, chainId: 8453 }).chain).toBe('Base');
+      expect(normalizePendleMarket({ ...mockPendleMarket, chainId: 56 }).chain).toBe('BSC');
+    });
+
+    test('unknown chainId uses numeric string', () => {
+      const pool = normalizePendleMarket({ ...mockPendleMarket, chainId: 999 });
+      expect(pool.chain).toBe('999');
+    });
+
+    test('sets ilRisk to no', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.ilRisk).toBe('no');
+    });
+
+    test('sets project to pendle', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.project).toBe('pendle');
+    });
+
+    test('uses market address as pool id', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.pool).toBe('0xabc123');
+    });
+
+    test('formats poolMeta with maturity date', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.poolMeta).toContain('Maturity');
+    });
+
+    test('passes through volume', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool.volumeUsd1d).toBe(1_200_000);
     });
   });
 });

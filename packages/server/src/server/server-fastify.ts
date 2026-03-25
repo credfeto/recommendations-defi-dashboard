@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import axios from 'axios';
 import { filterPools, getPoolsByType, getAvailableTypes } from './server';
+import { fetchPendlePools } from './pendleService';
 import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -16,20 +17,43 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 
 const LLAMA_POOLS_URL = 'https://yields.llama.fi/pools';
-const CACHE_KEY = 'llama_pools';
+const LLAMA_CACHE_KEY = 'llama_pools';
+const PENDLE_CACHE_KEY = 'pendle_pools';
 
-const getCachedPools = async (): Promise<any[]> => {
+const getCachedLlamaPools = async (): Promise<any[]> => {
   const now = Date.now();
-  const cached = cache.get(CACHE_KEY);
+  const cached = cache.get(LLAMA_CACHE_KEY);
 
   if (cached && now - cached.timestamp < CACHE_TTL_MS) {
     return cached.data;
   }
 
   const response = await axios.get(LLAMA_POOLS_URL);
-  const pools = response.data.data || [];
-  cache.set(CACHE_KEY, { data: pools, timestamp: now });
+  // Exclude Pendle pools from Llama — the Pendle API is the authoritative source
+  const pools = (response.data.data || []).filter((p: any) => p.project !== 'pendle');
+  cache.set(LLAMA_CACHE_KEY, { data: pools, timestamp: now });
   return pools;
+};
+
+const getCachedPendlePools = async (): Promise<any[]> => {
+  const now = Date.now();
+  const cached = cache.get(PENDLE_CACHE_KEY);
+
+  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  const pools = await fetchPendlePools();
+  cache.set(PENDLE_CACHE_KEY, { data: pools, timestamp: now });
+  return pools;
+};
+
+const getAllPools = async (): Promise<any[]> => {
+  const [llamaPools, pendlePools] = await Promise.all([
+    getCachedLlamaPools(),
+    getCachedPendlePools(),
+  ]);
+  return [...llamaPools, ...pendlePools];
 };
 
 export const start = async (): Promise<void> => {
@@ -55,7 +79,7 @@ export const start = async (): Promise<void> => {
     }
 
     try {
-      const allPools = await getCachedPools();
+      const allPools = await getAllPools();
       const pools = getPoolsByType(allPools, poolName);
       return { status: 'ok', data: pools };
     } catch (error) {

@@ -24,7 +24,12 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
   - Consumers import from `@shared` rather than `@shared/types/...`
 
 ### Data Sources ###
-- https://yields.llama.fi/pools
+- https://yields.llama.fi/pools (all projects except Pendle)
+- https://api-v2.pendle.finance/core/v1/{chainId}/markets (authoritative source for Pendle pools)
+  - Supported chain IDs: 1 (Ethereum), 42161 (Arbitrum), 8453 (Base), 56 (BSC)
+  - Add additional chain IDs to `PENDLE_CHAIN_IDS` in `pendleService.ts`
+  - Normalization: `aggregatedApy * 100` → `apy`, `liquidity.usd` → `tvlUsd`, `categoryIds.includes('stables')` → `stablecoin`, `ilRisk: 'no'` for all
+  - Llama Pendle pools are excluded at fetch time to avoid duplication
 - https://app.pendle.finance/trade/pools
 
 
