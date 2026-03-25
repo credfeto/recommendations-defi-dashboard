@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pool, PoolsResponse, PoolTypeMetadata } from '@shared';
-import { PoolTypeConfig, getAvailablePoolTypes } from './types/poolTypes';
+import { PoolTypeConfig } from './types/poolTypeConfig';
+import { getAvailablePoolTypes } from './types/getAvailablePoolTypes';
 import './FetchPools.css';
 
 interface PoolsByType {

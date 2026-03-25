@@ -1,4 +1,6 @@
-import { PoolTypeConfig, getPoolTypeById, getAvailablePoolTypes } from '../types/poolTypes';
+import { PoolTypeConfig } from '../types/poolTypeConfig';
+import { getPoolTypeById } from '../types/getPoolTypeById';
+import { getAvailablePoolTypes } from '../types/getAvailablePoolTypes';
 
 interface PoolData {
   symbol: string;
