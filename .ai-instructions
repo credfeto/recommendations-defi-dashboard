@@ -50,6 +50,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
   - **refactor**: Code refactoring without changing functionality
   - **test**: Adding or updating tests
   - **chore**: Maintenance tasks (build scripts, dependencies)
+- Never commit built or temporary files they should be in `.gitignore`
 
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
