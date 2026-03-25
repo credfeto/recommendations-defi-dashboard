@@ -1,58 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pool, PoolsResponse } from './types/pools';
-import { cacheManager, getPoolsCacheKey } from './utils/cacheManager';
 
 export const FetchPools: React.FC = () => {
-  const [pools, setPools] = useState<Pool[]>([]);
+  const [ethPools, setEthPools] = useState<Pool[]>([]);
+  const [stablePools, setStablePools] = useState<Pool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const url = 'https://yields.llama.fi/pools';
-    const cacheKey = getPoolsCacheKey();
-    
-    // Try to get cached data first
-    const cachedData = cacheManager.get<PoolsResponse>(cacheKey);
-    if (cachedData) {
-      const poolData = cachedData.data || [];
-      setPools(poolData);
-      setLoading(false);
-      return;
-    }
-    
-    // Fetch new data if cache is empty or expired
-    axios
-      .get<PoolsResponse>(url)
-      .then((response) => {
-        const poolData = response.data.data || [];
-        setPools(poolData);
-        cacheManager.set(cacheKey, response.data);
-      })
-      .catch((err) => {
+    const fetchPools = async () => {
+      try {
+        const [ethResponse, stablesResponse] = await Promise.all([
+          axios.get<PoolsResponse>('http://localhost:5000/api/pools/ETH'),
+          axios.get<PoolsResponse>('http://localhost:5000/api/pools/STABLES'),
+        ]);
+        
+        setEthPools(ethResponse.data.data || []);
+        setStablePools(stablesResponse.data.data || []);
+      } catch (err) {
         console.error('Error fetching pool data:', err);
         setError('Failed to fetch pool data');
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchPools();
   }, []);
 
   if (loading) return <div>Loading pools...</div>;
   if (error) return <div className="error">{error}</div>;
-
-  const MIN_TVL = 1_000_000;
-
-  const filterPools = (poolData: Pool[]): Pool[] => {
-    return poolData.filter(pool => 
-      pool.ilRisk === 'no' && 
-      pool.tvlUsd >= MIN_TVL && 
-      pool.apy > 0
-    );
-  };
-
-  const ethereumPools = filterPools(pools.filter(pool => pool.symbol.toUpperCase().includes('ETH')));
-  const stablecoinPools = filterPools(pools.filter(pool => pool.stablecoin));
 
   const renderTable = (tableTitle: string, poolData: Pool[]) => (
     <div className="table-section">
@@ -97,8 +75,8 @@ export const FetchPools: React.FC = () => {
   return (
     <div className="pools-container">
       <h2>DeFi Pools</h2>
-      {renderTable('ETH-Based Pools', ethereumPools)}
-      {renderTable('Stablecoin Pools', stablecoinPools)}
+      {renderTable('ETH-Based Pools', ethPools)}
+      {renderTable('Stablecoin Pools', stablePools)}
     </div>
   );
 };

@@ -8,7 +8,8 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 ### Language ###
 - All development should be in typescript
 - If there is a backend database it should use sqllite or something similar
-
+- Unit tests should be written at each step for both frontend and backend
+- When all tests pass then commit to the repository
 
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
@@ -24,7 +25,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Caching**: On-disk cache with 1-hour TTL
 - **Port**: 5000
 - **Location**: `src/server.ts`
-- serve the front end from the same server to avoid CORS issues
+- Serve the front end from the same server to avoid CORS issues
 
 ### External API
 - **Provider**: Llama Yields (https://yields.llama.fi/pools)
