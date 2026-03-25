@@ -6,24 +6,20 @@ export const POOL_TYPES: Record<string, PoolTypeConfig> = {
     name: 'Ethereum & Liquid Staking',
     description: 'Pools featuring ETH, ETH derivative tokens, and liquid staking tokens',
     predicate: (pool) => {
-      pool.underlyingTokens
+      pool.underlyingTokens;
       const symbolUpper = pool.symbol.toUpperCase();
       const lstSymbols = ['ETH', 'STETH', 'WSTETH', 'RETH', 'CBETH', 'SWETH', 'LSETH', 'EETH', 'WEETH'];
-      if(lstSymbols.some((s) => symbolUpper.includes(s)))
-      {
+      if (lstSymbols.some((s) => symbolUpper.includes(s))) {
         return true;
       }
 
-      if(pool.underlyingTokens && pool.underlyingTokens.length !== 0)
-      {
-        for(const underlyingToken of pool.underlyingTokens){
+      if (pool.underlyingTokens && pool.underlyingTokens.length !== 0) {
+        for (const underlyingToken of pool.underlyingTokens) {
           const underlyingSymbolUpper = underlyingToken.toUpperCase();
-          if(lstSymbols.some((s) => underlyingSymbolUpper.includes(s)))
-          {
+          if (lstSymbols.some((s) => underlyingSymbolUpper.includes(s))) {
             return true;
           }
         }
-
       }
 
       return false;
