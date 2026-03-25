@@ -100,7 +100,13 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 Pools must pass ALL filters to be displayed:
 - `ilRisk === 'no'` (no impermanent loss risk)
 - `tvlUsd >= 1,000,000` (minimum $1M TVL)
-- `apy > 0` (positive yield)
+- `apy > 0` (positive yield — pools with 0% APY must NEVER be returned)
+- Chain is not in `EXCLUDED_CHAINS` (currently: Tron, Sui)
+
+### Response Ordering
+Results are always sorted by:
+1. **APY descending** (highest yield first)
+2. **TVL descending** (tiebreak by largest pool)
 
 ### Pool Categorization
 - **ETH-Based**: Pools with "ETH" in symbol (STETH, WETH, WSTETH, WEETH, etc.)
@@ -213,7 +219,6 @@ curl http://localhost:5000/api/pools
 GET /api/pools/:poolName
 curl http://localhost:5000/api/pools/ETH
 curl http://localhost:5000/api/pools/STABLES
-curl http://localhost:5000/api/pools/LST
 curl http://localhost:5000/api/pools/HIGH_YIELD
 curl http://localhost:5000/api/pools/LOW_TVL
 curl http://localhost:5000/api/pools/BLUE_CHIP
@@ -231,7 +236,6 @@ curl http://localhost:5000/api/pools/INVALID
   "data": [
     { "name": "ETH", "displayName": "Ethereum" },
     { "name": "STABLES", "displayName": "Stablecoins" },
-    { "name": "LST", "displayName": "Liquid Staking" },
     { "name": "HIGH_YIELD", "displayName": "High Yield" },
     { "name": "LOW_TVL", "displayName": "Emerging Pools" },
     { "name": "BLUE_CHIP", "displayName": "Blue Chip" }

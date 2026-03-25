@@ -23,13 +23,15 @@ const EXCLUDED_CHAINS: string[] = ['Tron', 'Sui'];
 
 export const applyBaseFilters = (poolData: PoolData[]): PoolData[] => {
   const excludedLower = EXCLUDED_CHAINS.map((c) => c.toLowerCase());
-  return poolData.filter(
-    (pool) =>
-      pool.ilRisk === 'no' &&
-      pool.tvlUsd >= MIN_TVL &&
-      pool.apy > 0 &&
-      !excludedLower.includes(pool.chain.toLowerCase()),
-  );
+  return poolData
+    .filter(
+      (pool) =>
+        pool.ilRisk === 'no' &&
+        pool.tvlUsd >= MIN_TVL &&
+        pool.apy > 0 &&
+        !excludedLower.includes(pool.chain.toLowerCase()),
+    )
+    .sort((a, b) => b.apy - a.apy || b.tvlUsd - a.tvlUsd);
 };
 
 export const filterPoolsByType = (allPools: PoolData[], poolType: string): PoolData[] => {

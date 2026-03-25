@@ -115,7 +115,7 @@ describe('Server API Tests', () => {
     test('combines all filters correctly', () => {
       const filtered = filterPools(mockPoolData);
       expect(filtered.length).toBe(6);
-      expect(filtered.map((p) => p.symbol)).toEqual(['STETH', 'USDC', 'USDT', 'WEETH', 'RETH', 'CBETH']);
+      expect(filtered.map((p) => p.symbol)).toEqual(['RETH', 'CBETH', 'USDC', 'WEETH', 'STETH', 'USDT']);
     });
   });
 
@@ -123,19 +123,13 @@ describe('Server API Tests', () => {
     test('identifies ETH-based pools correctly', () => {
       const ethPools = getPoolsByType(mockPoolData, 'ETH');
       expect(ethPools.length).toBe(4);
-      expect(ethPools.map((p) => p.symbol)).toEqual(['STETH', 'WEETH', 'RETH', 'CBETH']);
+      expect(ethPools.map((p) => p.symbol)).toEqual(['RETH', 'CBETH', 'WEETH', 'STETH']);
     });
 
     test('identifies stablecoin pools correctly', () => {
       const stablePools = getPoolsByType(mockPoolData, 'STABLES');
       expect(stablePools.length).toBe(2);
       expect(stablePools.map((p) => p.symbol)).toEqual(['USDC', 'USDT']);
-    });
-
-    test('identifies liquid staking tokens (LST)', () => {
-      const lstPools = filterPoolsByType(mockPoolData, 'LST');
-      expect(lstPools.length).toBe(3);
-      expect(lstPools.map((p) => p.symbol)).toEqual(['STETH', 'RETH', 'CBETH']);
     });
 
     test('identifies high yield pools (>5% APY)', () => {
@@ -147,7 +141,7 @@ describe('Server API Tests', () => {
     test('identifies blue chip pools (>$100M TVL)', () => {
       const blueChipPools = filterPoolsByType(mockPoolData, 'BLUE_CHIP');
       expect(blueChipPools.length).toBe(5);
-      expect(blueChipPools.map((p) => p.symbol)).toEqual(['STETH', 'USDC', 'WEETH', 'RETH', 'CBETH']);
+      expect(blueChipPools.map((p) => p.symbol)).toEqual(['RETH', 'CBETH', 'USDC', 'WEETH', 'STETH']);
     });
 
     test('filters ETH pools with all criteria', () => {
@@ -305,7 +299,6 @@ describe('Server API Tests', () => {
       const names = metadata.map((t) => t.name);
       expect(names).toContain('ETH');
       expect(names).toContain('STABLES');
-      expect(names).toContain('LST');
       expect(names).toContain('HIGH_YIELD');
       expect(names).toContain('LOW_TVL');
       expect(names).toContain('BLUE_CHIP');
