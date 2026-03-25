@@ -18,8 +18,18 @@ interface PoolData {
 
 const MIN_TVL = 1_000_000;
 
+// Add chain names here (case-insensitive) to exclude them from all responses
+const EXCLUDED_CHAINS: string[] = ['Tron', 'Sui'];
+
 export const applyBaseFilters = (poolData: PoolData[]): PoolData[] => {
-  return poolData.filter((pool) => pool.ilRisk === 'no' && pool.tvlUsd >= MIN_TVL && pool.apy > 0);
+  const excludedLower = EXCLUDED_CHAINS.map((c) => c.toLowerCase());
+  return poolData.filter(
+    (pool) =>
+      pool.ilRisk === 'no' &&
+      pool.tvlUsd >= MIN_TVL &&
+      pool.apy > 0 &&
+      !excludedLower.includes(pool.chain.toLowerCase()),
+  );
 };
 
 export const filterPoolsByType = (allPools: PoolData[], poolType: string): PoolData[] => {
