@@ -36,10 +36,20 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Use a functional style where all objects are immutable
 
 ### Committing ###
-- Create a branch for each change and merge to main when complete.  Do not commit directly to main.
-- When all tests pass then commit to the repository and push upstream.
+- Do not commit directly to main.
+- Create a branch for each change - e.g. `git checkout -b feature/my-change`
+- Make changes in small incremental commits with descriptive messages ensuring that all tests pass before committing
+- Push the branch to origin on each incremental change - e.g. `git push origin feature/my-change`
+ - and merge to main when complete.
 - Use best practices for git commit messages
-
+- Use the following format for commit messages:
+  - **feat**: A new feature
+  - **fix**: A bug fix
+  - **docs**: Documentation changes
+  - **style**: Code style changes (formatting, linting)
+  - **refactor**: Code refactoring without changing functionality
+  - **test**: Adding or updating tests
+  - **chore**: Maintenance tasks (build scripts, dependencies)
 
 ### Frontend (React)
 - **Framework**: React 19.2.4 with TypeScript
