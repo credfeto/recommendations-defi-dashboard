@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import axios from 'axios';
 import { filterPools, getPoolsByType } from './server';
+import { getAvailablePoolTypesMetadata } from '../types/poolTypesMetadata';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -35,6 +36,15 @@ export const start = async (): Promise<void> => {
   const fastify: any = Fastify({ logger: true });
 
   await fastify.register(cors, { origin: true });
+
+  fastify.get('/api/pools', async (request: any, reply: any) => {
+    try {
+      const poolTypes = getAvailablePoolTypesMetadata();
+      return { status: 'ok', data: poolTypes };
+    } catch (error) {
+      return reply.code(500).send({ error: 'Failed to fetch available pool types' });
+    }
+  });
 
   fastify.get('/api/pools/:poolName', async (request: any, reply: any) => {
     const { poolName } = request.params as { poolName: string };

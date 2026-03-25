@@ -49,6 +49,11 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Location**: `packages/server/src/server/server-fastify.ts` (server entry point) and `packages/server/src/server/server.ts` (filtering logic)
 - Serve the front end from the same server to avoid CORS issues
 
+### Shared ###
+- Shared types between front end and back end should be in `packages/server/src/shared/types/` and `packages/client/src/shared/types/` (or consider a shared package if it grows)
+- **Types**: `Pool`, `PoolType`, etc. should be defined in shared
+- references to shared types should be via ``@aliases` in tsconfig.json and jestconfig.json e.g. `@types/*` for `./src/shared/types/*`
+
 ### External API
 - **Provider**: Llama Yields (https://yields.llama.fi/pools)
 - **Response**: Cached via backend to reduce external calls

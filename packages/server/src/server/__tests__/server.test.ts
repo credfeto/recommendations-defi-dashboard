@@ -1,4 +1,5 @@
 import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../server';
+import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '../../types/poolTypesMetadata';
 
 interface MockPool {
   chain: string;
@@ -278,6 +279,43 @@ describe('Server API Tests', () => {
       const filtered = filterPools(mockPoolData);
       filtered.forEach((pool) => {
         expect(typeof pool.ilRisk).toBe('string');
+      });
+    });
+  });
+
+  describe('Pool Types Metadata', () => {
+    test('getAvailablePoolTypesMetadata returns metadata for all pool types', () => {
+      const metadata = getAvailablePoolTypesMetadata();
+      expect(Array.isArray(metadata)).toBe(true);
+      expect(metadata.length).toBeGreaterThan(0);
+    });
+
+    test('pool type metadata has required fields', () => {
+      const metadata = getAvailablePoolTypesMetadata();
+      metadata.forEach((type) => {
+        expect(type).toHaveProperty('name');
+        expect(type).toHaveProperty('displayName');
+        expect(typeof type.name).toBe('string');
+        expect(typeof type.displayName).toBe('string');
+      });
+    });
+
+    test('includes all required pool types', () => {
+      const metadata = getAvailablePoolTypesMetadata();
+      const names = metadata.map((t) => t.name);
+      expect(names).toContain('ETH');
+      expect(names).toContain('STABLES');
+      expect(names).toContain('LST');
+      expect(names).toContain('HIGH_YIELD');
+      expect(names).toContain('LOW_TVL');
+      expect(names).toContain('BLUE_CHIP');
+    });
+
+    test('display names are properly formatted', () => {
+      const metadata = Object.values(POOL_TYPES_METADATA);
+      metadata.forEach((type) => {
+        expect(type.displayName.length > 0).toBe(true);
+        expect(typeof type.displayName).toBe('string');
       });
     });
   });

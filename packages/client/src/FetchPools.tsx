@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Pool, PoolsResponse } from './types/pools';
 import { PoolTypeConfig, getAvailablePoolTypes } from './types/poolTypes';
+import { PoolTypeMetadata } from './types/poolTypesMetadata';
 import './FetchPools.css';
 
 interface PoolsByType {
@@ -14,16 +15,25 @@ export const FetchPools: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [poolTypes] = useState<PoolTypeConfig[]>(getAvailablePoolTypes());
+  const [availablePoolTypes, setAvailablePoolTypes] = useState<PoolTypeMetadata[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   useEffect(() => {
-    const fetchPools = async () => {
+    const fetchPoolTypesAndData = async () => {
       try {
-        const requests = poolTypes.map((type) =>
+        // First, fetch available pool types from server
+        const typesResponse = await axios.get<{ status: string; data: PoolTypeMetadata[] }>(
+          'http://localhost:5000/api/pools',
+        );
+        const availableTypes = typesResponse.data.data || [];
+        setAvailablePoolTypes(availableTypes);
+
+        // Map server types to local types for data fetching
+        const requests = availableTypes.map((serverType) =>
           axios
-            .get<PoolsResponse>(`http://localhost:5000/api/pools/${type.id}`)
-            .then((res) => ({ typeId: type.id, data: res.data.data || [] }))
-            .catch(() => ({ typeId: type.id, data: [] })),
+            .get<PoolsResponse>(`http://localhost:5000/api/pools/${serverType.name}`)
+            .then((res) => ({ typeId: serverType.name, data: res.data.data || [] }))
+            .catch(() => ({ typeId: serverType.name, data: [] })),
         );
 
         const results = await Promise.all(requests);
@@ -34,6 +44,10 @@ export const FetchPools: React.FC = () => {
         });
 
         setPoolsByType(pools);
+        // Set first available type as selected
+        if (availableTypes.length > 0) {
+          setSelectedType(availableTypes[0].name);
+        }
       } catch (err) {
         console.error('Error fetching pool data:', err);
         setError('Failed to fetch pool data');
@@ -42,8 +56,8 @@ export const FetchPools: React.FC = () => {
       }
     };
 
-    fetchPools();
-  }, [poolTypes]);
+    fetchPoolTypesAndData();
+  }, []);
 
   const handleThemeToggle = () => {
     const newMode = !isDarkMode;
@@ -59,7 +73,8 @@ export const FetchPools: React.FC = () => {
   if (loading) return <div className='loading'>Loading pools...</div>;
   if (error) return <div className='error-message'>{error}</div>;
 
-  const currentType = poolTypes.find((t) => t.id === selectedType);
+  const currentServerType = availablePoolTypes.find((t) => t.name === selectedType);
+  const currentLocalType = poolTypes.find((t) => t.id === selectedType);
   const currentPools = poolsByType[selectedType] || [];
 
   return (
@@ -74,15 +89,15 @@ export const FetchPools: React.FC = () => {
         <aside className='pool-types-sidebar'>
           <h3>Pool Types</h3>
           <nav className='pool-types-nav'>
-            {poolTypes.map((type) => (
+            {availablePoolTypes.map((type) => (
               <button
-                key={type.id}
-                className={`pool-type-btn ${selectedType === type.id ? 'active' : ''}`}
-                onClick={() => setSelectedType(type.id)}
-                title={type.description}
+                key={type.name}
+                className={`pool-type-btn ${selectedType === type.name ? 'active' : ''}`}
+                onClick={() => setSelectedType(type.name)}
+                title={`${type.displayName} pools`}
               >
-                <span className='pool-type-name'>{type.name}</span>
-                <span className='pool-count'>{poolsByType[type.id]?.length || 0}</span>
+                <span className='pool-type-name'>{type.displayName}</span>
+                <span className='pool-count'>{poolsByType[type.name]?.length || 0}</span>
               </button>
             ))}
           </nav>
@@ -90,11 +105,11 @@ export const FetchPools: React.FC = () => {
 
         {/* Pool Details */}
         <main className='pool-details'>
-          {currentType && (
+          {currentLocalType && (
             <>
               <div className='pool-type-header'>
-                <h2>{currentType.name}</h2>
-                <p className='pool-description'>{currentType.description}</p>
+                <h2>{currentLocalType.name}</h2>
+                <p className='pool-description'>{currentLocalType.description}</p>
               </div>
 
               {currentPools.length === 0 ? (
