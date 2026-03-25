@@ -4,6 +4,12 @@
 
 # dependencies
 /node_modules
+/packages/client/build
+/packages/client/node_modules
+/packages/server/build
+/packages/server/node_modules
+/packages/shared/build
+/packages/shared/node_modules
 /.pnp
 .pnp.js
 
