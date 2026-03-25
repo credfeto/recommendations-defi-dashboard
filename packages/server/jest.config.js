@@ -1,12 +1,14 @@
 module.exports = {
+  displayName: 'server',
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
-  testMatch: ['<rootDir>/src/server/__tests__/**/*.test.ts'],
-  collectCoverageFrom: ['src/server/server.ts'],
+  rootDir: '.',
+  testMatch: ['**/__tests__/**/*.test.ts'],
+  collectCoverageFrom: ['src/server/server-fastify.ts'],
   coverageReporters: ['text', 'text-summary', 'html'],
   coverageThreshold: { global: { branches: 75, functions: 75, lines: 75, statements: 75 } },
   moduleNameMapper: {
-    '^@shared/(.*)$': '<rootDir>/src/shared/types/$1',
+    '^@shared$': '<rootDir>/../shared/src',
+    '^@shared/(.*)$': '<rootDir>/../shared/src/$1',
   },
 };

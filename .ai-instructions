@@ -26,7 +26,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Use a functional style where all objects are immutable
 
 ### Committing ###
-- Create a branch for each feature and merge to main when complete.  Do not commit directly to main.
+- Create a branch for each change and merge to main when complete.  Do not commit directly to main.
 - When all tests pass then commit to the repository and push upstream.
 - Use best practices for git commit messages
 
@@ -48,11 +48,14 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Port**: 5000
 - **Location**: `packages/server/src/server/server-fastify.ts` (server entry point) and `packages/server/src/server/server.ts` (filtering logic)
 - Serve the front end from the same server to avoid CORS issues
+- Use fully typed responses from fastify for the API endpoints
 
 ### Shared ###
 - Shared types between front end and back end should be in `packages/server/src/shared/types/` and `packages/client/src/shared/types/` (or consider a shared package if it grows)
 - **Types**: `Pool`, `PoolType`, etc. should be defined in shared
-- references to shared types should be via ``@aliases` in tsconfig.json and jestconfig.json e.g. `@types/*` for `./src/shared/types/*`
+- references to shared types should be via ``@aliases` in tsconfig.json and jest.config.json e.g. `@types/*` for `/packages/shared/types/*`
+- There should be one tsconfig.json in the repository
+- There should be one jest.config.json in the repository
 
 ### External API
 - **Provider**: Llama Yields (https://yields.llama.fi/pools)

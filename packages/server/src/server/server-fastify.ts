@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import axios from 'axios';
 import { filterPools, getPoolsByType } from './server';
-import { getAvailablePoolTypesMetadata } from '@shared/poolTypesMetadata';
+import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
