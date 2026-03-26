@@ -226,12 +226,6 @@
   font-weight: 600;
 }
 
-.pools-table .il-risk {
-  text-align: center;
-  font-weight: 600;
-  color: var(--accent-success);
-}
-
 .pools-table .exploit-risk {
   white-space: nowrap;
 }
