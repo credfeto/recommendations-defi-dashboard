@@ -35,7 +35,13 @@ describe('buildHackMap', () => {
   });
 
   test('stores HackInfo with correct fields', () => {
-    const hack = makeHack({ name: 'Ronin', date: 1_648_000_000, amount: 620_000_000, classification: 'Exploit', technique: 'Private Key' });
+    const hack = makeHack({
+      name: 'Ronin',
+      date: 1_648_000_000,
+      amount: 620_000_000,
+      classification: 'Exploit',
+      technique: 'Private Key',
+    });
     const map = buildHackMap([hack]);
     const info = map.get('ronin')![0];
     expect(info.name).toBe('Ronin');
