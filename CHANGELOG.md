@@ -22,6 +22,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - **Protocol page links** — the Project column links directly to the pool on its source platform (DefiLlama yield page or Pendle market page), generated server-side
 - **`HackInfo` shared type** — new interface in `@shared` for exploit incident data
 - JSON Schema validation and response serialization for all Fastify API routes via schemas.ts
+- GitHub Actions CI workflows for tests, build, and code quality checks
+- PR description template and automated maintenance workflow to initialize and update descriptions for draft pull requests
 
 ### Fixed
 

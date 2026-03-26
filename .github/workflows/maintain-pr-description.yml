@@ -1,0 +1,258 @@
+name: Maintain PR Description
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - converted_to_draft
+  check_run:
+    types:
+      - completed
+  pull_request_review:
+    types:
+      - submitted
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  initialize-description:
+    name: Initialize Description
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize PR description from template
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const pr = context.payload.pull_request;
+            const body = pr.body ?? '';
+            const maintainedMarker = '<!-- maintained-by-copilot -->';
+
+            if (body.includes(maintainedMarker)) {
+              console.log('PR description is already maintained by Copilot, skipping.');
+              return;
+            }
+
+            let template;
+            try {
+              template = fs.readFileSync('.github/PULL_REQUEST_TEMPLATE.md', 'utf8').trimEnd();
+            } catch {
+              console.log('No PR template found, skipping.');
+              return;
+            }
+
+            const normalize = (s) => s.trim().replace(/\r\n/g, '\n');
+            const normalizedBody = normalize(body);
+            const normalizedTemplate = normalize(template);
+
+            if (normalizedBody !== '' && normalizedBody !== normalizedTemplate) {
+              console.log('PR has a custom description, skipping initialization.');
+              return;
+            }
+
+            // Append a Copilot-managed review section after the template
+            const copilotSection =
+              '## Copilot Review\n\n- [ ] Copilot code review approved';
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: `${template}\n\n${copilotSection}\n\n${maintainedMarker}`,
+            });
+
+            console.log(`PR #${pr.number} description initialized with template.`);
+
+  update-status:
+    name: Update CI Status
+    if: github.event_name == 'check_run' || github.event_name == 'pull_request_review'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PR description checkboxes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const maintainedMarker = '<!-- maintained-by-copilot -->';
+
+            // Resolve the head SHA from the triggering event
+            let headSha;
+            if (context.eventName === 'check_run') {
+              headSha = context.payload.check_run.head_sha;
+            } else if (context.eventName === 'pull_request_review') {
+              headSha = context.payload.review.commit_id;
+            }
+
+            if (!headSha) {
+              console.log('Could not determine head SHA, skipping.');
+              return;
+            }
+
+            // Find open draft PRs with this head SHA that have the maintained marker
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+            });
+
+            const targetPrs = prs.filter(
+              (pr) =>
+                pr.draft &&
+                pr.head.sha === headSha &&
+                pr.body &&
+                pr.body.includes(maintainedMarker),
+            );
+
+            if (targetPrs.length === 0) {
+              console.log('No matching draft PRs with maintained description found, skipping.');
+              return;
+            }
+
+            // Fetch all check runs for this commit
+            const { data: checkData } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: headSha,
+              per_page: 100,
+            });
+
+            const checkRuns = checkData.check_runs;
+
+            /**
+             * Returns 'success' if all completed check runs whose names match the
+             * pattern succeeded, 'failure' if any failed, or null if none match.
+             */
+            const getCheckStatus = (pattern) => {
+              const re = new RegExp(pattern, 'i');
+              const matching = checkRuns.filter(
+                (cr) => re.test(cr.name) && cr.status === 'completed',
+              );
+              if (matching.length === 0) return null;
+              const failed = matching.filter(
+                (cr) =>
+                  cr.conclusion === 'failure' ||
+                  cr.conclusion === 'timed_out' ||
+                  cr.conclusion === 'action_required',
+              );
+              return failed.length === 0 ? 'success' : 'failure';
+            };
+
+            // Maps check-run name patterns to the actual checkbox text in
+            // .github/PULL_REQUEST_TEMPLATE.md that they should auto-manage.
+            const ciCheckboxMappings = [
+              {
+                // Matches any test check run (unit tests, integration tests, etc.)
+                pattern: '\\btest(s|ing)?\\b',
+                checkboxes: [
+                  {
+                    unchecked: '- [ ] All unit tests pass.',
+                    checked: '- [x] All unit tests pass.',
+                  },
+                  {
+                    unchecked: '- [ ] All integration tests pass.',
+                    checked: '- [x] All integration tests pass.',
+                  },
+                  {
+                    unchecked: '- [ ] All new and existing tests passed.',
+                    checked: '- [x] All new and existing tests passed.',
+                  },
+                ],
+              },
+              {
+                // Matches code quality / static analysis / lint check runs
+                pattern: '\\b(quality|lint|analysis|format|prettier)\\b',
+                checkboxes: [
+                  {
+                    unchecked:
+                      '- [ ] There are no Resharper\\static code analysis errors anywhere in the solution.',
+                    checked:
+                      '- [x] There are no Resharper\\static code analysis errors anywhere in the solution.',
+                  },
+                ],
+              },
+            ];
+
+            // Known Copilot bot usernames (exact match after lowercasing)
+            const COPILOT_REVIEWERS = new Set([
+              'copilot[bot]',
+              'github-advanced-security[bot]',
+              'github-copilot[bot]',
+            ]);
+
+            // Determine Copilot review state (for pull_request_review events)
+            let copilotReviewState = null;
+            if (context.eventName === 'pull_request_review') {
+              const reviewer = context.payload.review.user.login.toLowerCase();
+              if (COPILOT_REVIEWERS.has(reviewer)) {
+                const state = context.payload.review.state;
+                if (state === 'approved') {
+                  copilotReviewState = 'approved';
+                } else if (state === 'changes_requested') {
+                  copilotReviewState = 'changes_requested';
+                } else {
+                  // 'commented' or 'dismissed' — do not change the checkbox
+                  console.log(`Copilot review state "${state}" is not actionable, skipping.`);
+                  return;
+                }
+                console.log(`Copilot review detected: state=${state}, reviewer=${reviewer}`);
+              } else {
+                console.log(`Review by non-Copilot user "${reviewer}", skipping.`);
+                return;
+              }
+            }
+
+            for (const pr of targetPrs) {
+              let body = pr.body;
+              let updated = false;
+
+              // Update CI check run checkboxes
+              if (context.eventName === 'check_run') {
+                for (const { pattern, checkboxes } of ciCheckboxMappings) {
+                  const status = getCheckStatus(pattern);
+                  for (const { unchecked, checked } of checkboxes) {
+                    if (status === 'success' && body.includes(unchecked)) {
+                      body = body.replaceAll(unchecked, checked);
+                      updated = true;
+                    } else if (status === 'failure' && body.includes(checked)) {
+                      body = body.replaceAll(checked, unchecked);
+                      updated = true;
+                    }
+                  }
+                }
+              }
+
+              // Update Copilot review checkbox (appended to maintained body by initialize step)
+              if (copilotReviewState !== null) {
+                const copilotUnchecked = '- [ ] Copilot code review approved';
+                const copilotChecked = '- [x] Copilot code review approved';
+                if (copilotReviewState === 'approved' && body.includes(copilotUnchecked)) {
+                  body = body.replaceAll(copilotUnchecked, copilotChecked);
+                  updated = true;
+                } else if (copilotReviewState !== 'approved' && body.includes(copilotChecked)) {
+                  body = body.replaceAll(copilotChecked, copilotUnchecked);
+                  updated = true;
+                }
+              }
+
+              if (updated) {
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  body,
+                });
+                console.log(`Updated checkboxes for PR #${pr.number}.`);
+              } else {
+                console.log(`No checkbox update needed for PR #${pr.number}.`);
+              }
+            }
