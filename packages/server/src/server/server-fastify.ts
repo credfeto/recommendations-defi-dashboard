@@ -10,7 +10,7 @@ const PORT = parseInt(process.env.PORT || '5000', 10);
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 interface CacheEntry {
-  data: any[];
+  data: any;
   timestamp: number;
 }
 
@@ -57,18 +57,23 @@ const getAllPools = async (): Promise<any[]> => {
   return [...llamaPools, ...pendlePools];
 };
 
-const getCachedHackMap = async () => {
+const getCachedHackMap = async (): Promise<ReturnType<typeof buildHackMap>> => {
   const now = Date.now();
   const cached = cache.get(HACKS_CACHE_KEY);
 
   if (cached && now - cached.timestamp < CACHE_TTL_MS) {
-    return cached.data as Map<string, any[]>;
+    return cached.data as ReturnType<typeof buildHackMap>;
   }
 
-  const hacks = await fetchHacks();
-  const hackMap = buildHackMap(hacks);
-  cache.set(HACKS_CACHE_KEY, { data: hackMap, timestamp: now });
-  return hackMap;
+  try {
+    const hacks = await fetchHacks();
+    const hackMap = buildHackMap(hacks);
+    cache.set(HACKS_CACHE_KEY, { data: hackMap, timestamp: now });
+    return hackMap;
+  } catch (err) {
+    // If the hacks API is unavailable, return an empty map so pools still load
+    return new Map();
+  }
 };
 
 export const start = async (): Promise<void> => {
