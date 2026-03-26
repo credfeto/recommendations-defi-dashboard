@@ -72,24 +72,32 @@ const poolSchema = {
     hacks: { type: 'array', items: hackInfoSchema },
     depegAlerts: { type: 'array', items: depegAlertSchema },
   },
-  required: ['chain', 'project', 'symbol', 'tvlUsd', 'apy', 'stablecoin', 'ilRisk', 'exposure', 'pool', 'dataSource', 'hacks', 'depegAlerts'],
+  required: [
+    'chain',
+    'project',
+    'symbol',
+    'tvlUsd',
+    'apy',
+    'stablecoin',
+    'ilRisk',
+    'exposure',
+    'pool',
+    'dataSource',
+    'hacks',
+    'depegAlerts',
+  ],
 } as const;
 
 const poolTypeMetadataSchema = {
   type: 'object',
-  properties: {
-    name: { type: 'string' },
-    displayName: { type: 'string' },
-  },
+  properties: { name: { type: 'string' }, displayName: { type: 'string' } },
   required: ['name', 'displayName'],
   additionalProperties: false,
 } as const;
 
 const errorResponseSchema = {
   type: 'object',
-  properties: {
-    error: { type: 'string' },
-  },
+  properties: { error: { type: 'string' } },
   required: ['error'],
   additionalProperties: false,
 } as const;
@@ -98,10 +106,7 @@ export const getPoolTypesSchema = {
   response: {
     200: {
       type: 'object',
-      properties: {
-        status: { type: 'string', enum: ['ok'] },
-        data: { type: 'array', items: poolTypeMetadataSchema },
-      },
+      properties: { status: { type: 'string', enum: ['ok'] }, data: { type: 'array', items: poolTypeMetadataSchema } },
       required: ['status', 'data'],
       additionalProperties: false,
     },
@@ -112,19 +117,14 @@ export const getPoolTypesSchema = {
 export const getPoolsByNameSchema = {
   params: {
     type: 'object',
-    properties: {
-      poolName: { type: 'string' },
-    },
+    properties: { poolName: { type: 'string' } },
     required: ['poolName'],
     additionalProperties: false,
   },
   response: {
     200: {
       type: 'object',
-      properties: {
-        status: { type: 'string', enum: ['ok'] },
-        data: { type: 'array', items: poolSchema },
-      },
+      properties: { status: { type: 'string', enum: ['ok'] }, data: { type: 'array', items: poolSchema } },
       required: ['status', 'data'],
       additionalProperties: false,
     },
