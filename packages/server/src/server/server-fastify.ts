@@ -1,77 +1,34 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import axios from 'axios';
-import { filterPools, getPoolsByType, getAvailableTypes } from './server';
-import { fetchPendlePools } from './pendleService';
-import { fetchHacks, buildHackMap, matchHacks } from './hacksService';
+import { getCachedOrFetch } from '../db/cache.db';
+import { fetchDefiLlamaPools } from '../api/defillama.pools.api.service';
+import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
+import { fetchPendleMarkets } from '../api/pendle.markets.api.service';
+import { buildHackMap, matchHacks } from '../services/hacks.service';
+import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-interface CacheEntry {
-  data: any;
-  timestamp: number;
-}
-
-// In-memory cache
-const cache = new Map<string, CacheEntry>();
-
-const LLAMA_POOLS_URL = 'https://yields.llama.fi/pools';
-const LLAMA_CACHE_KEY = 'llama_pools';
-const PENDLE_CACHE_KEY = 'pendle_pools';
-const HACKS_CACHE_KEY = 'hacks';
-
-const getCachedLlamaPools = async (): Promise<any[]> => {
-  const now = Date.now();
-  const cached = cache.get(LLAMA_CACHE_KEY);
-
-  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
-    return cached.data;
-  }
-
-  const response = await axios.get(LLAMA_POOLS_URL);
-  // Exclude Pendle pools from Llama — the Pendle API is the authoritative source
-  const pools = (response.data.data || [])
-    .filter((p: any) => p.project !== 'pendle')
-    .map((p: any) => ({ ...p, dataSource: 'defillama' }));
-  cache.set(LLAMA_CACHE_KEY, { data: pools, timestamp: now });
-  return pools;
-};
-
-const getCachedPendlePools = async (): Promise<any[]> => {
-  const now = Date.now();
-  const cached = cache.get(PENDLE_CACHE_KEY);
-
-  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
-    return cached.data;
-  }
-
-  const pools = (await fetchPendlePools()).map((p: any) => ({ ...p, dataSource: 'pendle' }));
-  cache.set(PENDLE_CACHE_KEY, { data: pools, timestamp: now });
-  return pools;
+const CACHE_KEYS = {
+  LLAMA_POOLS: 'defillama_pools',
+  PENDLE_POOLS: 'pendle_pools',
+  HACKS: 'defillama_hacks',
 };
 
 const getAllPools = async (): Promise<any[]> => {
-  const [llamaPools, pendlePools] = await Promise.all([getCachedLlamaPools(), getCachedPendlePools()]);
+  const [llamaPools, pendlePools] = await Promise.all([
+    getCachedOrFetch(CACHE_KEYS.LLAMA_POOLS, fetchDefiLlamaPools),
+    getCachedOrFetch(CACHE_KEYS.PENDLE_POOLS, fetchPendleMarkets),
+  ]);
   return [...llamaPools, ...pendlePools];
 };
 
-const getCachedHackMap = async (): Promise<ReturnType<typeof buildHackMap>> => {
-  const now = Date.now();
-  const cached = cache.get(HACKS_CACHE_KEY);
-
-  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
-    return cached.data as ReturnType<typeof buildHackMap>;
-  }
-
+const getHackMap = async () => {
   try {
-    const hacks = await fetchHacks();
-    const hackMap = buildHackMap(hacks);
-    cache.set(HACKS_CACHE_KEY, { data: hackMap, timestamp: now });
-    return hackMap;
-  } catch (err) {
-    // If the hacks API is unavailable, return an empty map so pools still load
+    const hacks = await getCachedOrFetch(CACHE_KEYS.HACKS, fetchDefiLlamaHacks);
+    return buildHackMap(hacks);
+  } catch {
     return new Map();
   }
 };
@@ -81,11 +38,10 @@ export const start = async (): Promise<void> => {
 
   await fastify.register(cors, { origin: true });
 
-  fastify.get('/api/pools', async (request: any, reply: any) => {
+  fastify.get('/api/pools', async (_request: any, reply: any) => {
     try {
-      const poolTypes = getAvailablePoolTypesMetadata();
-      return { status: 'ok', data: poolTypes };
-    } catch (error) {
+      return { status: 'ok', data: getAvailablePoolTypesMetadata() };
+    } catch {
       return reply.code(500).send({ error: 'Failed to fetch available pool types' });
     }
   });
@@ -99,8 +55,8 @@ export const start = async (): Promise<void> => {
     }
 
     try {
-      const [allPools, hackMap] = await Promise.all([getAllPools(), getCachedHackMap()]);
-      const pools = getPoolsByType(allPools, poolName).map((pool: any) => ({
+      const [allPools, hackMap] = await Promise.all([getAllPools(), getHackMap()]);
+      const pools = filterPoolsByType(allPools, poolName).map((pool: any) => ({
         ...pool,
         hacks: matchHacks(pool.project, hackMap),
       }));
@@ -113,12 +69,10 @@ export const start = async (): Promise<void> => {
   await fastify.listen({ port: PORT, host: '0.0.0.0' });
 };
 
-// Always start the server
 start()
-  .then(() => {
-    console.log(`Server listening on port ${PORT}`);
-  })
+  .then(() => console.log(`Server listening on port ${PORT}`))
   .catch((err) => {
     console.error(err);
     process.exit(1);
   });
+

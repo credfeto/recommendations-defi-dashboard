@@ -1,5 +1,5 @@
-import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../server';
-import { normalizePendleMarket } from '../pendleService';
+import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../../services/pools.service';
+import { normalizePendleMarket } from '../../api/pendle.markets.api.service';
 import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared';
 
 interface MockPool {
@@ -224,7 +224,7 @@ describe('Server API Tests', () => {
 
   describe('Available Pool Types', () => {
     test('getAvailableTypes returns all pool type configs', () => {
-      const { getAvailableTypes } = require('../server');
+      const { getAvailableTypes } = require('../../services/pools.service');
       const types = getAvailableTypes();
       expect(Array.isArray(types)).toBe(true);
       expect(types.length).toBeGreaterThan(0);
@@ -233,7 +233,7 @@ describe('Server API Tests', () => {
     });
 
     test('getFilteredPools wrapper function works', () => {
-      const { getFilteredPools } = require('../server');
+      const { getFilteredPools } = require('../../services/pools.service');
       const pools = getFilteredPools(mockPoolData, 'ETH');
       expect(Array.isArray(pools)).toBe(true);
       expect(pools.length).toBeGreaterThan(0);

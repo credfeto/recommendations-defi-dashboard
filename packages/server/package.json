@@ -5,8 +5,10 @@
   "main": "src/server/server-fastify.ts",
   "dependencies": {
     "@fastify/cors": "^11.2.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^16.18.126",
     "axios": "^1.13.6",
+    "better-sqlite3": "^12.8.0",
     "fastify": "^5.8.4",
     "typescript": "^4.9.5"
   },
