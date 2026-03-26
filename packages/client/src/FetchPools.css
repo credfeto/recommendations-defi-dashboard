@@ -200,6 +200,16 @@
   color: var(--accent-primary);
 }
 
+.project-link {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.project-link:hover {
+  text-decoration: underline;
+}
+
 .pools-table .tvl {
   font-weight: 500;
   color: var(--accent-secondary);

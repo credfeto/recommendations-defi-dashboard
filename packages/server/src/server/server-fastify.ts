@@ -10,11 +10,7 @@ import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
-const CACHE_KEYS = {
-  LLAMA_POOLS: 'defillama_pools',
-  PENDLE_POOLS: 'pendle_pools',
-  HACKS: 'defillama_hacks',
-};
+const CACHE_KEYS = { LLAMA_POOLS: 'defillama_pools', PENDLE_POOLS: 'pendle_pools', HACKS: 'defillama_hacks' };
 
 const getAllPools = async (): Promise<any[]> => {
   const [llamaPools, pendlePools] = await Promise.all([
@@ -75,4 +71,3 @@ start()
     console.error(err);
     process.exit(1);
   });
-

@@ -5,12 +5,7 @@ const PENDLE_API_BASE = 'https://api-v2.pendle.finance/core/v1';
 // Add chain IDs here to include additional networks
 const PENDLE_CHAIN_IDS: number[] = [1, 42161, 8453, 56];
 
-const CHAIN_ID_TO_NAME: Record<number, string> = {
-  1: 'Ethereum',
-  42161: 'Arbitrum',
-  8453: 'Base',
-  56: 'BSC',
-};
+const CHAIN_ID_TO_NAME: Record<number, string> = { 1: 'Ethereum', 42161: 'Arbitrum', 8453: 'Base', 56: 'BSC' };
 
 interface PendleMarket {
   address: string;
