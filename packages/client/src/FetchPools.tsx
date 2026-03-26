@@ -131,7 +131,6 @@ export const FetchPools: React.FC = () => {
                         <th>APY Base</th>
                         <th>APY Reward</th>
                         <th>Stablecoin</th>
-                        <th>IL Risk</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -173,7 +172,6 @@ export const FetchPools: React.FC = () => {
                           <td>{pool.apyBase !== null ? pool.apyBase.toFixed(2) : '-'}%</td>
                           <td>{pool.apyReward !== null ? pool.apyReward.toFixed(2) : '-'}%</td>
                           <td className='stablecoin'>{pool.stablecoin ? '✓' : '—'}</td>
-                          <td className='il-risk'>{pool.ilRisk}</td>
                         </tr>
                       ))}
                     </tbody>
