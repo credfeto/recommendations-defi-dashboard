@@ -24,6 +24,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - JSON Schema validation and response serialization for all Fastify API routes via schemas.ts
 - GitHub Actions CI workflows for tests, build, and code quality checks
 - PR description template and automated maintenance workflow to initialize and update descriptions for draft pull requests
+- Auto-generate PR descriptions using GitHub Models API (gpt-4o-mini) when the Description section is empty; description is maintained by regenerating on new commits unless manually edited
 
 ### Fixed
 

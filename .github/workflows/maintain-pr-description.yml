@@ -325,3 +325,156 @@ jobs:
             } else {
               console.log(`No change type checkbox update needed for PR #${pr.number}.`);
             }
+
+  generate-description:
+    name: Generate Description
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      (github.event.action == 'opened' ||
+       github.event.action == 'synchronize' ||
+       github.event.action == 'reopened') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      models: read
+    steps:
+      - name: Generate PR description if missing
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          script: |
+            const AUTO_DESC_MARKER = '<!-- description-auto-generated-by-copilot -->';
+
+            const pr = context.payload.pull_request;
+
+            // Fetch the latest PR body to avoid stale event payload
+            const { data: currentPr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+            const body = currentPr.body ?? '';
+            const action = context.payload.action;
+
+            // Find the Description section content (supports # / ## / ### heading levels)
+            function getDescriptionSectionContent(text) {
+              const sectionRegex = /^#{1,3}\s+Description\s*\n([\s\S]*?)(?=\n#{1,3}\s|$)/m;
+              const match = text.match(sectionRegex);
+              return match ? match[1] : null;
+            }
+
+            // Check if content has anything beyond HTML comments and whitespace
+            function hasRealContent(content) {
+              if (!content) return false;
+              return content.replace(/<!--[\s\S]*?-->/g, '').trim().length > 0;
+            }
+
+            const descContent = getDescriptionSectionContent(body);
+            const descHasContent = hasRealContent(descContent);
+            const hasAutoMarker = body.includes(AUTO_DESC_MARKER);
+
+            // Skip if description was manually written (has content but no auto marker)
+            if (descHasContent && !hasAutoMarker) {
+              console.log('PR has a manually-written description, skipping generation.');
+              return;
+            }
+
+            // Skip if already auto-generated and this is not a synchronize event
+            if (descHasContent && hasAutoMarker && action !== 'synchronize') {
+              console.log('Description already auto-generated and no new commits, skipping.');
+              return;
+            }
+
+            console.log(`Generating PR description (action: ${action})...`);
+
+            // Fetch the list of changed files
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+
+            const MAX_FILES_FOR_SUMMARY = 200;
+            const totalFiles = files.length;
+            const limitedFiles = files.slice(0, MAX_FILES_FOR_SUMMARY);
+
+            let filesSummary = limitedFiles
+              .map((f) => `${f.filename} (${f.status}: +${f.additions}/-${f.deletions})`)
+              .join('\n');
+
+            if (totalFiles > MAX_FILES_FOR_SUMMARY) {
+              const remaining = totalFiles - MAX_FILES_FOR_SUMMARY;
+              filesSummary += `\n... and ${remaining} more file${remaining === 1 ? '' : 's'}`;
+            }
+
+            // Call GitHub Models API to generate a description
+            let generatedDescription = null;
+            try {
+              const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                },
+                body: JSON.stringify({
+                  model: 'gpt-4o-mini',
+                  messages: [
+                    {
+                      role: 'system',
+                      content:
+                        'You are a helpful assistant that writes concise pull request descriptions. Write a clear 2-4 sentence description of what this pull request does based on the PR title and changed files. Be specific and technical. Do not include markdown headers or bullet points.',
+                    },
+                    {
+                      role: 'user',
+                      content: `PR Title: ${currentPr.title}\n\nChanged files:\n${filesSummary}\n\nWrite a concise description for this pull request.`,
+                    },
+                  ],
+                  max_tokens: 300,
+                  temperature: 0.3,
+                }),
+              });
+
+              if (response.ok) {
+                const result = await response.json();
+                generatedDescription = result.choices?.[0]?.message?.content?.trim() ?? null;
+              } else {
+                const errText = await response.text();
+                console.log(`GitHub Models API failed: ${response.status} - ${errText}`);
+              }
+            } catch (err) {
+              console.log(`Error calling GitHub Models API: ${err.message}`);
+            }
+
+            if (!generatedDescription) {
+              console.log('Could not generate description, skipping.');
+              return;
+            }
+
+            // Remove any existing auto marker before reinserting
+            let updatedBody = body
+              .replace(`\n${AUTO_DESC_MARKER}`, '')
+              .replace(AUTO_DESC_MARKER, '');
+
+            // Replace the description section content, or prepend a new section
+            const sectionRegex = /(^#{1,3}\s+Description\s*\n)([\s\S]*?)(?=\n#{1,3}\s|$)/m;
+            const sectionMatch = updatedBody.match(sectionRegex);
+
+            if (sectionMatch) {
+              const replacement = `${sectionMatch[1]}${generatedDescription}\n\n${AUTO_DESC_MARKER}\n\n`;
+              updatedBody = updatedBody.replace(sectionMatch[0], replacement);
+            } else {
+              updatedBody = `# Description\n\n${generatedDescription}\n\n${AUTO_DESC_MARKER}\n\n${updatedBody}`;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: updatedBody,
+            });
+
+            console.log(`Generated and inserted description for PR #${pr.number}.`);
