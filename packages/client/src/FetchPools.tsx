@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Pool, PoolsResponse, PoolTypeMetadata, HackInfo, DepegAlert } from '@shared';
+import { Pool, PoolsResponse, PoolTypeMetadata, HackInfo } from '@shared';
 import { PoolTypeConfig } from './types/poolTypeConfig';
 import { getAvailablePoolTypes } from './types/getAvailablePoolTypes';
 import './FetchPools.css';
@@ -125,7 +125,6 @@ export const FetchPools: React.FC = () => {
                         <th>Chain</th>
                         <th>Project</th>
                         <th>Source</th>
-                        <th>Depeg Alert</th>
                         <th>Exploit Risk</th>
                         <th>TVL (USD)</th>
                         <th>APY (%)</th>
@@ -150,24 +149,6 @@ export const FetchPools: React.FC = () => {
                             )}
                           </td>
                           <td className='data-source'>{pool.dataSource}</td>
-                          <td className='depeg-alert'>
-                            {pool.depegAlerts && pool.depegAlerts.length > 0 ? (
-                              <span
-                                className={`depeg-badge depeg-${pool.depegAlerts[0].severity}`}
-                                title={pool.depegAlerts
-                                  .map(
-                                    (a: DepegAlert) =>
-                                      `${a.symbol}: $${a.currentPrice.toFixed(4)} (${(a.deviation * 100).toFixed(1)}% from peg)`,
-                                  )
-                                  .join('\n')}
-                              >
-                                {pool.depegAlerts[0].severity === 'critical' ? '🚨' : '⚠️'}{' '}
-                                {pool.depegAlerts.map((a: DepegAlert) => a.symbol).join(', ')} depegged
-                              </span>
-                            ) : (
-                              <span className='depeg-clean'>—</span>
-                            )}
-                          </td>
                           <td className='exploit-risk'>
                             {pool.hacks && pool.hacks.length > 0 ? (
                               <span

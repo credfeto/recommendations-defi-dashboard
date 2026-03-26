@@ -87,12 +87,14 @@ export const start = async (): Promise<void> => {
         getStablecoinPriceMap(),
         getStablecoinAddressMap(),
       ]);
-      const pools = filterPoolsByType(allPools, poolName).map((pool: any) => ({
-        ...pool,
-        url: getPoolUrl(pool),
-        hacks: matchHacks(pool.project, hackMap),
-        depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
-      }));
+      const pools = filterPoolsByType(allPools, poolName)
+        .map((pool: any) => ({
+          ...pool,
+          url: getPoolUrl(pool),
+          hacks: matchHacks(pool.project, hackMap),
+          depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
+        }))
+        .filter((pool: any) => pool.depegAlerts.length === 0);
       return { status: 'ok', data: pools };
     } catch (error) {
       return reply.code(500).send({ error: 'Failed to fetch pools' });
