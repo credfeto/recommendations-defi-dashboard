@@ -2,10 +2,10 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
 import { getCachedOrFetch } from '../db/cache.db';
-import { fetchDefiLlamaPools } from '../api/defillama.pools.api.service';
-import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
-import { fetchPendleMarkets } from '../api/pendle.markets.api.service';
-import { fetchCoinGeckoStablecoins, fetchCoinGeckoCoinList } from '../api/coingecko.stablecoins.api.service';
+import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
+import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
+import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
+import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api.service';
 import { buildHackMap, matchHacks } from '../services/hacks.service';
 import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
@@ -27,15 +27,15 @@ const CACHE_KEYS = {
 
 const getAllPools = async (): Promise<any[]> => {
   const [llamaPools, pendlePools] = await Promise.all([
-    getCachedOrFetch(CACHE_KEYS.LLAMA_POOLS, fetchDefiLlamaPools),
-    getCachedOrFetch(CACHE_KEYS.PENDLE_POOLS, fetchPendleMarkets),
+    getCachedOrFetch(CACHE_KEYS.LLAMA_POOLS, () => defiLlamaPoolsApiService.fetchPools()),
+    getCachedOrFetch(CACHE_KEYS.PENDLE_POOLS, () => pendleMarketsApiService.fetchMarkets()),
   ]);
   return [...llamaPools, ...pendlePools];
 };
 
 const getHackMap = async () => {
   try {
-    const hacks = await getCachedOrFetch(CACHE_KEYS.HACKS, fetchDefiLlamaHacks);
+    const hacks = await getCachedOrFetch(CACHE_KEYS.HACKS, () => defiLlamaHacksApiService.fetchHacks());
     return buildHackMap(hacks);
   } catch {
     return new Map();
@@ -44,7 +44,7 @@ const getHackMap = async () => {
 
 const getStablecoinPriceMap = async () => {
   try {
-    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, fetchCoinGeckoStablecoins);
+    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, () => coinGeckoStablecoinsApiService.fetchStablecoins());
     return buildStablecoinPriceMap(coins);
   } catch {
     return new Map<string, number>();
@@ -54,8 +54,8 @@ const getStablecoinPriceMap = async () => {
 const getStablecoinAddressMap = async () => {
   try {
     const [coins, coinList] = await Promise.all([
-      getCachedOrFetch(CACHE_KEYS.STABLECOINS, fetchCoinGeckoStablecoins),
-      getCachedOrFetch(CACHE_KEYS.COIN_LIST, fetchCoinGeckoCoinList),
+      getCachedOrFetch(CACHE_KEYS.STABLECOINS, () => coinGeckoStablecoinsApiService.fetchStablecoins()),
+      getCachedOrFetch(CACHE_KEYS.COIN_LIST, () => coinGeckoStablecoinsApiService.fetchCoinList()),
     ]);
     return buildStablecoinAddressMap(coins, coinList);
   } catch {

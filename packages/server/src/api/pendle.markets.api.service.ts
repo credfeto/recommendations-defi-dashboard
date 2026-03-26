@@ -40,27 +40,6 @@ export interface PendlePoolData {
   [key: string]: unknown;
 }
 
-const fetchMarketsForChain = async (chainId: number): Promise<PendleMarket[]> => {
-  const markets: PendleMarket[] = [];
-  const limit = 100;
-  let skip = 0;
-  let total = Infinity;
-
-  while (skip < total) {
-    const response = await axios.get<{ total: number; results: PendleMarket[] }>(
-      `${PENDLE_API_BASE}/${chainId}/markets`,
-      { params: { limit, skip, select: 'all' } },
-    );
-    const { results, total: pageTotal } = response.data;
-    total = pageTotal;
-    markets.push(...results);
-    skip += results.length;
-    if (results.length === 0) break;
-  }
-
-  return markets.filter((m) => m.isActive);
-};
-
 export const normalizePendleMarket = (market: PendleMarket): PendlePoolData => {
   const chain = CHAIN_ID_TO_NAME[market.chainId] ?? String(market.chainId);
   const expiry = market.expiry
@@ -84,7 +63,32 @@ export const normalizePendleMarket = (market: PendleMarket): PendlePoolData => {
   };
 };
 
-export const fetchPendleMarkets = async (): Promise<PendlePoolData[]> => {
-  const results = await Promise.allSettled(PENDLE_CHAIN_IDS.map(fetchMarketsForChain));
-  return results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])).map(normalizePendleMarket);
-};
+export class PendleMarketsApiService {
+  private async fetchMarketsForChain(chainId: number): Promise<PendleMarket[]> {
+    const markets: PendleMarket[] = [];
+    const limit = 100;
+    let skip = 0;
+    let total = Infinity;
+
+    while (skip < total) {
+      const response = await axios.get<{ total: number; results: PendleMarket[] }>(
+        `${PENDLE_API_BASE}/${chainId}/markets`,
+        { params: { limit, skip, select: 'all' } },
+      );
+      const { results, total: pageTotal } = response.data;
+      total = pageTotal;
+      markets.push(...results);
+      skip += results.length;
+      if (results.length === 0) break;
+    }
+
+    return markets.filter((m) => m.isActive);
+  }
+
+  public async fetchMarkets(): Promise<PendlePoolData[]> {
+    const results = await Promise.allSettled(PENDLE_CHAIN_IDS.map((id) => this.fetchMarketsForChain(id)));
+    return results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])).map(normalizePendleMarket);
+  }
+}
+
+export const pendleMarketsApiService = new PendleMarketsApiService();

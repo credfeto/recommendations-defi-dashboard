@@ -25,6 +25,7 @@
     "dev": "ts-node -O '{\"module\": \"commonjs\"}' src/server/server-fastify.ts",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:e2e": "jest --config jest.e2e.config.js"
   }
 }
