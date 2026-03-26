@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import compress from '@fastify/compress';
 import { getCachedOrFetch } from '../db/cache.db';
 import { fetchDefiLlamaPools } from '../api/defillama.pools.api.service';
 import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
@@ -10,8 +11,11 @@ import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
+import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
+
+const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
 
 const CACHE_KEYS = {
   LLAMA_POOLS: 'defillama_pools',
@@ -62,17 +66,19 @@ const getStablecoinAddressMap = async () => {
 export const start = async (): Promise<void> => {
   const fastify: any = Fastify({ logger: true });
 
+  await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
 
-  fastify.get('/api/pools', async (_request: any, reply: any) => {
+  fastify.get('/api/pools', { schema: getPoolTypesSchema }, async (_request: any, reply: any) => {
     try {
+      reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: getAvailablePoolTypesMetadata() };
     } catch {
       return reply.code(500).send({ error: 'Failed to fetch available pool types' });
     }
   });
 
-  fastify.get('/api/pools/:poolName', async (request: any, reply: any) => {
+  fastify.get('/api/pools/:poolName', { schema: getPoolsByNameSchema }, async (request: any, reply: any) => {
     const { poolName } = request.params as { poolName: string };
 
     const validPoolTypes = getAvailableTypes().map((pt) => pt.id);
@@ -95,6 +101,7 @@ export const start = async (): Promise<void> => {
           depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
         }))
         .filter((pool: any) => pool.depegAlerts.length === 0);
+      reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: pools };
     } catch (error) {
       return reply.code(500).send({ error: 'Failed to fetch pools' });

@@ -21,6 +21,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - **Exploit risk column** — pools are matched against the DefiLlama hacks dataset; affected protocols display an amber ⚠️ badge with incident count and a hover tooltip showing name, year, amount stolen, and technique
 - **Protocol page links** — the Project column links directly to the pool on its source platform (DefiLlama yield page or Pendle market page), generated server-side
 - **`HackInfo` shared type** — new interface in `@shared` for exploit incident data
+- JSON Schema validation and response serialization for all Fastify API routes via schemas.ts
 
 ### Fixed
 
@@ -37,6 +38,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - **Pool URL generation moved to server** — the `url` field is now computed server-side in `pool-url.service.ts` and included in the API response; the client no longer needs any knowledge of data sources to render links
 - **Persistent API cache** — third-party data is cached in SQLite (`packages/server/data/cache.db`) and survives server restarts; data fresher than 1 hour is served directly from cache; stale data (1–2 hours) is used as fallback if a live fetch fails; data older than 2 hours is always refetched
 - Sorting by APY descending then TVL
+- Enable HTTP response caching (15s TTL with stale-while-revalidate) and brotli/gzip compression via @fastify/compress
 
 ### Removed
 
