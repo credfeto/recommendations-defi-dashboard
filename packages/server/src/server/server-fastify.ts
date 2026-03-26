@@ -61,7 +61,7 @@ const getStablecoinAddressMap = async () => {
     ]);
     return buildStablecoinAddressMap(coins, coinList);
   } catch {
-    return new Map<string, number>();
+    return new Map<string, string>();
   }
 };
 
