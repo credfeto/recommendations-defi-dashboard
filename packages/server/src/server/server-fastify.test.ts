@@ -1,6 +1,6 @@
-import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../../services/pools.service';
+import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../services/pools.service';
 import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared';
-import { getPoolsByNameSchema } from '../schemas';
+import { getPoolsByNameSchema } from './schemas';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fastJsonStringify = require('fast-json-stringify');
 
@@ -226,7 +226,7 @@ describe('Server API Tests', () => {
 
   describe('Available Pool Types', () => {
     test('getAvailableTypes returns all pool type configs', () => {
-      const { getAvailableTypes } = require('../../services/pools.service');
+      const { getAvailableTypes } = require('../services/pools.service');
       const types = getAvailableTypes();
       expect(Array.isArray(types)).toBe(true);
       expect(types.length).toBeGreaterThan(0);
@@ -235,7 +235,7 @@ describe('Server API Tests', () => {
     });
 
     test('getFilteredPools wrapper function works', () => {
-      const { getFilteredPools } = require('../../services/pools.service');
+      const { getFilteredPools } = require('../services/pools.service');
       const pools = getFilteredPools(mockPoolData, 'ETH');
       expect(Array.isArray(pools)).toBe(true);
       expect(pools.length).toBeGreaterThan(0);
