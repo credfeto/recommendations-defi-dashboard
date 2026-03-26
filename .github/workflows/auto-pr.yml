@@ -1,0 +1,164 @@
+name: Auto Create Pull Request
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - master
+      - develop
+
+permissions:
+  contents: read
+  pull-requests: write
+  models: read
+
+jobs:
+  create-or-update-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create or update pull request with Copilot description
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branch = context.ref.replace('refs/heads/', '');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            // Use the repository's actual default branch rather than assuming 'main'
+            const base = context.payload.repository.default_branch || 'main';
+            const autoMarker = '<!-- copilot-auto-description -->';
+
+            // Look for an existing open PR for this branch
+            const existingPRs = await github.rest.pulls.list({
+              owner,
+              repo,
+              head: `${owner}:${branch}`,
+              state: 'open',
+            });
+
+            let prNumber;
+            let shouldGenerateDescription = true;
+
+            if (existingPRs.data.length === 0) {
+              // Format a human-readable title from the branch name
+              const title = branch
+                .replace(/^(feature|fix|chore|docs|refactor|test|style|build|perf|ci|revert)\//i, '')
+                .replace(/[-_]/g, ' ')
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+
+              const pr = await github.rest.pulls.create({
+                owner,
+                repo,
+                title,
+                body: autoMarker,
+                head: branch,
+                base,
+              });
+              prNumber = pr.data.number;
+              core.info(`Created PR #${prNumber}: ${pr.data.html_url}`);
+            } else {
+              const pr = existingPRs.data[0];
+              prNumber = pr.number;
+              const body = pr.body || '';
+              // Only regenerate if the body is empty or was previously auto-generated
+              shouldGenerateDescription = !body || body.includes(autoMarker);
+              core.info(
+                `Found existing PR #${prNumber} – regenerate description: ${shouldGenerateDescription}`
+              );
+            }
+
+            if (!shouldGenerateDescription) {
+              core.info('PR has a user-provided description; skipping auto-generation.');
+              return;
+            }
+
+            // Build context from commits and changed files
+            let diffContext = `Branch: \`${branch}\``;
+            try {
+              const comparison = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${base}...${branch}`,
+              });
+
+              const commitLines = comparison.data.commits
+                .slice(-10)
+                .map((c) => `- ${c.commit.message.split('\n')[0]}`)
+                .join('\n');
+
+              const fileLines = (comparison.data.files || [])
+                .slice(0, 20)
+                .map((f) => `- \`${f.filename}\` (${f.status})`)
+                .join('\n');
+
+              diffContext =
+                `Commits:\n${commitLines || '(none)'}` +
+                `\n\nFiles changed:\n${fileLines || '(none)'}`;
+            } catch (e) {
+              core.warning(`Could not fetch diff: ${e.message}`);
+            }
+
+            // Generate a description using the GitHub Models (Copilot) API
+            let description = '';
+            try {
+              const response = await fetch(
+                'https://models.inference.ai.azure.com/chat/completions',
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                  },
+                  body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                      {
+                        role: 'system',
+                        content:
+                          'You are GitHub Copilot helping to write pull request descriptions. ' +
+                          'Write a clear, professional, and concise PR description in Markdown. ' +
+                          'Include: a brief summary of what changed, the motivation or context, ' +
+                          'and any important notes for reviewers. Keep it under 300 words.',
+                      },
+                      {
+                        role: 'user',
+                        content: `Write a PR description for branch \`${branch}\`.\n\n${diffContext}`,
+                      },
+                    ],
+                    max_tokens: 600,
+                    temperature: 0.2,
+                  }),
+                }
+              );
+
+              if (response.ok) {
+                const data = await response.json();
+                description = data.choices?.[0]?.message?.content?.trim() ?? '';
+              } else {
+                core.warning(
+                  `GitHub Models API returned ${response.status}: ${await response.text()}`
+                );
+              }
+            } catch (e) {
+              core.warning(`GitHub Models API call failed: ${e.message}`);
+            }
+
+            // Fall back to a simple diff-based description if the API is unavailable
+            if (!description) {
+              description = `Automated pull request for branch \`${branch}\`.\n\n${diffContext}`;
+            }
+
+            await github.rest.pulls.update({
+              owner,
+              repo,
+              pull_number: prNumber,
+              body: `${description}\n\n---\n${autoMarker}`,
+            });
+            core.info('PR description updated successfully.');
