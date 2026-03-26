@@ -2,7 +2,7 @@ export interface CoinGeckoStablecoin {
   id: string;
   symbol: string;
   name: string;
-  current_price: number;
+  current_price: number | null;
 }
 
 /** Coin list entry including on-chain contract addresses keyed by CoinGecko platform id */
@@ -41,7 +41,8 @@ export class CoinGeckoStablecoinsApiService {
 
   /**
    * Fetches the full CoinGecko coin list with on-chain contract addresses.
-   * Used to build an address → price map for underlyingTokens depeg checking.
+   * Used to build an address → symbol map for underlyingTokens depeg checking;
+   * prices are derived separately from market data.
    */
   public async fetchCoinList(): Promise<CoinGeckoCoinPlatforms[]> {
     const url = `${BASE_URL}/coins/list?include_platform=true`;

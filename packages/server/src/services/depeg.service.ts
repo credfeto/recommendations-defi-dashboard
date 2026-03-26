@@ -82,7 +82,8 @@ function makeAlert(symbol: string, price: number): DepegAlert | null {
 /**
  * Checks a pool for stablecoin depeg risk using two sources:
  *  1. Pool symbol tokens looked up in the symbol → price map
- *  2. underlyingTokens contract addresses looked up in the address → price map
+ *  2. underlyingTokens contract addresses looked up in the address → symbol map,
+ *     then prices resolved via the symbol → price map
  *
  * Applies to all pools — the price maps act as the natural filter
  * (only known stablecoins produce alerts).

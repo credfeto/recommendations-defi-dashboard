@@ -18,7 +18,7 @@ describe('CoinGeckoStablecoinsApiService', () => {
 
   beforeEach(() => {
     service = new CoinGeckoStablecoinsApiService();
-    global.fetch = jest.fn();
+    jest.spyOn(global, 'fetch');
   });
 
   afterEach(() => {
@@ -37,6 +37,8 @@ describe('CoinGeckoStablecoinsApiService', () => {
     });
 
     test('paginates when a full page is returned', async () => {
+      jest.useFakeTimers();
+
       const fullPage = Array.from({ length: 250 }, (_, i) => ({
         id: `coin-${i}`,
         symbol: `coin${i}`,
@@ -48,7 +50,11 @@ describe('CoinGeckoStablecoinsApiService', () => {
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(fullPage) })
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockStablecoins) });
 
-      const result = await service.fetchStablecoins();
+      const resultPromise = service.fetchStablecoins();
+      await jest.runAllTimersAsync();
+      const result = await resultPromise;
+
+      jest.useRealTimers();
 
       expect(result).toHaveLength(252);
       expect(global.fetch).toHaveBeenCalledTimes(2);

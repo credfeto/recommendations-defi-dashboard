@@ -72,13 +72,19 @@ describe('PendleMarketsApiService', () => {
     });
 
     test('paginates until all markets are fetched', async () => {
-      const pageOne = { total: 2, results: [mockMarket] };
-      const pageTwo = { total: 2, results: [{ ...mockMarket, address: '0xdef456' }] };
+      const page1Market = mockMarket;
+      const page2Market = { ...mockMarket, address: '0xdef456' };
 
-      mockedAxios.get
-        .mockResolvedValueOnce({ data: pageOne })
-        .mockResolvedValueOnce({ data: pageTwo })
-        .mockResolvedValue({ data: { total: 0, results: [] } });
+      // Use URL + skip param to serve pages deterministically for chain 1;
+      // all other chains return empty so only chain 1 exercises the pagination path.
+      mockedAxios.get.mockImplementation((url: string, config?: { params?: { skip?: number } }) => {
+        if (url.includes('/1/markets')) {
+          const skip = config?.params?.skip ?? 0;
+          if (skip === 0) return Promise.resolve({ data: { total: 2, results: [page1Market] } });
+          return Promise.resolve({ data: { total: 2, results: [page2Market] } });
+        }
+        return Promise.resolve({ data: { total: 0, results: [] } });
+      });
 
       const result = await service.fetchMarkets();
 

@@ -22,7 +22,7 @@ describe('buildStablecoinPriceMap', () => {
   });
 
   test('skips coins with null price', () => {
-    const coins: CoinGeckoStablecoin[] = [{ id: 'x', symbol: 'X', name: 'X', current_price: null as any }];
+    const coins: CoinGeckoStablecoin[] = [{ id: 'x', symbol: 'X', name: 'X', current_price: null }];
     const map = buildStablecoinPriceMap(coins);
     expect(map.size).toBe(0);
   });
