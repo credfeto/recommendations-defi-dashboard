@@ -1,4 +1,8 @@
-import { CoinGeckoStablecoinsApiService, CoinGeckoStablecoin, CoinGeckoCoinPlatforms } from './coingecko.stablecoins.api.service';
+import {
+  CoinGeckoStablecoinsApiService,
+  CoinGeckoStablecoin,
+  CoinGeckoCoinPlatforms,
+} from './coingecko.stablecoins.api.service';
 
 const mockStablecoins: CoinGeckoStablecoin[] = [
   { id: 'tether', symbol: 'usdt', name: 'Tether', current_price: 1.0 },
@@ -6,11 +10,7 @@ const mockStablecoins: CoinGeckoStablecoin[] = [
 ];
 
 const mockCoinList: CoinGeckoCoinPlatforms[] = [
-  {
-    id: 'tether',
-    symbol: 'usdt',
-    platforms: { ethereum: '0xdac17f958d2ee523a2206206994597c13d831ec7' },
-  },
+  { id: 'tether', symbol: 'usdt', platforms: { ethereum: '0xdac17f958d2ee523a2206206994597c13d831ec7' } },
 ];
 
 describe('CoinGeckoStablecoinsApiService', () => {
@@ -27,10 +27,7 @@ describe('CoinGeckoStablecoinsApiService', () => {
 
   describe('fetchStablecoins', () => {
     test('returns stablecoins from a single page', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockStablecoins),
-      });
+      (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockStablecoins) });
 
       const result = await service.fetchStablecoins();
 
@@ -58,20 +55,13 @@ describe('CoinGeckoStablecoinsApiService', () => {
     });
 
     test('throws when response is not ok', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 429,
-        statusText: 'Too Many Requests',
-      });
+      (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 429, statusText: 'Too Many Requests' });
 
       await expect(service.fetchStablecoins()).rejects.toThrow('CoinGecko stablecoins request failed: 429');
     });
 
     test('each coin has required fields', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockStablecoins),
-      });
+      (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockStablecoins) });
 
       const result = await service.fetchStablecoins();
 
@@ -87,10 +77,7 @@ describe('CoinGeckoStablecoinsApiService', () => {
 
   describe('fetchCoinList', () => {
     test('returns coin list with platforms', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockCoinList),
-      });
+      (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCoinList) });
 
       const result = await service.fetchCoinList();
 
@@ -100,20 +87,13 @@ describe('CoinGeckoStablecoinsApiService', () => {
     });
 
     test('throws when response is not ok', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 503,
-        statusText: 'Service Unavailable',
-      });
+      (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 503, statusText: 'Service Unavailable' });
 
       await expect(service.fetchCoinList()).rejects.toThrow('CoinGecko coin list request failed: 503');
     });
 
     test('each entry has id, symbol, and platforms', async () => {
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockCoinList),
-      });
+      (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockCoinList) });
 
       const result = await service.fetchCoinList();
 

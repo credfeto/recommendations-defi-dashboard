@@ -422,6 +422,5 @@ describe('Server API Tests', () => {
       const result = JSON.parse(serialize({ status: 'ok', data: [defillamaPool] }));
       expect(result.data[0].predictions).toBeNull();
     });
-
   });
 });

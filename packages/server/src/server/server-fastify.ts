@@ -44,7 +44,9 @@ const getHackMap = async () => {
 
 const getStablecoinPriceMap = async () => {
   try {
-    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, () => coinGeckoStablecoinsApiService.fetchStablecoins());
+    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, () =>
+      coinGeckoStablecoinsApiService.fetchStablecoins(),
+    );
     return buildStablecoinPriceMap(coins);
   } catch {
     return new Map<string, number>();
