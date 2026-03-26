@@ -1,20 +1,7 @@
-import {PoolTypeConfig} from '../types/poolTypeConfig';
-import {getPoolTypeById} from '../types/getPoolTypeById';
-import {getAvailablePoolTypes} from '../types/getAvailablePoolTypes';
-
-interface PoolData {
-  symbol: string;
-  chain: string;
-  project: string;
-  tvlUsd: number;
-  apy: number;
-  apyBase?: number;
-  apyReward?: number | null;
-  ilRisk: string;
-  stablecoin: boolean;
-  pool: string;
-  [key: string]: any;
-}
+import { PoolTypeConfig } from '../types/poolTypeConfig';
+import { getPoolTypeById } from '../types/getPoolTypeById';
+import { getAvailablePoolTypes } from '../types/getAvailablePoolTypes';
+import { PoolData } from '@shared/types/poolData';
 
 const MIN_TVL = 1_000_000;
 
