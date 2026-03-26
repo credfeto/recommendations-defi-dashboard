@@ -51,7 +51,6 @@ jobs:
     needs: [check-not-draft, copilot-review]
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
-      secrets.SOURCE_PUSH_TOKEN != '' &&
       needs.check-not-draft.result == 'success' &&
       needs.copilot-review.result == 'success'
 
