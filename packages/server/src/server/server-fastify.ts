@@ -11,8 +11,11 @@ import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
+import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
+
+const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
 
 const CACHE_KEYS = {
   LLAMA_POOLS: 'defillama_pools',
@@ -66,9 +69,7 @@ export const start = async (): Promise<void> => {
   await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
 
-  const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
-
-  fastify.get('/api/pools', async (_request: any, reply: any) => {
+  fastify.get('/api/pools', { schema: getPoolTypesSchema }, async (_request: any, reply: any) => {
     try {
       reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: getAvailablePoolTypesMetadata() };
@@ -77,7 +78,7 @@ export const start = async (): Promise<void> => {
     }
   });
 
-  fastify.get('/api/pools/:poolName', async (request: any, reply: any) => {
+  fastify.get('/api/pools/:poolName', { schema: getPoolsByNameSchema }, async (request: any, reply: any) => {
     const { poolName } = request.params as { poolName: string };
 
     const validPoolTypes = getAvailableTypes().map((pt) => pt.id);

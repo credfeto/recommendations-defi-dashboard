@@ -21,6 +21,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - **Exploit risk column** — pools are matched against the DefiLlama hacks dataset; affected protocols display an amber ⚠️ badge with incident count and a hover tooltip showing name, year, amount stolen, and technique
 - **Protocol page links** — the Project column links directly to the pool on its source platform (DefiLlama yield page or Pendle market page), generated server-side
 - **`HackInfo` shared type** — new interface in `@shared` for exploit incident data
+- JSON Schema validation and response serialization for all Fastify API routes via schemas.ts
 
 ### Fixed
 
