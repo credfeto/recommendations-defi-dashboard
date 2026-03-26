@@ -1,6 +1,9 @@
 import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../../services/pools.service';
 import { normalizePendleMarket } from '../../api/pendle.markets.api.service';
 import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared';
+import { getPoolsByNameSchema } from '../schemas';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fastJsonStringify = require('fast-json-stringify');
 
 interface MockPool {
   chain: string;
@@ -95,6 +98,22 @@ const mockPoolData: MockPool[] = [
     pool: '8',
   },
 ];
+
+const mockPendleMarket = {
+  address: '0xabc123',
+  chainId: 1,
+  simpleSymbol: 'sUSDe',
+  expiry: '2026-06-26T00:00:00.000Z',
+  isActive: true,
+  categoryIds: ['stables', 'ethena'],
+  liquidity: { usd: 50_000_000 },
+  aggregatedApy: 0.082,
+  underlyingApy: 0.07,
+  pendleApy: 0.006,
+  lpRewardApy: 0.004,
+  swapFeeApy: 0.001,
+  tradingVolume: { usd: 1_200_000 },
+};
 
 describe('Server API Tests', () => {
   describe('Pool Filtering', () => {
@@ -315,22 +334,6 @@ describe('Server API Tests', () => {
   });
 
   describe('Pendle Normalizer', () => {
-    const mockPendleMarket = {
-      address: '0xabc123',
-      chainId: 1,
-      simpleSymbol: 'sUSDe',
-      expiry: '2026-06-26T00:00:00.000Z',
-      isActive: true,
-      categoryIds: ['stables', 'ethena'],
-      liquidity: { usd: 50_000_000 },
-      aggregatedApy: 0.082,
-      underlyingApy: 0.07,
-      pendleApy: 0.006,
-      lpRewardApy: 0.004,
-      swapFeeApy: 0.001,
-      tradingVolume: { usd: 1_200_000 },
-    };
-
     test('converts decimal APY to percentage', () => {
       const pool = normalizePendleMarket(mockPendleMarket);
       expect(pool.apy).toBeCloseTo(8.2, 5);
@@ -387,6 +390,118 @@ describe('Server API Tests', () => {
     test('passes through volume', () => {
       const pool = normalizePendleMarket(mockPendleMarket);
       expect(pool.volumeUsd1d).toBe(1_200_000);
+    });
+  });
+
+  describe('Pool Response Schema', () => {
+    // Regression guard: the schema must handle heterogeneous DeFiLlama + Pendle data.
+    // Pendle pools are missing exposure, predictions, mu, sigma, count, outlier, apyMean30d.
+    // DeFiLlama pools can have predictions: null.
+    // fast-json-stringify must not throw for either shape.
+
+    const pendlePool = {
+      chain: 'Ethereum',
+      project: 'pendle',
+      symbol: 'sUSDe',
+      tvlUsd: 50_000_000,
+      apy: 8.2,
+      apyBase: 7.0,
+      apyReward: null,
+      rewardTokens: null,
+      pool: '0xabc123',
+      stablecoin: true,
+      ilRisk: 'no',
+      poolMeta: 'Maturity: Jun 2026',
+      volumeUsd1d: 1_200_000,
+      dataSource: 'pendle',
+      hacks: [],
+      depegAlerts: [],
+    };
+
+    const defillamaPool = {
+      chain: 'Ethereum',
+      project: 'lido',
+      symbol: 'STETH',
+      tvlUsd: 20_000_000_000,
+      apy: 2.5,
+      apyBase: 2.5,
+      apyReward: null,
+      rewardTokens: null,
+      pool: 'steth-pool-id',
+      stablecoin: false,
+      ilRisk: 'no',
+      exposure: 'single',
+      predictions: null,
+      poolMeta: null,
+      mu: 2.4,
+      sigma: 0.3,
+      count: 365,
+      outlier: false,
+      apyMean30d: 2.45,
+      volumeUsd1d: null,
+      volumeUsd7d: null,
+      apyPct1D: 0.1,
+      apyPct7D: 0.5,
+      apyPct30D: 1.2,
+      il7d: null,
+      apyBase7d: null,
+      apyBaseInception: null,
+      underlyingTokens: null,
+      url: 'https://defillama.com/yields?pool=steth-pool-id',
+      dataSource: 'defillama',
+      hacks: [],
+      depegAlerts: [],
+    };
+
+    let serialize: (data: unknown) => string;
+
+    beforeAll(() => {
+      serialize = fastJsonStringify(getPoolsByNameSchema.response[200]);
+    });
+
+    test('schema does not require exposure field', () => {
+      const required: readonly string[] = (getPoolsByNameSchema.response[200] as any).properties.data.items.required;
+      expect(required).not.toContain('exposure');
+    });
+
+    test('predictions field allows null in schema', () => {
+      const predictionsSchema = (getPoolsByNameSchema.response[200] as any).properties.data.items.properties.predictions;
+      expect(predictionsSchema).toHaveProperty('anyOf');
+      expect(predictionsSchema.anyOf).toContainEqual({ type: 'null' });
+    });
+
+    test('nullable statistical fields allow null in schema', () => {
+      const props = (getPoolsByNameSchema.response[200] as any).properties.data.items.properties;
+      for (const field of ['mu', 'sigma', 'count', 'apyMean30d']) {
+        expect(props[field].type).toContain('null');
+      }
+      expect(props['outlier'].type).toContain('null');
+    });
+
+    test('serializes Pendle pool (no exposure/predictions/mu/sigma) without throwing', () => {
+      expect(() => serialize({ status: 'ok', data: [pendlePool] })).not.toThrow();
+    });
+
+    test('serializes DeFiLlama pool with predictions: null without throwing', () => {
+      expect(() => serialize({ status: 'ok', data: [defillamaPool] })).not.toThrow();
+    });
+
+    test('Pendle pool serialization produces valid JSON with correct values', () => {
+      const result = JSON.parse(serialize({ status: 'ok', data: [pendlePool] }));
+      expect(result.status).toBe('ok');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].project).toBe('pendle');
+      expect(result.data[0].apy).toBeCloseTo(8.2);
+    });
+
+    test('DeFiLlama pool serialization preserves null predictions', () => {
+      const result = JSON.parse(serialize({ status: 'ok', data: [defillamaPool] }));
+      expect(result.data[0].predictions).toBeNull();
+    });
+
+    test('normalizePendleMarket output does not include exposure field', () => {
+      const pool = normalizePendleMarket(mockPendleMarket);
+      expect(pool).not.toHaveProperty('exposure');
     });
   });
 });
