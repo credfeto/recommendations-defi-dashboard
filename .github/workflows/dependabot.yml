@@ -1,0 +1,38 @@
+name: "Dependabot: Rebase"
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+
+jobs:
+  auto-rebase:
+    runs-on: [self-hosted, linux, build]
+
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    timeout-minutes: 5
+    steps:
+      - name: "Initialise Workspace"
+        if: startsWith(runner.name, 'buildagent-')
+        shell: bash
+        run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
+
+      - name: "Set Active Environment"
+        shell: bash
+        run: |
+          {
+          echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
+          echo "ACTIVE_HOSTNAME=$HOSTNAME"
+          echo "ACTIVE_USER=$USER"
+          } >> "$GITHUB_ENV"
+
+      - name: "Rebase"
+        uses: bbeesley/gha-auto-dependabot-rebase@v1.5.225
+        env:
+          GITHUB_TOKEN: ${{secrets.SOURCE_PUSH_TOKEN}}

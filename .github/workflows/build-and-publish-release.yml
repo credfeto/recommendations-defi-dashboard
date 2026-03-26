@@ -1,0 +1,149 @@
+name: "Build: Release"
+
+on:
+  push:
+    branches:
+      - 'release/*'
+      - 'hotfix/*'
+
+# Don't cancel anything in progress
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  security-events: write
+
+jobs:
+  build-release:
+
+    runs-on: [self-hosted, linux, build]
+
+    env:
+      # Optimisation for repo visibility check
+      REPO_STATUS: ${{vars.REPO_VISIBILITY}}
+      # Which NPM Registry to use
+      NPM_REGISTRY: ${{vars.NPM_REGISTRY}}
+      NPM_CACHE_CERT: ${{vars.NPM_CACHE_CERT}}
+      # Nuget caching
+      USE_NUGET_CACHE: ${{vars.USE_NUGET_CACHE}}
+      NUGET_BAGET_CACHE: ''
+      PRERELEASE_BAGET_CACHE: ''
+      RELEASE_BAGET_CACHE: ''
+
+    steps:
+      - name: "Initialise Workspace"
+        if: startsWith(runner.name, 'buildagent-')
+        shell: bash
+        run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
+
+      - name: "Set Active Environment"
+        shell: bash
+        run: |
+          {
+          echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
+          echo "ACTIVE_HOSTNAME=$HOSTNAME"
+          echo "ACTIVE_USER=$USER"
+          echo "TEMP=${{runner.temp}}"
+          echo "TMP=${{runner.temp}}"
+          } >> "$GITHUB_ENV"
+
+      - name: "Checkout Source"
+        uses: actions/checkout@v6.0.2
+        with:
+          clean: true
+          fetch-depth: 0
+          fetch-tags: true
+
+      - if: env.USE_NUGET_CACHE == ''
+        name: "Setup Nuget Cache (Cache disabled)"
+        shell: bash
+        run: echo "USE_NUGET_CACHE=false" >> "$GITHUB_ENV"
+
+      - if: startsWith(runner.name, 'buildagent-') != true
+        name: "Ensure on github agents nuget cache is disabled"
+        shell: bash
+        run: echo "USE_NUGET_CACHE=false" >> "$GITHUB_ENV"
+
+      - if: env.REPO_STATUS == ''
+        name: "Check Repo Visibility"
+        uses: credfeto/action-repo-visibility@v1.2.0
+        id: visibility
+        with:
+          repository: ${{github.repository}}
+          token: ${{secrets.SOURCE_PUSH_TOKEN}}
+
+      - name: "Check Runner details"
+        uses: actions/github-script@v8.0.0
+        with:
+          script: |
+            core.info('Name: ${{runner.name}}');
+            core.info('OS: ${{runner.os}}');
+
+      - name: "Enable Local nuget/npm feeds if caching"
+        if: env.USE_NUGET_CACHE == 'true'
+        shell: bash
+        run: |
+          {
+            echo "NUGET_BAGET_CACHE=${{vars.NUGET_BAGET_CACHE}}"
+            echo "PRERELEASE_BAGET_CACHE=${{vars.PRERELEASE_BAGET_CACHE}}"
+            echo "RELEASE_BAGET_CACHE=${{vars.RELEASE_BAGET_CACHE}}"
+            [[ -n "${{vars.NPM_CACHE}}" ]] \
+                        && echo "NPM_REGISTRY=${{vars.NPM_CACHE}}"
+          }>> "$GITHUB_ENV"
+
+      - name: "Build and deploy"
+        uses: ./.github/actions/build
+        with:
+          PRODUCTION_BUILD: True
+          NPM_PRODUCTION_PACKAGER_VERSION: ${{vars.PRODUCTION_PACKAGER_VERSION}}
+          NPM_CONTENT_PACKAGE_WALLET_PASSWORD: ${{secrets.CONTENT_PACKAGE_WALLET_PASSWORD}}
+          NPM_PACKAGE_STORE_SIGNING_WALLET: ${{secrets.PACKAGE_STORE_SIGNING_WALLET}}
+          NPM_PACKAGE_STORE_SIGNING_WALLET_PASSWORD: ${{secrets.PACKAGE_STORE_SIGNING_WALLET_PASSWORD}}
+          NPM_REGISTRY: ${{env.NPM_REGISTRY}}
+          NPM_CACHE_CERT: ${{env.NPM_CACHE_CERT}}
+          NUGET_PUBLIC_RESTORE_FEED_CACHE: ${{env.NUGET_BAGET_CACHE}}
+          NUGET_PUBLIC_RESTORE_FEED: ${{vars.NUGET_PUBLIC_RESTORE_FEED}}
+          NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE: ${{env.RELEASE_BAGET_CACHE}}
+          NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE: ""
+          NUGET_ADDITIONAL_RESTORE_FEED_RELEASE: ${{vars.NUGET_ADDITIONAL_RESTORE_FEED_RELEASE}}
+          NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE: ""
+          NUGET_PACK: ${{vars.NUGET_PACK}}
+          NUGET_FEED: ${{secrets.NUGET_FEED}}
+          NUGET_SYMBOL_FEED: ${{secrets.NUGET_SYMBOL_FEED}}
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+          SLEET_CONFIG: ${{secrets.SLEET_CONFIG}}
+          SLEET_FEED: "dotnet-release"
+          PROJECT_TO_PUBLISH: ${{vars.PROJECT_TO_PUBLISH}}
+          DOCKER_APP_OWNER: ${{vars.DOCKER_APP_OWNER}}
+          DOCKER_APP_NAME: ${{vars.DOCKER_APP_NAME}}
+          BUILD_TAG: stable
+          CLOUD_FORMATION_DEPLOY: ${{vars.CLOUD_FORMATION_DEPLOY}}
+          CLOUD_FORMATION_STACK: ${{vars.CLOUD_FORMATION_STACK}}
+          GITHUB_TOKEN: ${{secrets.SOURCE_PUSH_TOKEN}}
+          REPO_VISIBILITY: ${{env.REPO_STATUS}}
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_DOCKER_CONTAINER_REGISTRY_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_DOCKER_CONTAINER_REGISTRY_SECRET_ACCESS_KEY}}
+          AWS_REGION: ${{vars.AWS_REGION}}
+          DOCKER_CONTAINER_REGISTRY: ${{vars.DOCKER_CONTAINER_REGISTRY_RELEASE}}
+          AWS_LOAD_BALANCER_HOSTNAME: ${{vars.AWS_LOAD_BALANCER_HOSTNAME_PROD}}
+          AWS_LOAD_BALANCER_PRIORITY: ${{vars.AWS_LOAD_BALANCER_PRIORITY_PROD}}
+          API_HOST: ${{vars.AWS_LOAD_BALANCER_HOSTNAME_DEV}}
+          API_PREFIX: ${{vars.API_PREFIX}}
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_ACCESS_TOKEN: ${{secrets.DOCKER_ACCESS_TOKEN}}
+          DOTNET_DOCKER_PLATFORM: ${{vars.DOTNET_DOCKER_PLATFORM}}
+          DOTNET_CONTAINER_PLATFORM: ${{vars.DOTNET_CONTAINER_PLATFORM}}
+          SQL_SERVER: "${{vars.SQL_SERVER}}"
+          SQL_DB: "${{vars.SQL_DB}}"
+          SQL_USER: "${{vars.SQL_USER}}"
+          SQL_PASSWORD: "${{secrets.SQL_PASSWORD}}"
+          CREATE_RELEASE: true
+
+      - name: "Build Version"
+        uses: actions/github-script@v8.0.0
+        with:
+          script: |
+            core.info('Version: \u001b[38;5;6m${{env.BUILD_VERSION}}');
+            core.notice('Version: ${{env.BUILD_VERSION}}');
