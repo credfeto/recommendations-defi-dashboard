@@ -124,6 +124,7 @@ export const FetchPools: React.FC = () => {
                         <th>Symbol</th>
                         <th>Chain</th>
                         <th>Project</th>
+                        <th>Source</th>
                         <th>TVL (USD)</th>
                         <th>APY (%)</th>
                         <th>APY Base</th>
@@ -138,6 +139,7 @@ export const FetchPools: React.FC = () => {
                           <td className='symbol'>{pool.symbol}</td>
                           <td>{pool.chain}</td>
                           <td>{pool.project}</td>
+                          <td className='data-source'>{pool.dataSource}</td>
                           <td className='tvl'>
                             ${pool.tvlUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                           </td>

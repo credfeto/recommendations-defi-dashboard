@@ -30,7 +30,9 @@ const getCachedLlamaPools = async (): Promise<any[]> => {
 
   const response = await axios.get(LLAMA_POOLS_URL);
   // Exclude Pendle pools from Llama — the Pendle API is the authoritative source
-  const pools = (response.data.data || []).filter((p: any) => p.project !== 'pendle');
+  const pools = (response.data.data || [])
+    .filter((p: any) => p.project !== 'pendle')
+    .map((p: any) => ({ ...p, dataSource: 'defillama' }));
   cache.set(LLAMA_CACHE_KEY, { data: pools, timestamp: now });
   return pools;
 };
@@ -43,7 +45,7 @@ const getCachedPendlePools = async (): Promise<any[]> => {
     return cached.data;
   }
 
-  const pools = await fetchPendlePools();
+  const pools = (await fetchPendlePools()).map((p: any) => ({ ...p, dataSource: 'pendle' }));
   cache.set(PENDLE_CACHE_KEY, { data: pools, timestamp: now });
   return pools;
 };

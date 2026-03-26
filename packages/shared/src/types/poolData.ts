@@ -9,5 +9,6 @@ export interface PoolData {
   ilRisk: string;
   stablecoin: boolean;
   pool: string;
+  dataSource: string;
   [key: string]: any;
 }

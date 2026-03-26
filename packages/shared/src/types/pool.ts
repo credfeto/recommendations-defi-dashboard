@@ -4,6 +4,7 @@ export interface Pool {
   chain: string;
   project: string;
   symbol: string;
+  dataSource: string;
   tvlUsd: number;
   apyBase: number | null;
   apyReward: number | null;
