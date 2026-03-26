@@ -465,7 +465,8 @@ describe('Server API Tests', () => {
     });
 
     test('predictions field allows null in schema', () => {
-      const predictionsSchema = (getPoolsByNameSchema.response[200] as any).properties.data.items.properties.predictions;
+      const predictionsSchema = (getPoolsByNameSchema.response[200] as any).properties.data.items.properties
+        .predictions;
       expect(predictionsSchema).toHaveProperty('anyOf');
       expect(predictionsSchema.anyOf).toContainEqual({ type: 'null' });
     });
