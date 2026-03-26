@@ -48,7 +48,6 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Create a branch for each change - e.g. `git checkout -b feature/my-change`
 - Make changes in small incremental commits with descriptive messages ensuring that all tests pass before committing
 - Push the branch to origin on each incremental change - e.g. `git push origin feature/my-change`
- - and merge to main when complete.
 - Use best practices for git commit messages
 - Always include the user's original prompt verbatim in the commit description (body), prefixed with `Prompt: `. Do not include it in the commit title.
 - Use the following format for commit messages:
