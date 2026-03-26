@@ -44,6 +44,7 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 
 ### Committing ###
 - Do not commit directly to main.
+- Before making any changes, make sure current branch is main and is is up-to-date with origin.
 - Create a branch for each change - e.g. `git checkout -b feature/my-change`
 - Make changes in small incremental commits with descriptive messages ensuring that all tests pass before committing
 - Push the branch to origin on each incremental change - e.g. `git push origin feature/my-change`
