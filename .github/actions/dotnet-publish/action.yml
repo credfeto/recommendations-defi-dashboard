@@ -1,0 +1,88 @@
+--- # Publishes a Dotnet app to an executable
+name: 'Publishes a Dotnet app to an executable'
+description: 'Publishes a Dotnet app to an executable'
+inputs:
+  # General
+  PRODUCTION_BUILD:
+    description: 'Whether to build a production build'
+    required: true
+
+  BUILD_VERSION:
+    description: 'Build version'
+    required: true
+
+  RELEASE_NOTES:
+    description: 'Release notes'
+    required: false
+
+  PLATFORM:
+    description: 'Platform to build'
+    required: true
+
+  PROJECT_TO_PUBLISH:
+    description: 'Package (root) to deploy'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+  - name: "Dotnet: Check Variables"
+    shell: bash
+    run: |
+      echo "Platform: $PLATFORM"
+      if [ -z "$PLATFORM" ]; then
+        echo "Missing Platform";
+        exit 1
+      fi
+    env:
+      PLATFORM: ${{inputs.PLATFORM}}
+
+  # TODO: Investigate changing the settings for these to be project settings like with "-p:PublishTrimmed=False" so can
+  #       optimise the projects that better suit the settings.
+  #
+  # -p:PublishAot=false
+  # -p:PublishReadyToRun=False
+  ## Notes: NETSDK1094  can't use --no-restore
+  - name: "Dotnet: Publish"
+    working-directory: ${{github.workspace}}/src/${{inputs.PROJECT_TO_PUBLISH}}
+    shell: bash
+    run: |
+      dotnet publish \
+                --warnaserror  \
+                --configuration:Release \
+                "-r:${{inputs.PLATFORM}}" \
+                --self-contained \
+                --ignore-failed-sources \
+                -nodeReuse:False \
+                "-p:Deterministic=True" \
+                "-p:DisableSwagger=${{env.RELEASE}}" \
+                "-p:FFPublishing=True" \
+                "-p:IncludeNativeLibrariesForSelfExtract=True" \
+                "-p:IsProduction=${{inputs.PRODUCTION_BUILD}}" \
+                "-p:NoWarn=NETSDK1179" \
+                "-p:Optimize=true" \
+                "-p:PublishAot=false" \
+                "-p:PublishReadyToRun=True" \
+                "-p:PublishReadyToRunShowWarnings=True" \
+                "-p:PublishSingleFile=true" \
+                "-p:SolutionDir=..\\" \
+                "-p:SuppressNETCoreSdkPreviewMessage=true" \
+                "-p:TreatWarningsAsErrors=True" \
+                "-p:Version=${{inputs.BUILD_VERSION}}" \
+                "-p:ContinuousIntegrationBuild=true" \
+                --output ${{github.workspace}}/server-dist/${{inputs.PLATFORM}} \
+                ${{env.DOTNET_RELEASE_DEFINES}}
+    env:
+      ReleaseNotes: ${{inputs.RELEASE_NOTES}}
+      DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+      DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+      DOTNET_MULTILEVEL_LOOKUP: "false"
+      DOTNET_NOLOGO: "true"
+      DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+      DOTNET_JitCollect64BitCounts: "1"
+      DOTNET_ReadyToRun: "0"
+      DOTNET_TC_QuickJitForLoops: "1"
+      DOTNET_TC_CallCountingDelayMs: "0"
+      DOTNET_TieredPGO: "1"
+      MSBUILDTERMINALLOGGER: "auto"
+      NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages

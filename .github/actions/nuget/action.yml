@@ -1,0 +1,138 @@
+--- # Build and deploy packages
+name: 'Configure Nuget Feeds'
+description: 'Configure Nuget Feeds'
+inputs:
+  # NUGET
+  NUGET_PUBLIC_RESTORE_FEED_CACHE:
+    description: 'Local cache of public nuget feed'
+    required: false
+  NUGET_PUBLIC_RESTORE_FEED:
+    description: 'public nuget feed'
+    required: false
+  NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE:
+    description: 'Any additional nuget feed to download packages from'
+    required: false
+  NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE:
+    description: 'Any additional nuget feed to download packages from'
+    required: false
+  NUGET_ADDITIONAL_RESTORE_FEED_RELEASE:
+    description: 'Any additional nuget feed to download packages from'
+    required: false
+  NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE:
+    description: 'Any additional nuget feed to download packages from'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Dotnet: Build NuGet Config"
+      shell: bash
+      env:
+        NUGET_PUBLIC_RESTORE_FEED_CACHE: ${{inputs.NUGET_PUBLIC_RESTORE_FEED_CACHE}}
+        NUGET_PUBLIC_RESTORE_FEED: ${{inputs.NUGET_PUBLIC_RESTORE_FEED}}
+        NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE: ${{inputs.NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE}}
+        NUGET_ADDITIONAL_RESTORE_FEED_RELEASE: ${{inputs.NUGET_ADDITIONAL_RESTORE_FEED_RELEASE}}
+        NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE: ${{inputs.NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE}}
+        NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE: ${{inputs.NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE}}
+      run: |
+        # Conf settings
+        NUGET_CONF_DIR="$HOME/.nuget/NuGet"
+        NUGET_CONF_FILE="$HOME/.nuget/NuGet/NuGet.Config"
+
+        [ -d "$NUGET_CONF_DIR" ] || mkdir -p "$NUGET_CONF_DIR"
+        echo "NuGet.Config: $NUGET_CONF_FILE"
+
+        NAMES=()
+        URLS=()
+
+        # Nuget.org cache
+        if [ -n "$NUGET_PUBLIC_RESTORE_FEED_CACHE" ]; then
+          echo "Adding Cached nuget.org feed"
+          NAMES+=("Cache: nuget.org")
+          URLS+=("$NUGET_PUBLIC_RESTORE_FEED_CACHE")
+        elif [ -n "$NUGET_PUBLIC_RESTORE_FEED" ]; then
+          echo "Adding nuget.org feed"
+          NAMES+=("nuget.org")
+          URLS+=("$NUGET_PUBLIC_RESTORE_FEED")
+        else
+          echo "No nuget.org feed"
+        fi
+
+        # Release Packages Feed
+        if [ -n "$NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE" ]; then
+          echo "Adding Cached Release feed"
+          NAMES+=("Cache: Additional: Release")
+          URLS+=("$NUGET_ADDITIONAL_RESTORE_FEED_RELEASE_CACHE")
+        elif [ -n "$NUGET_ADDITIONAL_RESTORE_FEED_RELEASE" ]; then
+          echo "Adding Release feed"
+          NAMES+=("Additional: Release")
+          URLS+=("$NUGET_ADDITIONAL_RESTORE_FEED_RELEASE")
+        else
+          echo "No Release feed"
+        fi
+
+        # Pre-Release Packages Feed
+        if [ -n "$NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE" ]; then
+          echo "Adding Cached Pre-Release feed"
+          NAMES+=("Cache: Additional: Pre-Release")
+          URLS+=("$NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE_CACHE")
+        elif [ -n "$NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE" ]; then
+          echo "Adding Pre-Release feed"
+          NAMES+=("Additional: Pre-Release")
+          URLS+=("$NUGET_ADDITIONAL_RESTORE_FEED_PRERELEASE")
+        else
+          echo "No Pre-Release feed"
+        fi
+
+        {
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+          echo "<configuration>"
+          echo "  <packageSources>"
+          echo "    <clear />"
+          for index in ${!NAMES[@]}; do
+            NAME=${NAMES[$index]}
+            URL=${URLS[$index]}
+            echo "    <add key=\"$NAME\" value=\"$URL\" protocolVersion=\"3\" />"
+          done
+          echo "  </packageSources>"
+          echo "</configuration>"
+        } > "$NUGET_CONF_FILE"
+
+        cat "$NUGET_CONF_FILE"
+
+    - name: "Dotnet: Show sources (After)"
+      shell: bash
+      run: |
+        echo "List current nuget feeds (after)"
+        dotnet nuget list source
+      env:
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
+        NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+    - name: "Dotnet: Clear nuget cache"
+      shell: bash
+      run: dotnet nuget locals all --clear
+      env:
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
+        NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages

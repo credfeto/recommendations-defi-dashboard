@@ -1,0 +1,31 @@
+--- # Build and deploy packages
+name: 'Publish to Sleet'
+description: 'Publishes Nuget packages with sleet'
+inputs:
+  SLEET_CONFIG:
+    description: 'Sleet config file'
+    required: false
+  SLEET_FEED:
+    description: 'Sleet feed to push packages to'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: "Sleet: Generate Sleet Config"
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        echo "$VALUE" > "${FILE}"
+      env:
+        FILE: "${{github.workspace}}/sleet.json"
+        VALUE: "${{ inputs.SLEET_CONFIG }}"
+
+    - name: "Sleet: Publish Packages to Nuget (Using Sleet)"
+      if: always()
+      uses: ./.github/actions/dotnet-tool-run
+      with:
+        WORKING_DIRECTORY: "${{github.workspace}}"
+        TOOL_NAME: "sleet"
+        TOOL_ARGUMENTS: "push \"${{github.workspace}}/dist\" --config \"${{github.workspace}}/sleet.json\" --source \"${{inputs.SLEET_FEED}}\""
