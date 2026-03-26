@@ -1,9 +1,4 @@
-const PENDLE_CHAIN_IDS: Record<string, number> = {
-  ethereum: 1,
-  arbitrum: 42161,
-  base: 8453,
-  bsc: 56,
-};
+const PENDLE_CHAIN_IDS: Record<string, number> = { ethereum: 1, arbitrum: 42161, base: 8453, bsc: 56 };
 
 /**
  * Returns a direct URL to the pool/protocol page for the given pool, or null

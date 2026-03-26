@@ -262,6 +262,48 @@
   color: var(--text-muted);
 }
 
+/* Depeg Alert badges */
+.depeg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: help;
+}
+
+.depeg-badge.depeg-warning {
+  background: var(--depeg-warn-bg, rgba(245, 158, 11, 0.15));
+  color: var(--depeg-warn-text, #b45309);
+  border: 1px solid var(--depeg-warn-border, rgba(245, 158, 11, 0.4));
+}
+
+.depeg-badge.depeg-critical {
+  background: var(--depeg-critical-bg, rgba(220, 38, 38, 0.12));
+  color: var(--depeg-critical-text, #dc2626);
+  border: 1px solid var(--depeg-critical-border, rgba(220, 38, 38, 0.4));
+}
+
+@media (prefers-color-scheme: dark) {
+  .depeg-badge.depeg-warning {
+    --depeg-warn-bg: rgba(245, 158, 11, 0.2);
+    --depeg-warn-text: #fbbf24;
+    --depeg-warn-border: rgba(245, 158, 11, 0.5);
+  }
+
+  .depeg-badge.depeg-critical {
+    --depeg-critical-bg: rgba(220, 38, 38, 0.2);
+    --depeg-critical-text: #f87171;
+    --depeg-critical-border: rgba(220, 38, 38, 0.5);
+  }
+}
+
+.depeg-clean {
+  color: var(--text-muted);
+}
+
 /* Summary Statistics */
 .pools-summary {
   display: grid;

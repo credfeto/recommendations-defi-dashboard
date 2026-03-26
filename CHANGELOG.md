@@ -12,6 +12,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Added
 
+- **Stablecoin depeg monitoring** — for pools marked as stablecoins, individual token symbols are looked up against the CoinGecko stablecoins market data; pools whose tokens deviate >0.5% from their $1 peg show a ⚠️ warning badge; deviations >2% show a 🚨 critical badge with token symbol, live price, and percentage deviation in the tooltip
+- **CoinGecko stablecoins API service** — new `coingecko.stablecoins.api.service.ts` fetches all stablecoin prices (paginated) and is cached in SQLite for up to 1 hour following the same cache policy as other third-party data sources
+- **`DepegAlert` shared type** — new interface in `@shared` exposing `symbol`, `currentPrice`, `pegPrice`, `deviation`, and `severity`
+- **Depeg service** — `depeg.service.ts` provides `buildStablecoinPriceMap()` and `checkDepeg()` for symbol-to-price lookup and threshold evaluation
 - **Data source column** — each pool row now shows whether data originates from DefiLlama or Pendle
 - **Exploit risk column** — pools are matched against the DefiLlama hacks dataset; affected protocols display an amber ⚠️ badge with incident count and a hover tooltip showing name, year, amount stolen, and technique
 - **Protocol page links** — the Project column links directly to the pool on its source platform (DefiLlama yield page or Pendle market page), generated server-side

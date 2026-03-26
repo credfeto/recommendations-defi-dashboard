@@ -4,14 +4,21 @@ import { getCachedOrFetch } from '../db/cache.db';
 import { fetchDefiLlamaPools } from '../api/defillama.pools.api.service';
 import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
 import { fetchPendleMarkets } from '../api/pendle.markets.api.service';
+import { fetchCoinGeckoStablecoins } from '../api/coingecko.stablecoins.api.service';
 import { buildHackMap, matchHacks } from '../services/hacks.service';
+import { buildStablecoinPriceMap, checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
-const CACHE_KEYS = { LLAMA_POOLS: 'defillama_pools', PENDLE_POOLS: 'pendle_pools', HACKS: 'defillama_hacks' };
+const CACHE_KEYS = {
+  LLAMA_POOLS: 'defillama_pools',
+  PENDLE_POOLS: 'pendle_pools',
+  HACKS: 'defillama_hacks',
+  STABLECOINS: 'coingecko_stablecoins',
+};
 
 const getAllPools = async (): Promise<any[]> => {
   const [llamaPools, pendlePools] = await Promise.all([
@@ -27,6 +34,15 @@ const getHackMap = async () => {
     return buildHackMap(hacks);
   } catch {
     return new Map();
+  }
+};
+
+const getStablecoinPriceMap = async () => {
+  try {
+    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, fetchCoinGeckoStablecoins);
+    return buildStablecoinPriceMap(coins);
+  } catch {
+    return new Map<string, number>();
   }
 };
 
@@ -52,11 +68,12 @@ export const start = async (): Promise<void> => {
     }
 
     try {
-      const [allPools, hackMap] = await Promise.all([getAllPools(), getHackMap()]);
+      const [allPools, hackMap, priceMap] = await Promise.all([getAllPools(), getHackMap(), getStablecoinPriceMap()]);
       const pools = filterPoolsByType(allPools, poolName).map((pool: any) => ({
         ...pool,
         url: getPoolUrl(pool),
         hacks: matchHacks(pool.project, hackMap),
+        depegAlerts: pool.stablecoin ? checkDepeg(pool.symbol, priceMap) : [],
       }));
       return { status: 'ok', data: pools };
     } catch (error) {
