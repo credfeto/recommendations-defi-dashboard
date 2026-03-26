@@ -13,6 +13,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 
 - **Stablecoin depeg monitoring** — for pools marked as stablecoins, individual token symbols are looked up against the CoinGecko stablecoins market data; pools whose tokens deviate >0.5% from their $1 peg show a ⚠️ warning badge; deviations >2% show a 🚨 critical badge with token symbol, live price, and percentage deviation in the tooltip
+- **Depeg check extended to all pools via underlyingTokens** — depeg checking now runs on all pools (not only `stablecoin: true`); a CoinGecko coin list (address→stablecoin mapping) is fetched and cached, allowing `underlyingTokens` contract addresses to be resolved to stablecoin prices and checked for depeg; this catches LP and yield pools that contain stablecoins without being flagged as stablecoin pools themselves
 - **CoinGecko stablecoins API service** — new `coingecko.stablecoins.api.service.ts` fetches all stablecoin prices (paginated) and is cached in SQLite for up to 1 hour following the same cache policy as other third-party data sources
 - **`DepegAlert` shared type** — new interface in `@shared` exposing `symbol`, `currentPrice`, `pegPrice`, `deviation`, and `severity`
 - **Depeg service** — `depeg.service.ts` provides `buildStablecoinPriceMap()` and `checkDepeg()` for symbol-to-price lookup and threshold evaluation

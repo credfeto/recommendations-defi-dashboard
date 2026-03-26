@@ -4,9 +4,9 @@ import { getCachedOrFetch } from '../db/cache.db';
 import { fetchDefiLlamaPools } from '../api/defillama.pools.api.service';
 import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
 import { fetchPendleMarkets } from '../api/pendle.markets.api.service';
-import { fetchCoinGeckoStablecoins } from '../api/coingecko.stablecoins.api.service';
+import { fetchCoinGeckoStablecoins, fetchCoinGeckoCoinList } from '../api/coingecko.stablecoins.api.service';
 import { buildHackMap, matchHacks } from '../services/hacks.service';
-import { buildStablecoinPriceMap, checkDepeg } from '../services/depeg.service';
+import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
@@ -18,6 +18,7 @@ const CACHE_KEYS = {
   PENDLE_POOLS: 'pendle_pools',
   HACKS: 'defillama_hacks',
   STABLECOINS: 'coingecko_stablecoins',
+  COIN_LIST: 'coingecko_coin_list',
 };
 
 const getAllPools = async (): Promise<any[]> => {
@@ -46,6 +47,18 @@ const getStablecoinPriceMap = async () => {
   }
 };
 
+const getStablecoinAddressMap = async () => {
+  try {
+    const [coins, coinList] = await Promise.all([
+      getCachedOrFetch(CACHE_KEYS.STABLECOINS, fetchCoinGeckoStablecoins),
+      getCachedOrFetch(CACHE_KEYS.COIN_LIST, fetchCoinGeckoCoinList),
+    ]);
+    return buildStablecoinAddressMap(coins, coinList);
+  } catch {
+    return new Map<string, number>();
+  }
+};
+
 export const start = async (): Promise<void> => {
   const fastify: any = Fastify({ logger: true });
 
@@ -68,12 +81,17 @@ export const start = async (): Promise<void> => {
     }
 
     try {
-      const [allPools, hackMap, priceMap] = await Promise.all([getAllPools(), getHackMap(), getStablecoinPriceMap()]);
+      const [allPools, hackMap, priceMap, addressMap] = await Promise.all([
+        getAllPools(),
+        getHackMap(),
+        getStablecoinPriceMap(),
+        getStablecoinAddressMap(),
+      ]);
       const pools = filterPoolsByType(allPools, poolName).map((pool: any) => ({
         ...pool,
         url: getPoolUrl(pool),
         hacks: matchHacks(pool.project, hackMap),
-        depegAlerts: pool.stablecoin ? checkDepeg(pool.symbol, priceMap) : [],
+        depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
       }));
       return { status: 'ok', data: pools };
     } catch (error) {

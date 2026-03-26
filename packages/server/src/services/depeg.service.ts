@@ -1,5 +1,5 @@
 import { DepegAlert } from '@shared';
-import { CoinGeckoStablecoin } from '../api/coingecko.stablecoins.api.service';
+import { CoinGeckoStablecoin, CoinGeckoCoinPlatforms } from '../api/coingecko.stablecoins.api.service';
 
 /** Assumed peg for all USD stablecoins */
 const USD_PEG = 1.0;
@@ -23,6 +23,37 @@ export function buildStablecoinPriceMap(coins: CoinGeckoStablecoin[]): Map<strin
 }
 
 /**
+ * Builds a contract address → current price map by cross-referencing:
+ *  - stablecoins: the price data we already have (id → price)
+ *  - coinList:    the full coin list with on-chain addresses (id → platforms → address)
+ *
+ * Addresses are lowercased. Only stablecoin IDs present in the price data are indexed.
+ */
+export function buildStablecoinAddressMap(
+  stablecoins: CoinGeckoStablecoin[],
+  coinList: CoinGeckoCoinPlatforms[],
+): Map<string, number> {
+  const idToPrice = new Map<string, number>();
+  for (const coin of stablecoins) {
+    if (coin.current_price != null) {
+      idToPrice.set(coin.id, coin.current_price);
+    }
+  }
+
+  const addressMap = new Map<string, number>();
+  for (const coin of coinList) {
+    const price = idToPrice.get(coin.id);
+    if (price == null) continue;
+    for (const address of Object.values(coin.platforms)) {
+      if (address && address.startsWith('0x')) {
+        addressMap.set(address.toLowerCase(), price);
+      }
+    }
+  }
+  return addressMap;
+}
+
+/**
  * Parses a pool symbol string into individual token symbols.
  * Handles separators: -, /, +, space.
  * e.g. "USR-USDC" → ["USR", "USDC"], "crvUSD" → ["crvUSD"]
@@ -34,35 +65,62 @@ export function parsePoolSymbols(poolSymbol: string): string[] {
     .filter(Boolean);
 }
 
-/**
- * Checks whether any tokens in a pool symbol are depegging.
- * Only runs for stablecoin-flagged pools.
- * Returns a DepegAlert for each token whose price deviates from $1 beyond thresholds.
- */
-export function checkDepeg(poolSymbol: string, priceMap: Map<string, number>): DepegAlert[] {
-  const tokens = parsePoolSymbols(poolSymbol);
-  const alerts: DepegAlert[] = [];
-  const seen = new Set<string>();
+function makeAlert(symbol: string, price: number): DepegAlert | null {
+  const deviation = (price - USD_PEG) / USD_PEG;
+  const absDeviation = Math.abs(deviation);
+  if (absDeviation < WARN_THRESHOLD) return null;
+  return {
+    symbol,
+    currentPrice: price,
+    pegPrice: USD_PEG,
+    deviation,
+    severity: absDeviation >= CRITICAL_THRESHOLD ? 'critical' : 'warning',
+  };
+}
 
-  for (const token of tokens) {
+/**
+ * Checks a pool for stablecoin depeg risk using two sources:
+ *  1. Pool symbol tokens looked up in the symbol → price map
+ *  2. underlyingTokens contract addresses looked up in the address → price map
+ *
+ * Applies to all pools — the price maps act as the natural filter
+ * (only known stablecoins produce alerts).
+ */
+export function checkDepeg(
+  poolSymbol: string,
+  priceMap: Map<string, number>,
+  underlyingTokens: string[] | null = null,
+  addressMap: Map<string, number> | null = null,
+): DepegAlert[] {
+  const alerts: DepegAlert[] = [];
+  const seen = new Set<string>(); // deduplicate by symbol key
+
+  // --- Symbol-based check ---
+  for (const token of parsePoolSymbols(poolSymbol)) {
     const key = token.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-
     const price = priceMap.get(key);
     if (price == null) continue;
+    const alert = makeAlert(token, price);
+    if (alert) alerts.push(alert);
+  }
 
-    const deviation = (price - USD_PEG) / USD_PEG;
-    const absDeviation = Math.abs(deviation);
-
-    if (absDeviation >= WARN_THRESHOLD) {
-      alerts.push({
-        symbol: token,
-        currentPrice: price,
-        pegPrice: USD_PEG,
-        deviation,
-        severity: absDeviation >= CRITICAL_THRESHOLD ? 'critical' : 'warning',
-      });
+  // --- Address-based check (underlyingTokens) ---
+  if (addressMap && underlyingTokens) {
+    for (const address of underlyingTokens) {
+      const normalised = address.toLowerCase();
+      const price = addressMap.get(normalised);
+      if (price == null) continue;
+      // Resolve display symbol from priceMap by reverse lookup, fall back to short address
+      const symbol =
+        [...priceMap.entries()].find(([, p]) => p === price)?.[0]?.toUpperCase() ??
+        `${address.slice(0, 6)}…${address.slice(-4)}`;
+      const key = symbol.toLowerCase();
+      if (seen.has(key)) continue; // already reported via symbol check
+      seen.add(key);
+      const alert = makeAlert(symbol, price);
+      if (alert) alerts.push(alert);
     }
   }
 

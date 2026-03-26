@@ -5,6 +5,13 @@ export interface CoinGeckoStablecoin {
   current_price: number;
 }
 
+/** Coin list entry including on-chain contract addresses keyed by CoinGecko platform id */
+export interface CoinGeckoCoinPlatforms {
+  id: string;
+  symbol: string;
+  platforms: Record<string, string>;
+}
+
 const BASE_URL = 'https://api.coingecko.com/api/v3';
 const PER_PAGE = 250;
 
@@ -29,4 +36,15 @@ export async function fetchCoinGeckoStablecoins(): Promise<CoinGeckoStablecoin[]
   }
 
   return all;
+}
+
+/**
+ * Fetches the full CoinGecko coin list with on-chain contract addresses.
+ * Used to build an address → price map for underlyingTokens depeg checking.
+ */
+export async function fetchCoinGeckoCoinList(): Promise<CoinGeckoCoinPlatforms[]> {
+  const url = `${BASE_URL}/coins/list?include_platform=true`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`CoinGecko coin list request failed: ${res.status} ${res.statusText}`);
+  return res.json() as Promise<CoinGeckoCoinPlatforms[]>;
 }
