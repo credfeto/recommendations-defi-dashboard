@@ -61,11 +61,15 @@ jobs:
               return;
             }
 
+            // Append a Copilot-managed review section after the template
+            const copilotSection =
+              '## Copilot Review\n\n- [ ] Copilot code review approved';
+
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number,
-              body: `${template}\n\n${maintainedMarker}`,
+              body: `${template}\n\n${copilotSection}\n\n${maintainedMarker}`,
             });
 
             console.log(`PR #${pr.number} description initialized with template.`);
@@ -125,8 +129,8 @@ jobs:
             const checkRuns = checkData.check_runs;
 
             /**
-             * Returns 'success' if all matching completed check runs succeeded,
-             * 'failure' if any failed/timed out, or null if no matching runs exist.
+             * Returns 'success' if all completed check runs whose names match the
+             * pattern succeeded, 'failure' if any failed, or null if none match.
              */
             const getCheckStatus = (pattern) => {
               const re = new RegExp(pattern, 'i');
@@ -143,21 +147,38 @@ jobs:
               return failed.length === 0 ? 'success' : 'failure';
             };
 
+            // Maps check-run name patterns to the actual checkbox text in
+            // .github/PULL_REQUEST_TEMPLATE.md that they should auto-manage.
             const ciCheckboxMappings = [
               {
+                // Matches any test check run (unit tests, integration tests, etc.)
                 pattern: '\\btest(s|ing)?\\b',
-                unchecked: '- [ ] Tests pass',
-                checked: '- [x] Tests pass',
+                checkboxes: [
+                  {
+                    unchecked: '- [ ] All unit tests pass.',
+                    checked: '- [x] All unit tests pass.',
+                  },
+                  {
+                    unchecked: '- [ ] All integration tests pass.',
+                    checked: '- [x] All integration tests pass.',
+                  },
+                  {
+                    unchecked: '- [ ] All new and existing tests passed.',
+                    checked: '- [x] All new and existing tests passed.',
+                  },
+                ],
               },
               {
-                pattern: '\\bbuild\\b',
-                unchecked: '- [ ] Build succeeds',
-                checked: '- [x] Build succeeds',
-              },
-              {
-                pattern: '\\b(quality|lint|format|prettier)\\b',
-                unchecked: '- [ ] Code quality checks pass',
-                checked: '- [x] Code quality checks pass',
+                // Matches code quality / static analysis / lint check runs
+                pattern: '\\b(quality|lint|analysis|format|prettier)\\b',
+                checkboxes: [
+                  {
+                    unchecked:
+                      '- [ ] There are no Resharper\\static code analysis errors anywhere in the solution.',
+                    checked:
+                      '- [x] There are no Resharper\\static code analysis errors anywhere in the solution.',
+                  },
+                ],
               },
             ];
 
@@ -183,9 +204,7 @@ jobs:
                   console.log(`Copilot review state "${state}" is not actionable, skipping.`);
                   return;
                 }
-                console.log(
-                  `Copilot review detected: state=${state}, reviewer=${reviewer}`,
-                );
+                console.log(`Copilot review detected: state=${state}, reviewer=${reviewer}`);
               } else {
                 console.log(`Review by non-Copilot user "${reviewer}", skipping.`);
                 return;
@@ -198,19 +217,21 @@ jobs:
 
               // Update CI check run checkboxes
               if (context.eventName === 'check_run') {
-                for (const { pattern, unchecked, checked } of ciCheckboxMappings) {
+                for (const { pattern, checkboxes } of ciCheckboxMappings) {
                   const status = getCheckStatus(pattern);
-                  if (status === 'success' && body.includes(unchecked)) {
-                    body = body.replaceAll(unchecked, checked);
-                    updated = true;
-                  } else if (status === 'failure' && body.includes(checked)) {
-                    body = body.replaceAll(checked, unchecked);
-                    updated = true;
+                  for (const { unchecked, checked } of checkboxes) {
+                    if (status === 'success' && body.includes(unchecked)) {
+                      body = body.replaceAll(unchecked, checked);
+                      updated = true;
+                    } else if (status === 'failure' && body.includes(checked)) {
+                      body = body.replaceAll(checked, unchecked);
+                      updated = true;
+                    }
                   }
                 }
               }
 
-              // Update Copilot review checkbox
+              // Update Copilot review checkbox (appended to maintained body by initialize step)
               if (copilotReviewState !== null) {
                 const copilotUnchecked = '- [ ] Copilot code review approved';
                 const copilotChecked = '- [x] Copilot code review approved';
