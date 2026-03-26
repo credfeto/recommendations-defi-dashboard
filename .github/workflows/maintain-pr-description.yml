@@ -15,7 +15,6 @@ on:
 permissions:
   pull-requests: write
   contents: read
-  models: read
 
 jobs:
   initialize-description:
@@ -333,8 +332,13 @@ jobs:
       github.event_name == 'pull_request_target' &&
       (github.event.action == 'opened' ||
        github.event.action == 'synchronize' ||
-       github.event.action == 'reopened')
+       github.event.action == 'reopened') &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+      models: read
     steps:
       - name: Generate PR description if missing
         uses: actions/github-script@v7
@@ -394,9 +398,18 @@ jobs:
               per_page: 100,
             });
 
-            const filesSummary = files
+            const MAX_FILES_FOR_SUMMARY = 200;
+            const totalFiles = files.length;
+            const limitedFiles = files.slice(0, MAX_FILES_FOR_SUMMARY);
+
+            let filesSummary = limitedFiles
               .map((f) => `${f.filename} (${f.status}: +${f.additions}/-${f.deletions})`)
               .join('\n');
+
+            if (totalFiles > MAX_FILES_FOR_SUMMARY) {
+              const remaining = totalFiles - MAX_FILES_FOR_SUMMARY;
+              filesSummary += `\n... and ${remaining} more file${remaining === 1 ? '' : 's'}`;
+            }
 
             // Call GitHub Models API to generate a description
             let generatedDescription = null;
