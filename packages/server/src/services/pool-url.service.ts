@@ -6,9 +6,10 @@ const PENDLE_CHAIN_IDS: Record<string, number> = {
 };
 
 /**
- * Returns a direct URL to the pool/protocol page for the given pool.
- * - DefiLlama pools link to the specific yield entry on defillama.com
- * - Pendle pools link to the market page on app.pendle.finance
+ * Returns a direct URL to the pool/protocol page for the given pool, or null
+ * if a URL cannot be determined.
+ * - DefiLlama pools: defillama.com/yields?pool={uuid}
+ * - Pendle pools:    app.pendle.finance/trade/markets/{chainId}/{address}/pt
  */
 export function getPoolUrl(pool: { dataSource: string; pool: string; chain: string }): string | null {
   if (pool.dataSource === 'pendle') {

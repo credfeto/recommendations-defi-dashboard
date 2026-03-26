@@ -3,7 +3,6 @@ import axios from 'axios';
 import { Pool, PoolsResponse, PoolTypeMetadata, HackInfo } from '@shared';
 import { PoolTypeConfig } from './types/poolTypeConfig';
 import { getAvailablePoolTypes } from './types/getAvailablePoolTypes';
-import { getPoolUrl } from './utils/poolUrl.utils';
 import './FetchPools.css';
 
 interface PoolsByType {
@@ -141,16 +140,13 @@ export const FetchPools: React.FC = () => {
                           <td className='symbol'>{pool.symbol}</td>
                           <td>{pool.chain}</td>
                           <td>
-                            {(() => {
-                              const url = getPoolUrl(pool);
-                              return url ? (
-                                <a href={url} target='_blank' rel='noopener noreferrer' className='project-link'>
-                                  {pool.project} ↗
-                                </a>
-                              ) : (
-                                pool.project
-                              );
-                            })()}
+                            {pool.url ? (
+                              <a href={pool.url} target='_blank' rel='noopener noreferrer' className='project-link'>
+                                {pool.project} ↗
+                              </a>
+                            ) : (
+                              pool.project
+                            )}
                           </td>
                           <td className='data-source'>{pool.dataSource}</td>
                           <td className='exploit-risk'>

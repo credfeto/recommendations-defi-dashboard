@@ -3,6 +3,7 @@ import { HackInfo } from './hackInfo';
 
 export interface Pool {
   hacks: HackInfo[];
+  url: string | null;
   chain: string;
   project: string;
   symbol: string;

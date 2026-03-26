@@ -6,6 +6,7 @@ import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
 import { fetchPendleMarkets } from '../api/pendle.markets.api.service';
 import { buildHackMap, matchHacks } from '../services/hacks.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
+import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -54,6 +55,7 @@ export const start = async (): Promise<void> => {
       const [allPools, hackMap] = await Promise.all([getAllPools(), getHackMap()]);
       const pools = filterPoolsByType(allPools, poolName).map((pool: any) => ({
         ...pool,
+        url: getPoolUrl(pool),
         hacks: matchHacks(pool.project, hackMap),
       }));
       return { status: 'ok', data: pools };
