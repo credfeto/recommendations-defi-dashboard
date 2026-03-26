@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import compress from '@fastify/compress';
 import { getCachedOrFetch } from '../db/cache.db';
 import { fetchDefiLlamaPools } from '../api/defillama.pools.api.service';
 import { fetchDefiLlamaHacks } from '../api/defillama.hacks.api.service';
@@ -62,10 +63,14 @@ const getStablecoinAddressMap = async () => {
 export const start = async (): Promise<void> => {
   const fastify: any = Fastify({ logger: true });
 
+  await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
+
+  const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
 
   fastify.get('/api/pools', async (_request: any, reply: any) => {
     try {
+      reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: getAvailablePoolTypesMetadata() };
     } catch {
       return reply.code(500).send({ error: 'Failed to fetch available pool types' });
@@ -95,6 +100,7 @@ export const start = async (): Promise<void> => {
           depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
         }))
         .filter((pool: any) => pool.depegAlerts.length === 0);
+      reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: pools };
     } catch (error) {
       return reply.code(500).send({ error: 'Failed to fetch pools' });

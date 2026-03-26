@@ -37,6 +37,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - **Pool URL generation moved to server** — the `url` field is now computed server-side in `pool-url.service.ts` and included in the API response; the client no longer needs any knowledge of data sources to render links
 - **Persistent API cache** — third-party data is cached in SQLite (`packages/server/data/cache.db`) and survives server restarts; data fresher than 1 hour is served directly from cache; stale data (1–2 hours) is used as fallback if a live fetch fails; data older than 2 hours is always refetched
 - Sorting by APY descending then TVL
+- Enable HTTP response caching (15s TTL with stale-while-revalidate) and brotli/gzip compression via @fastify/compress
 
 ### Removed
 
