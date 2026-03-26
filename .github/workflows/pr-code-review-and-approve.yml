@@ -1,4 +1,4 @@
-name: PR - Test and Validate
+name: PR - Code Review and Approve
 
 on:
   pull_request:
