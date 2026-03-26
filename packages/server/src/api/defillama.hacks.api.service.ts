@@ -12,8 +12,12 @@ export interface RawHack {
   parentProtocolId?: string;
 }
 
-/** Fetch all recorded DeFi exploits from DefiLlama. */
-export async function fetchDefiLlamaHacks(): Promise<RawHack[]> {
-  const response = await axios.get<RawHack[]>(HACKS_URL);
-  return response.data ?? [];
+export class DefiLlamaHacksApiService {
+  /** Fetch all recorded DeFi exploits from DefiLlama. */
+  public async fetchHacks(): Promise<RawHack[]> {
+    const response = await axios.get<RawHack[]>(HACKS_URL);
+    return response.data ?? [];
+  }
 }
+
+export const defiLlamaHacksApiService = new DefiLlamaHacksApiService();
