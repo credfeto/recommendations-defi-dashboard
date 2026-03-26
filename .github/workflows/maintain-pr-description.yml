@@ -1,0 +1,154 @@
+name: Maintain PR Description
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - converted_to_draft
+  workflow_run:
+    workflows:
+      - Tests
+      - Build
+      - Code Quality
+    types:
+      - completed
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  initialize-description:
+    name: Initialize Description
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize PR description from template
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const pr = context.payload.pull_request;
+            const body = pr.body ?? '';
+            const maintainedMarker = '<!-- maintained-by-copilot -->';
+
+            if (body.includes(maintainedMarker)) {
+              console.log('PR description is already maintained by Copilot, skipping.');
+              return;
+            }
+
+            let template;
+            try {
+              template = fs.readFileSync('.github/PULL_REQUEST_TEMPLATE.md', 'utf8').trimEnd();
+            } catch {
+              console.log('No PR template found, skipping.');
+              return;
+            }
+
+            const normalize = (s) => s.trim().replace(/\r\n/g, '\n');
+            const normalizedBody = normalize(body);
+            const normalizedTemplate = normalize(template);
+
+            if (normalizedBody !== '' && normalizedBody !== normalizedTemplate) {
+              console.log('PR has a custom description, skipping initialization.');
+              return;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: `${template}\n\n${maintainedMarker}`,
+            });
+
+            console.log(`PR #${pr.number} description initialized with template.`);
+
+  update-checkboxes:
+    name: Update CI Checkboxes
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PR description checkboxes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const { head_sha: headSha, name: workflowName, conclusion } = run;
+            const maintainedMarker = '<!-- maintained-by-copilot -->';
+
+            if (!conclusion) {
+              console.log('Workflow run has no conclusion yet, skipping.');
+              return;
+            }
+
+            const checkboxMappings = {
+              Tests: { unchecked: '- [ ] Tests pass', checked: '- [x] Tests pass' },
+              Build: { unchecked: '- [ ] Build succeeds', checked: '- [x] Build succeeds' },
+              'Code Quality': {
+                unchecked: '- [ ] Code quality checks pass',
+                checked: '- [x] Code quality checks pass',
+              },
+            };
+
+            const mapping = checkboxMappings[workflowName];
+            if (!mapping) {
+              console.log(`No checkbox mapping for workflow "${workflowName}", skipping.`);
+              return;
+            }
+
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+            });
+
+            const targetPrs = prs.filter(
+              (pr) =>
+                pr.draft &&
+                pr.head.sha === headSha &&
+                pr.body &&
+                pr.body.includes(maintainedMarker),
+            );
+
+            if (targetPrs.length === 0) {
+              console.log('No matching draft PRs with maintained description found, skipping.');
+              return;
+            }
+
+            for (const pr of targetPrs) {
+              let body = pr.body;
+              const { unchecked, checked } = mapping;
+              let updated = false;
+
+              const isFailure = conclusion === 'failure' || conclusion === 'timed_out' || conclusion === 'action_required';
+
+              if (conclusion === 'success' && body.includes(unchecked)) {
+                body = body.replaceAll(unchecked, checked);
+                updated = true;
+              } else if (isFailure && body.includes(checked)) {
+                body = body.replaceAll(checked, unchecked);
+                updated = true;
+              }
+
+              if (updated) {
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  body,
+                });
+                console.log(
+                  `Updated checkbox for PR #${pr.number}: "${workflowName}" → ${conclusion}`,
+                );
+              } else {
+                console.log(`No checkbox update needed for PR #${pr.number}.`);
+              }
+            }
