@@ -206,7 +206,9 @@ jobs:
       github.event_name == 'pull_request_target' &&
       (github.event.action == 'opened' ||
        github.event.action == 'synchronize' ||
-       github.event.action == 'reopened')
+       github.event.action == 'reopened' ||
+       github.event.action == 'converted_to_draft' ||
+       github.event.action == 'edited')
     runs-on: ubuntu-latest
     steps:
       - name: Update change type checkboxes based on PR files
@@ -215,7 +217,14 @@ jobs:
           script: |
             const maintainedMarker = '<!-- maintained-by-copilot -->';
             const pr = context.payload.pull_request;
-            const body = pr.body ?? '';
+
+            // Fetch the current PR body to avoid relying on stale event payload
+            const { data: currentPr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+            const body = currentPr.body ?? '';
 
             if (!body.includes(maintainedMarker)) {
               console.log('PR description is not maintained by Copilot, skipping.');
@@ -241,12 +250,13 @@ jobs:
               (/\.md$/i.test(f) && !isChangelogFile(f));
 
             const isDependencyFile = (f) =>
-              /^package\.json$/i.test(f) ||
-              /^package-lock\.json$/i.test(f) ||
-              /^yarn\.lock$/i.test(f) ||
+              /(^|\/)package\.json$/i.test(f) ||
+              /(^|\/)package-lock\.json$/i.test(f) ||
+              /(^|\/)yarn\.lock$/i.test(f) ||
+              /(^|\/)pnpm-lock\.yaml$/i.test(f) ||
               /\.csproj$/i.test(f) ||
-              /^Directory\.Packages\.props$/i.test(f) ||
-              /^nuget\.config$/i.test(f);
+              /(^|\/)Directory\.Packages\.props$/i.test(f) ||
+              /(^|\/)nuget\.config$/i.test(f);
 
             const isTestFile = (f) =>
               /\.(test|spec)\.[cm]?[jt]sx?$/i.test(f) ||
