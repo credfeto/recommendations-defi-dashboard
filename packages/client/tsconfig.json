@@ -14,10 +14,7 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "paths": {
-      "@shared": ["../shared/src"],
-      "@shared/*": ["../shared/src/*"]
-    }
+    "paths": { "@shared": ["../shared/src"], "@shared/*": ["../shared/src/*"] }
   },
   "include": ["src", "vite.config.ts"]
 }
