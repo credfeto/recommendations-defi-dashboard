@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Pool, PoolsResponse, PoolTypeMetadata } from '@shared';
+import { Pool, PoolsResponse, PoolTypeMetadata, HackInfo } from '@shared';
 import { PoolTypeConfig } from './types/poolTypeConfig';
 import { getAvailablePoolTypes } from './types/getAvailablePoolTypes';
 import './FetchPools.css';
@@ -125,6 +125,7 @@ export const FetchPools: React.FC = () => {
                         <th>Chain</th>
                         <th>Project</th>
                         <th>Source</th>
+                        <th>Exploit Risk</th>
                         <th>TVL (USD)</th>
                         <th>APY (%)</th>
                         <th>APY Base</th>
@@ -140,6 +141,23 @@ export const FetchPools: React.FC = () => {
                           <td>{pool.chain}</td>
                           <td>{pool.project}</td>
                           <td className='data-source'>{pool.dataSource}</td>
+                          <td className='exploit-risk'>
+                            {pool.hacks && pool.hacks.length > 0 ? (
+                              <span
+                                className='hack-badge'
+                                title={pool.hacks
+                                  .map(
+                                    (h: HackInfo) =>
+                                      `${h.name} (${new Date(h.date * 1000).getFullYear()}): $${(h.amountUsd / 1_000_000).toFixed(1)}M — ${h.technique}`,
+                                  )
+                                  .join('\n')}
+                              >
+                                ⚠️ {pool.hacks.length > 1 ? `${pool.hacks.length} incidents` : '1 incident'}
+                              </span>
+                            ) : (
+                              <span className='hack-clean'>—</span>
+                            )}
+                          </td>
                           <td className='tvl'>
                             ${pool.tvlUsd.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                           </td>

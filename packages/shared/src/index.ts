@@ -1,4 +1,5 @@
 // Re-export shared types
+export * from './types/hackInfo';
 export * from './types/predictions';
 export * from './types/pool';
 export * from './types/poolsResponse';

@@ -222,6 +222,36 @@
   color: var(--accent-success);
 }
 
+.pools-table .exploit-risk {
+  white-space: nowrap;
+}
+
+.hack-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--hack-badge-bg, rgba(245, 158, 11, 0.15));
+  color: var(--hack-badge-text, #b45309);
+  border: 1px solid var(--hack-badge-border, rgba(245, 158, 11, 0.4));
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: help;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hack-badge {
+    --hack-badge-bg: rgba(245, 158, 11, 0.2);
+    --hack-badge-text: #fbbf24;
+    --hack-badge-border: rgba(245, 158, 11, 0.5);
+  }
+}
+
+.hack-clean {
+  color: var(--text-muted);
+}
+
 /* Summary Statistics */
 .pools-summary {
   display: grid;

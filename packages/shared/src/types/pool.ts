@@ -1,6 +1,8 @@
 import { Predictions } from './predictions';
+import { HackInfo } from './hackInfo';
 
 export interface Pool {
+  hacks: HackInfo[];
   chain: string;
   project: string;
   symbol: string;
