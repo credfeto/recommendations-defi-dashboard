@@ -10,21 +10,22 @@ inputs:
     required: false
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: 'Sleet: Generate Sleet Config'
+
+    - name: "Sleet: Generate Sleet Config"
       shell: bash
       working-directory: ${{ github.workspace }}
       run: |
         echo "$VALUE" > "${FILE}"
       env:
-        FILE: '${{github.workspace}}/sleet.json'
-        VALUE: '${{ inputs.SLEET_CONFIG }}'
+        FILE: "${{github.workspace}}/sleet.json"
+        VALUE: "${{ inputs.SLEET_CONFIG }}"
 
-    - name: 'Sleet: Publish Packages to Nuget (Using Sleet)'
+    - name: "Sleet: Publish Packages to Nuget (Using Sleet)"
       if: always()
       uses: ./.github/actions/dotnet-tool-run
       with:
-        WORKING_DIRECTORY: '${{github.workspace}}'
-        TOOL_NAME: 'sleet'
-        TOOL_ARGUMENTS: 'push "${{github.workspace}}/dist" --config "${{github.workspace}}/sleet.json" --source "${{inputs.SLEET_FEED}}"'
+        WORKING_DIRECTORY: "${{github.workspace}}"
+        TOOL_NAME: "sleet"
+        TOOL_ARGUMENTS: "push \"${{github.workspace}}/dist\" --config \"${{github.workspace}}/sleet.json\" --source \"${{inputs.SLEET_FEED}}\""
