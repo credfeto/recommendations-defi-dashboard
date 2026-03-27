@@ -24,23 +24,22 @@ inputs:
     description: 'API Prefix'
     required: false
   AWS_LOAD_BALANCER_HOSTNAME:
-    description: "AWS Load Balancer match hostname"
+    description: 'AWS Load Balancer match hostname'
     required: true
   AWS_LOAD_BALANCER_PRIORITY:
-    description: "AWS Load Balancer match priority"
+    description: 'AWS Load Balancer match priority'
     required: true
   DOCKER_CONTAINER_REGISTRY:
-    description: "AWS container registry to retrieve package from"
+    description: 'AWS container registry to retrieve package from'
     required: true
   BUILD_VERSION:
-    description: "Build Version"
+    description: 'Build Version'
     required: true
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
-
-    - name: "Add offsets for direct connections"
+    - name: 'Add offsets for direct connections'
       id: priorities
       shell: bash
       run: |
@@ -61,7 +60,7 @@ runs:
           } >> "$GITHUB_OUTPUT"
         fi
 
-    - name: "Build TemplateParameters file"
+    - name: 'Build TemplateParameters file'
       shell: bash
       run: |
         FIRST=1
@@ -102,7 +101,7 @@ runs:
         Direct2LoadBalancerPriority: ${{steps.priorities.outputs.DIRECT2}}
         AwsContainerRegistry: ${{inputs.DOCKER_CONTAINER_REGISTRY}}
 
-    - name: "show Validated TemplateParameters"
+    - name: 'show Validated TemplateParameters'
       shell: bash
       run: |
         echo "SNS ARN: ${{inputs.CLOUDFORMATION_SNS_ARN}}"
@@ -110,7 +109,7 @@ runs:
         jq . "${{github.workspace}}/TemplateParameters.json"
 
     - if: inputs.CLOUDFORMATION_SNS_ARN != ''
-      name: "AWS Cloudformation Deploy (With Notifications)"
+      name: 'AWS Cloudformation Deploy (With Notifications)'
       shell: bash
       run: |
         /usr/local/aws-cli/v2/current/bin/aws \
@@ -128,7 +127,7 @@ runs:
                               "Version=${{inputs.BUILD_VERSION}}"
 
     - if: inputs.CLOUDFORMATION_SNS_ARN == ''
-      name: "AWS Cloudformation Deploy (No Notifications)"
+      name: 'AWS Cloudformation Deploy (No Notifications)'
       shell: bash
       run: |
         /usr/local/aws-cli/v2/current/bin/aws \
@@ -143,7 +142,7 @@ runs:
                               "App=${{inputs.CLOUD_FORMATION_STACK}}" \
                               "Version=${{inputs.BUILD_VERSION}}"
 
-    - name: "AWS Enable Stack termination protection"
+    - name: 'AWS Enable Stack termination protection'
       shell: bash
       run: |
         /usr/local/aws-cli/v2/current/bin/aws \
