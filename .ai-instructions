@@ -336,77 +336,35 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"error"' && echo "✓
 
 ```
 .
-├── package.json                        # Root workspace configuration
 ├── tsconfig.base.json                  # Shared TypeScript base config (ESNext, strict)
-├── tsconfig.json                       # Root tsconfig (references base)
-├── jest.config.js                      # Root Jest configuration
 ├── .npmrc                              # legacy-peer-deps=true (ts-jest <6 peer dep)
 ├── packages/
-│   ├── shared/                         # Shared types and utilities
-│   │   ├── package.json
-│   │   └── src/
-│   │       ├── index.ts               # Re-exports all shared types
-│   │       └── types/
-│   │           ├── predictions.ts
-│   │           ├── pool.ts
-│   │           ├── poolData.ts
-│   │           ├── poolsResponse.ts
-│   │           ├── poolTypeMetadata.ts
-│   │           ├── poolTypesMetadataConfig.ts
-│   │           ├── hackInfo.ts
-│   │           ├── depegAlert.ts
-│   │           └── getAvailablePoolTypesMetadata.ts
+│   ├── shared/src/
+│   │   ├── index.ts                   # Re-exports all shared types
+│   │   └── types/                     # One type/interface per file
 │   │
-│   ├── client/                         # React frontend application
-│   │   ├── package.json
-│   │   ├── tsconfig.json              # Standalone (does not extend base), moduleResolution: bundler
-│   │   ├── vite.config.ts             # Vite 8 build config, @shared alias
-│   │   ├── index.html                 # Vite entry point
+│   ├── client/
+│   │   ├── tsconfig.json              # Standalone, moduleResolution: bundler
+│   │   ├── vite.config.ts             # Vite 8 config, @shared alias
+│   │   ├── index.html                 # Entry point
 │   │   └── src/
-│   │       ├── App.tsx
-│   │       ├── App.css
-│   │       ├── App.test.tsx
-│   │       ├── FetchPools.tsx         # Pool dashboard component
-│   │       ├── FetchPools.css
-│   │       ├── index.tsx
-│   │       ├── index.css
-│   │       ├── reportWebVitals.ts
-│   │       ├── setupTests.ts
+│   │       ├── FetchPools.tsx         # Main pool dashboard component
 │   │       └── types/
-│   │           ├── poolTypeConfig.ts
-│   │           ├── poolTypesConfig.ts
-│   │           ├── getAvailablePoolTypes.ts
-│   │           └── getPoolTypeById.ts
 │   │
-│   └── server/                         # Fastify backend server
-│       ├── package.json               # typescript 6.0.2 in devDependencies
-│       ├── tsconfig.json              # extends base, rootDir: src
-│       ├── jest.config.js
+│   └── server/
+│       ├── tsconfig.json              # Extends base, rootDir: src
 │       └── src/
 │           ├── server/
 │           │   ├── server-fastify.ts  # Fastify setup, routing, startup
-│           │   ├── server-fastify.test.ts
-│           │   └── schemas.ts         # JSON Schema for Fastify response validation
-│           ├── api/                   # External API client services (class + singleton)
-│           │   ├── defillama.pools.api.service.ts
-│           │   ├── defillama.hacks.api.service.ts
-│           │   ├── pendle.markets.api.service.ts
-│           │   └── coingecko.stablecoins.api.service.ts
+│           │   └── schemas.ts         # JSON Schema for response validation
+│           ├── api/                   # External API client services
 │           ├── services/              # Business logic services
 │           │   ├── pools.service.ts   # Pool filtering and categorisation
-│           │   ├── hacks.service.ts   # Hack map building and matching
-│           │   ├── depeg.service.ts   # Stablecoin depeg detection
-│           │   ├── pool-url.service.ts # Pool URL generation
-│           │   └── cache-warmer.service.ts # Startup cache warming (class + singleton)
+│           │   └── cache-warmer.service.ts # Startup cache warming
 │           ├── db/
 │           │   └── cache.db.ts        # SQLite cache (1h fresh TTL, 2h stale fallback)
 │           ├── types/
-│           │   ├── poolTypeConfig.ts
-│           │   ├── poolTypesConfig.ts
-│           │   ├── getAvailablePoolTypes.ts
-│           │   └── getPoolTypeById.ts
 │           └── utils/
-│               └── slug.utils.ts
 │
 ├── docs/
 ├── CHANGELOG.md
