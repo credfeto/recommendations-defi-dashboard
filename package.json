@@ -10,7 +10,8 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "husky": "^9.1.7",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2"
   },
   "scripts": {
     "start": "npm --workspace=@defi-dashboard/client start",
