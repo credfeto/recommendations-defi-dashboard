@@ -37,4 +37,8 @@ plugins:
 #########
 # Rules #
 #########
-rules: {}
+rules:
+  # TypeScript compiler handles import resolution; the linter environment
+  # does not have node_modules installed so these rules produce false positives
+  n/no-missing-import: off
+  n/no-unpublished-import: off
