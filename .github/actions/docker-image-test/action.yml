@@ -14,7 +14,7 @@ inputs:
     default: ${{github.token}}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: "Wouldn't it be nice if all these things worked"
       shell: bash
