@@ -374,4 +374,4 @@ dotnet-tools.json
 
 /build/
 /coverage/
-node-modules
+node_modules
