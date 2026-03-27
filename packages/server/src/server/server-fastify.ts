@@ -12,18 +12,11 @@ import { filterPoolsByType, getAvailableTypes } from '../services/pools.service'
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
+import { CACHE_KEYS, cacheWarmerService } from '../services/cache-warmer.service';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
 const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
-
-const CACHE_KEYS = {
-  LLAMA_POOLS: 'defillama_pools',
-  PENDLE_POOLS: 'pendle_pools',
-  HACKS: 'defillama_hacks',
-  STABLECOINS: 'coingecko_stablecoins',
-  COIN_LIST: 'coingecko_coin_list',
-};
 
 const getAllPools = async (): Promise<any[]> => {
   const [llamaPools, pendlePools] = await Promise.all([
@@ -111,6 +104,7 @@ export const start = async (): Promise<void> => {
   });
 
   await fastify.listen({ port: PORT, host: '0.0.0.0' });
+  cacheWarmerService.warmCache(fastify.log);
 };
 
 start()
