@@ -111,5 +111,5 @@ start()
   .then(() => console.log(`Server listening on port ${PORT}`))
   .catch((err: unknown) => {
     console.error(err);
-    process.exitCode = 1;
+    process.exit(1);
   });
