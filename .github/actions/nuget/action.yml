@@ -23,9 +23,10 @@ inputs:
     required: false
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: 'Dotnet: Build NuGet Config'
+
+    - name: "Dotnet: Build NuGet Config"
       shell: bash
       env:
         NUGET_PUBLIC_RESTORE_FEED_CACHE: ${{inputs.NUGET_PUBLIC_RESTORE_FEED_CACHE}}
@@ -100,38 +101,38 @@ runs:
 
         cat "$NUGET_CONF_FILE"
 
-    - name: 'Dotnet: Show sources (After)'
+    - name: "Dotnet: Show sources (After)"
       shell: bash
       run: |
         echo "List current nuget feeds (after)"
         dotnet nuget list source
       env:
-        DOTNET_ROOT: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_INSTALL_DIR: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_MULTILEVEL_LOOKUP: 'false'
-        DOTNET_NOLOGO: 'true'
-        DOTNET_PRINT_TELEMETRY_MESSAGE: 'false'
-        DOTNET_JitCollect64BitCounts: '1'
-        DOTNET_ReadyToRun: '0'
-        DOTNET_TC_QuickJitForLoops: '1'
-        DOTNET_TC_CallCountingDelayMs: '0'
-        DOTNET_TieredPGO: '1'
-        MSBUILDTERMINALLOGGER: 'auto'
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
         NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
-    - name: 'Dotnet: Clear nuget cache'
+    - name: "Dotnet: Clear nuget cache"
       shell: bash
       run: dotnet nuget locals all --clear
       env:
-        DOTNET_ROOT: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_INSTALL_DIR: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_MULTILEVEL_LOOKUP: 'false'
-        DOTNET_NOLOGO: 'true'
-        DOTNET_PRINT_TELEMETRY_MESSAGE: 'false'
-        DOTNET_JitCollect64BitCounts: '1'
-        DOTNET_ReadyToRun: '0'
-        DOTNET_TC_QuickJitForLoops: '1'
-        DOTNET_TC_CallCountingDelayMs: '0'
-        DOTNET_TieredPGO: '1'
-        MSBUILDTERMINALLOGGER: 'auto'
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
         NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
