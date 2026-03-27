@@ -64,37 +64,38 @@ inputs:
     required: false
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
+
     ############################################################################################################
     # DOTNET BUILD
     ############################################################################################################
 
-    - name: 'Dotnet: Define Master build settings'
+    - name: "Dotnet: Define Master build settings"
       if: inputs.RELEASE == 'false'
       working-directory: ${{github.workspace}}/src
       shell: bash
       run: echo "DOTNET_RELEASE_DEFINES=-p:IsProduction=false" >> "$GITHUB_ENV"
 
-    - name: 'Dotnet: Define Release build settings'
+    - name: "Dotnet: Define Release build settings"
       if: inputs.RELEASE == 'false'
       working-directory: ${{github.workspace}}/src
       shell: bash
       run: echo "DOTNET_RELEASE_DEFINES=-p:IsProduction=True" >> "$GITHUB_ENV"
 
-    - name: 'Dotnet: Run build check'
+    - name: "Dotnet: Run build check"
       if: ${{ (!endsWith(github.repository, 'funfair-dotnet-build-check')) && (!endsWith(github.repository, '-template')) }}
       uses: ./.github/actions/dotnet-build-check
       with:
         RELEASE: ${{inputs.RELEASE}}
 
-    - name: 'Dotnet: Override code analysis rules'
+    - name: "Dotnet: Override code analysis rules"
       if: ${{ !endsWith(github.repository, '-template') }}
       uses: ./.github/actions/dotnet-code-analysis-override
       with:
         RELEASE: ${{inputs.RELEASE}}
 
-    - name: 'Dotnet: Restore packages'
+    - name: "Dotnet: Restore packages"
       working-directory: ${{github.workspace}}/src
       shell: bash
       run: |
@@ -116,20 +117,20 @@ runs:
               -p:SuppressNETCoreSdkPreviewMessage=true \
               --ignore-failed-sources
       env:
-        DOTNET_ROOT: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_INSTALL_DIR: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_MULTILEVEL_LOOKUP: 'false'
-        DOTNET_NOLOGO: 'true'
-        DOTNET_PRINT_TELEMETRY_MESSAGE: 'false'
-        DOTNET_JitCollect64BitCounts: '1'
-        DOTNET_ReadyToRun: '0'
-        DOTNET_TC_QuickJitForLoops: '1'
-        DOTNET_TC_CallCountingDelayMs: '0'
-        DOTNET_TieredPGO: '1'
-        MSBUILDTERMINALLOGGER: 'auto'
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
         NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
-    - name: 'Dotnet: Build (Non-Release)'
+    - name: "Dotnet: Build (Non-Release)"
       working-directory: ${{github.workspace}}/src
       shell: bash
       run: |
@@ -147,21 +148,21 @@ runs:
                   ${{env.DOTNET_RELEASE_DEFINES}}
       env:
         ReleaseNotes: ${{inputs.RELEASE_NOTES}}
-        DOTNET_ROOT: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_INSTALL_DIR: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_MULTILEVEL_LOOKUP: 'false'
-        DOTNET_NOLOGO: 'true'
-        DOTNET_PRINT_TELEMETRY_MESSAGE: 'false'
-        DOTNET_JitCollect64BitCounts: '1'
-        DOTNET_ReadyToRun: '0'
-        DOTNET_TC_QuickJitForLoops: '1'
-        DOTNET_TC_CallCountingDelayMs: '0'
-        DOTNET_TieredPGO: '1'
-        MSBUILDTERMINALLOGGER: 'auto'
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
         NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
     ## RUN TESTS
-    - name: 'Dotnet: Test'
+    - name: "Dotnet: Test"
       working-directory: ${{github.workspace}}/src
       shell: bash
       run: |
@@ -183,23 +184,23 @@ runs:
                   "-p:Version=${{inputs.BUILD_VERSION}}"
       env:
         ReleaseNotes: ${{inputs.RELEASE_NOTES}}
-        DOTNET_ROOT: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_INSTALL_DIR: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_MULTILEVEL_LOOKUP: 'false'
-        DOTNET_NOLOGO: 'true'
-        DOTNET_PRINT_TELEMETRY_MESSAGE: 'false'
-        DOTNET_JitCollect64BitCounts: '1'
-        DOTNET_ReadyToRun: '0'
-        DOTNET_TC_QuickJitForLoops: '1'
-        DOTNET_TC_CallCountingDelayMs: '0'
-        DOTNET_TieredPGO: '1'
-        MSBUILDTERMINALLOGGER: 'auto'
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
         NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
     # ############################################################################################################
     # # DATABASE BUILD
     # ############################################################################################################
-    - name: 'SQL: Build'
+    - name: "SQL: Build"
       if: inputs.BUILD_SQL == 'true'
       uses: ./.github/actions/sql
       with:
@@ -211,7 +212,7 @@ runs:
     # Publish ready for deploy
     ############################################################################################################
 
-    - name: 'Dotnet: Publish Packages'
+    - name: "Dotnet: Publish Packages"
       if: inputs.PROJECT_TO_PUBLISH != ''
       uses: ./.github/actions/dotnet-publish
       with:
@@ -224,7 +225,7 @@ runs:
     ############################################################################################################
     # DOTNET PUSH TO NUGET
     ############################################################################################################
-    - name: 'Dotnet: Pack tool'
+    - name: "Dotnet: Pack tool"
       if: inputs.NUGET_PACK == 'true'
       working-directory: ${{github.workspace}}/src
       shell: bash
@@ -241,20 +242,20 @@ runs:
                   "-p:ContinuousIntegrationBuild=true"
       env:
         ReleaseNotes: ${{inputs.RELEASE_NOTES}}
-        DOTNET_ROOT: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_INSTALL_DIR: '${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}'
-        DOTNET_MULTILEVEL_LOOKUP: 'false'
-        DOTNET_NOLOGO: 'true'
-        DOTNET_PRINT_TELEMETRY_MESSAGE: 'false'
-        DOTNET_JitCollect64BitCounts: '1'
-        DOTNET_ReadyToRun: '0'
-        DOTNET_TC_QuickJitForLoops: '1'
-        DOTNET_TC_CallCountingDelayMs: '0'
-        DOTNET_TieredPGO: '1'
-        MSBUILDTERMINALLOGGER: 'auto'
+        DOTNET_ROOT: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_INSTALL_DIR: "${{github.workspace}}/.dotnet/${{github.sha}}-${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}"
+        DOTNET_MULTILEVEL_LOOKUP: "false"
+        DOTNET_NOLOGO: "true"
+        DOTNET_PRINT_TELEMETRY_MESSAGE: "false"
+        DOTNET_JitCollect64BitCounts: "1"
+        DOTNET_ReadyToRun: "0"
+        DOTNET_TC_QuickJitForLoops: "1"
+        DOTNET_TC_CallCountingDelayMs: "0"
+        DOTNET_TieredPGO: "1"
+        MSBUILDTERMINALLOGGER: "auto"
         NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
-    - name: 'Dotnet: Copy packed to dist'
+    - name: "Dotnet: Copy packed to dist"
       if: inputs.NUGET_PACK == 'true'
       shell: bash
       run: |
@@ -262,7 +263,7 @@ runs:
         cp **/*.nupkg "${{github.workspace}}/dist"
       working-directory: ${{github.workspace}}/src
 
-    - name: 'Dotnet: Publish Packages to Nuget (With integrated symbol feed)'
+    - name: "Dotnet: Publish Packages to Nuget (With integrated symbol feed)"
       if: |-
         inputs.NUGET_API_KEY != '' &&
         inputs.NUGET_API_KEY != 'SLEET' &&
@@ -273,7 +274,7 @@ runs:
         NUGET_FEED: ${{inputs.NUGET_FEED}}
         NUGET_API_KEY: ${{inputs.NUGET_API_KEY}}
 
-    - name: 'Dotnet: Publish Packages to Nuget (With separate symbol feed)'
+    - name: "Dotnet: Publish Packages to Nuget (With separate symbol feed)"
       if: |-
         inputs.NUGET_API_KEY != '' &&
         inputs.NUGET_API_KEY != 'SLEET' &&
@@ -285,7 +286,7 @@ runs:
         NUGET_SYMBOL_FEED: ${{inputs.NUGET_SYMBOL_FEED}}
         NUGET_API_KEY: ${{inputs.NUGET_API_KEY}}
 
-    - name: 'Dotnet: Publish Packages using sleet'
+    - name: "Dotnet: Publish Packages using sleet"
       if: |-
         inputs.NUGET_API_KEY == 'SLEET' &&
         inputs.NUGET_PACK == 'true' &&
