@@ -3,6 +3,12 @@
 ## Project Overview
 This is a React-based DeFi (Decentralized Finance) dashboard that displays liquidity pools from the Llama Yields API. It filters pools by type (ETH-based and stablecoins) with quality metrics.
 
+## Management rules
+
+- Whenever an instruction to remember to do something is given it should be updated in this file.
+- Whenever this file changes, re-revaluate your memory against it
+- If there is a massive difference between your memory and this file then stop and ask for clarification and update this file and your memory.
+
 ## Architecture
 
 ### Documentation ###
@@ -11,7 +17,8 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Maintain a CHANGELOG.md in [KeepAChangeLog](https://keepachangelog.com/en/1.0.0/) format to track changes and updates to the project.  use the dotnet tool credfeto.changelog.cmd to add new entries to the changelog. Purely documentation changes should not be added to the changelog.
 - Use the `Credfeto.Changelog.Cmd` dotnet tool to update the changelog: e.g. `dotnet changelog -f CHANGELOG.md -a <ChangeType> -m"<reason for change>"` change types can be: Security, Added, Fixed, Changed, Removed, Deployment Changes
 - Documentation and architecture diagrams other than the README.md and CHANGELOG.md should be in the /docs folder
-
+- Do not need to specify all details i.e. version numbers of packages and every single file in architecture diagrams, just folder structure is good enough.
+- If this file's description diverges from the source code then update it to reflect the changes.
 
 ### Code Organization Rules ###
 
