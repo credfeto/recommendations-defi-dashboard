@@ -22,12 +22,13 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - **Package Index Files**: Use `index.ts` to re-export types for clean public API
   - Example: `packages/shared/src/index.ts` exports all shared types via `export * from './types/...'`
   - Consumers import from `@shared` rather than `@shared/types/...`
+- **Service naming**: service files are named `<name>.service.ts` and export a singleton instance: `export const fooService = new FooService()`
 
 ### Data Sources ###
 - https://yields.llama.fi/pools (all projects except Pendle)
 - https://api-v2.pendle.finance/core/v1/{chainId}/markets (authoritative source for Pendle pools)
   - Supported chain IDs: 1 (Ethereum), 42161 (Arbitrum), 8453 (Base), 56 (BSC)
-  - Add additional chain IDs to `PENDLE_CHAIN_IDS` in `pendleService.ts`
+  - Add additional chain IDs to `PENDLE_CHAIN_IDS` in `pendle.markets.api.service.ts`
   - Normalization: `aggregatedApy * 100` → `apy`, `liquidity.usd` → `tvlUsd`, `categoryIds.includes('stables')` → `stablecoin`, `ilRisk: 'no'` for all
   - Llama Pendle pools are excluded at fetch time to avoid duplication
 - https://app.pendle.finance/trade/pools
@@ -44,12 +45,14 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 
 ### Committing ###
 - Do not commit directly to main.
-- Before making any changes, make sure current branch is main and is is up-to-date with origin.
+- Before making any changes, make sure current branch is main and is up-to-date with origin.
 - Create a branch for each change - e.g. `git checkout -b feature/my-change`
 - Make changes in small incremental commits with descriptive messages ensuring that all tests pass before committing
 - Push the branch to origin on each incremental change - e.g. `git push origin feature/my-change`
 - Use best practices for git commit messages
 - Always include the user's original prompt verbatim in the commit description (body), prefixed with `Prompt: `. Do not include it in the commit title.
+- **Never amend a commit** — always create a new commit, even if its only purpose is to fix or move something from a prior commit
+- `git rebase main` is allowed (and preferred over merge) to bring upstream changes into a feature branch; interactive rebase (`rebase -i`) is not
 - Use the following format for commit messages:
   - **feat**: A new feature
   - **fix**: A bug fix
@@ -62,55 +65,60 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - CHANGELOG.md should be updated with a description of any code changes that are made
 
 ### Frontend (React)
-- **Framework**: React 19.2.4 with TypeScript
-- **Build Tool**: react-scripts
-- **Key Component**: `packages/client/src/client/FetchPools.tsx` - Main view component that fetches and displays pool data
-- **Types**: `packages/client/src/shared/types/pools.ts` - TypeScript interfaces for API responses
+- **Framework**: React 19 with TypeScript
+- **Build Tool**: Vite 8
+- **Entry point**: `packages/client/index.html`
+- **Vite config**: `packages/client/vite.config.ts`
+- **Key Component**: `packages/client/src/FetchPools.tsx` - Main view component that fetches and displays pool data
 - **Port**: 3000 (development)
 - Should display the content in a nice way where the output is pleasing.
 - Should have a tab for each {PoolName} in the UI
 
 ### Backend (Fastify)
-- **Framework**: Fastify 5.8.4 with @fastify/cors
-- **Runtime**: Node.js (TypeScript via ts-node)
-- **Endpoint**: `GET /api/pools/{PoolName}` - Caches and proxies Llama API
-- **Caching**: On-disk cache with 1-hour TTL
+- **Framework**: Fastify 5 with @fastify/cors and @fastify/compress (brotli preferred, gzip fallback)
+- **Runtime**: Node.js (TypeScript 6.0.2 via ts-node with `transpileOnly: true`)
+- **Entry point**: `packages/server/src/server/server-fastify.ts`
+- **Endpoints**:
+  - `GET /api/pools` — returns available pool type metadata
+  - `GET /api/pools/:poolName` — returns filtered and enriched pools for the given type
+- **Caching**: SQLite on disk (`packages/server/src/db/cache.db.ts`), 1-hour fresh TTL, 2-hour stale fallback
+- **Cache warming**: On startup, `cacheWarmerService.warmCache()` fetches any missing or stale entries in the background; errors are logged per-entry and do not block startup
+- **HTTP response caching**: `Cache-Control: public, max-age=15, s-maxage=15, stale-while-revalidate=5`
 - **Port**: 5000
-- **Location**: `packages/server/src/server/server-fastify.ts` (server entry point) and `packages/server/src/server/server.ts` (filtering logic)
-- Serve the front end from the same server to avoid CORS issues
+- **Response schemas**: `packages/server/src/server/schemas.ts`
 - Use fully typed responses from fastify for the API endpoints
 
 ### Shared ###
 - **Location**: `packages/shared/` - Centralized package for shared types and utilities
 - **Entry Point**: `packages/shared/src/index.ts` - Re-exports all shared types
-- **Usage**: Import from `@shared` (path alias configured in tsconfig.base.json)
+- **Usage**: Import from `@shared` (path alias configured in tsconfig.base.json and vite.config.ts)
 - **Types**: All types that are used by both client and server go here
   - Example: `Pool`, `PoolsResponse`, `Predictions` interfaces
   - Example: `PoolTypeMetadata` interface and related constants/functions
-- **Configuration**: 
-  - Root `tsconfig.base.json` defines compiler options and `@shared` path alias
-  - Each package's `tsconfig.json` extends base and sets relative paths
-  - Root `jest.config.js` orchestrates all test runs
 
-### External API
-- **Provider**: Llama Yields (https://yields.llama.fi/pools)
-- **Response**: Cached via backend to reduce external calls
+### TypeScript Setup ###
+- `tsconfig.base.json` at root: `target: ESNext`, `module: CommonJS`, `moduleResolution: node10`, `ignoreDeprecations: "6.0"` (suppresses node10/ts-jest deprecation warnings), strict mode fully enabled
+- Server `tsconfig.json`: extends base, adds `rootDir: src`, `paths` for `@shared`; ts-node uses `transpileOnly: true`
+- Client `tsconfig.json`: standalone (does not extend base), `moduleResolution: bundler`, `target: ES2020`
+- TypeScript 6.0.2 in server devDependencies; also listed in root devDependencies so ts-jest (hoisted to root node_modules) can find it
+- `.npmrc` sets `legacy-peer-deps=true` because ts-jest 29 declares `typescript: ">=4.3 <6"` as a peer dep
 
 ## Key Patterns & Conventions
 
 ### Data Flow
-1. React component calls `http://localhost:5000/api/pools`
-2. Fastify backend checks in-memory cache
-3. If cache miss or expired (>1 hour), fetches from Llama API
-4. Response is cached and returned to frontend
-5. React component filters and displays data in tables
+1. React component calls `http://localhost:5000/api/pools/:poolName`
+2. Fastify backend checks SQLite cache for each data source
+3. If cache miss or stale (>1 hour), fetches from the relevant external API and updates cache
+4. Pools are filtered by type, enriched with hack data and depeg alerts, then returned
+5. React component displays data in a table per pool type
 
 ### Filtering Rules
 Pools must pass ALL filters to be displayed:
 - `ilRisk === 'no'` (no impermanent loss risk)
 - `tvlUsd >= 1,000,000` (minimum $1M TVL)
-- `apy > 0` (positive yield — pools with 0% APY must NEVER be returned)
-- Chain is not in `EXCLUDED_CHAINS` (currently: Tron, Sui)
+- `apy > 0 && apy < 100` (valid yield range — 0% APY pools must NEVER be returned)
+- `depegAlerts.length === 0` (no stablecoin depeg detected)
+- Chain is not in `EXCLUDED_CHAINS`: Aptos, Avalanche, Cardano, FileCoin, Flare, Flow, ICP, Stellar, Sui, Ton, Tron, Venom
 
 ### Response Ordering
 Results are always sorted by:
@@ -118,14 +126,17 @@ Results are always sorted by:
 2. **TVL descending** (tiebreak by largest pool)
 
 ### Pool Categorization
-- **ETH-Based**: Pools with "ETH" in symbol (STETH, WETH, WSTETH, WEETH, etc.)
-- **Stablecoins**: Pools marked as stablecoin (USDC, USDT, SUSDE, etc.)
+- **ETH**: Pools containing ETH / LST tokens (STETH, WSTETH, RETH, CBETH, SWETH, LSETH, EETH, WEETH)
+- **STABLES**: Pools marked as stablecoin
+- **HIGH_YIELD**: APY > 5%
+- **LOW_TVL**: TVL < $10M
+- **BLUE_CHIP**: TVL > $100M
 
 ### Component Structure
 - Single component `FetchPools` handles:
   - Data fetching with loading/error states
   - Filtering logic
-  - Table rendering for both categories
+  - Table rendering for all pool categories
   - Proper TypeScript typing
 
 ## Development Setup
@@ -161,7 +172,7 @@ npm run build
 
 #### JavaScript Optimization
 - ✅ **Minification**: All JavaScript is minified (removes whitespace, shortens variable names)
-- ✅ **Tree Shaking**: Unused code is removed via `create-react-app` webpack config
+- ✅ **Tree Shaking**: Unused code is removed via Vite
 - ✅ **Code Splitting**: Large bundles are automatically split into chunks
 - ✅ **Dynamic Imports**: Use `React.lazy()` for route-based code splitting if bundle size grows
 - ✓ Verify bundle size is acceptable: `npm run build` reports final sizes
@@ -169,7 +180,7 @@ npm run build
 
 #### CSS Optimization
 - ✅ **Minification**: All CSS is minified (removes whitespace, shortens selectors)
-- ✅ **Dead Code Elimination**: Unused styles are removed via `create-react-app`
+- ✅ **Dead Code Elimination**: Unused styles are removed via Vite
 - ✅ **Autoprefixing**: Browser-specific prefixes are added automatically
 - ✓ Use CSS modules or scoped styles to avoid accidental global conflicts
 - ✓ Use CSS variables for theming instead of duplicate declarations
@@ -179,7 +190,7 @@ npm run build
   - ✅ Convert PNG/JPG to WebP format (smaller file size)
   - ✅ Use SVG for icons and logos (scalable, compressible)
   - ✅ Optimize with tools: `imagemin`, `svgo`, or online tools like `tinypng.com`
-  
+
 - **Fonts**:
   - ✅ Use system fonts or web fonts sparingly
   - ✅ Load only the font weights/variants you use
@@ -193,9 +204,9 @@ npm run build
 #### Build Verification Checklist
 After running `npm run build`, verify:
 ```bash
-# Check bundle sizes
-ls -lh packages/client/build/static/js/*.js
-ls -lh packages/client/build/static/css/*.css
+# Check bundle sizes (Vite outputs to build/assets/)
+ls -lh packages/client/build/assets/*.js
+ls -lh packages/client/build/assets/*.css
 
 # Should see:
 # ✓ JavaScript files are <50KB (gzipped)
@@ -256,21 +267,22 @@ curl http://localhost:5000/api/pools/INVALID
   "status": "ok",
   "data": [
     {
-      "chain": "ethereum",
-      "project": "Uniswap V3",
-      "symbol": "ETH/USDC",
-      "tvlUsd": 1500000,
-      "apy": 0.15,
-      // ... other pool fields
+      "chain": "Ethereum",
+      "project": "lido",
+      "symbol": "STETH",
+      "tvlUsd": 20000000000,
+      "apy": 2.5,
+      "url": "https://defillama.com/yields?pool=...",
+      "hacks": [],
+      "depegAlerts": [],
+      "dataSource": "defillama"
     }
-    // ... more pools
   ]
 }
 
 // GET /api/pools/INVALID (error)
 {
-  "error": "Invalid pool name. Use ETH or STABLES",
-  "statusCode": 400
+  "error": "Invalid pool name. Valid options: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP"
 }
 ```
 
@@ -286,7 +298,7 @@ echo "Testing GET /api/pools/STABLES..."
 curl -s http://localhost:5000/api/pools/STABLES | grep -q '"status":"ok"' && echo "✓ PASS" || echo "✗ FAIL"
 
 echo "Testing GET /api/pools/INVALID (should fail)..."
-curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && echo "✓ PASS" || echo "✗ FAIL"
+curl -s http://localhost:5000/api/pools/INVALID | grep -q '"error"' && echo "✓ PASS" || echo "✗ FAIL"
 ```
 
 ## Code Style & Best Practices
@@ -311,79 +323,96 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && 
 ### Performance
 - Component memoization via React.FC when beneficial
 - Avoid unnecessary re-renders
-- Cache API responses server-side (1-hour TTL minimum)
+- Cache API responses server-side (1-hour fresh TTL, 2-hour stale fallback)
 
 ## File Structure
 
 ```
 .
 ├── package.json                        # Root workspace configuration
-├── tsconfig.base.json                  # Shared TypeScript base config
+├── tsconfig.base.json                  # Shared TypeScript base config (ESNext, strict)
+├── tsconfig.json                       # Root tsconfig (references base)
 ├── jest.config.js                      # Root Jest configuration
+├── .npmrc                              # legacy-peer-deps=true (ts-jest <6 peer dep)
 ├── packages/
 │   ├── shared/                         # Shared types and utilities
-│   │   ├── package.json               # Shared package metadata
+│   │   ├── package.json
 │   │   └── src/
 │   │       ├── index.ts               # Re-exports all shared types
 │   │       └── types/
-│   │           ├── predictions.ts      # Predictions interface
-│   │           ├── pool.ts             # Pool interface
-│   │           ├── poolsResponse.ts    # PoolsResponse interface
-│   │           ├── poolTypeMetadata.ts # PoolTypeMetadata interface
-│   │           ├── poolTypesMetadataConfig.ts # Pool type metadata constants
-│   │           └── getAvailablePoolTypesMetadata.ts # Metadata retrieval function
+│   │           ├── predictions.ts
+│   │           ├── pool.ts
+│   │           ├── poolData.ts
+│   │           ├── poolsResponse.ts
+│   │           ├── poolTypeMetadata.ts
+│   │           ├── poolTypesMetadataConfig.ts
+│   │           ├── hackInfo.ts
+│   │           ├── depegAlert.ts
+│   │           └── getAvailablePoolTypesMetadata.ts
 │   │
 │   ├── client/                         # React frontend application
-│   │   ├── package.json               # Client-specific dependencies
-│   │   ├── tsconfig.json              # TypeScript configuration (extends base)
-│   │   ├── craco.config.js            # Craco config for path alias support
-│   │   ├── jest.config.js             # Jest test configuration
-│   │   ├── public/                    # Static assets
+│   │   ├── package.json
+│   │   ├── tsconfig.json              # Standalone (does not extend base), moduleResolution: bundler
+│   │   ├── vite.config.ts             # Vite 8 build config, @shared alias
+│   │   ├── index.html                 # Vite entry point
 │   │   └── src/
-│   │       ├── App.tsx                # Main App component
-│   │       ├── App.css                # App styling
-│   │       ├── App.test.tsx           # App component tests
+│   │       ├── App.tsx
+│   │       ├── App.css
+│   │       ├── App.test.tsx
 │   │       ├── FetchPools.tsx         # Pool dashboard component
-│   │       ├── FetchPools.css         # Pool dashboard styling
-│   │       ├── index.tsx              # React entry point
-│   │       ├── index.css              # Global CSS
-│   │       ├── reportWebVitals.ts     # Performance monitoring
-│   │       ├── setupTests.ts          # Test configuration
-│   │       ├── react-app-env.d.ts     # React type definitions
-│   │       ├── logo.svg               # Logo asset
+│   │       ├── FetchPools.css
+│   │       ├── index.tsx
+│   │       ├── index.css
+│   │       ├── reportWebVitals.ts
+│   │       ├── setupTests.ts
 │   │       └── types/
-│   │           ├── poolTypeConfig.ts  # PoolTypeConfig interface
-│   │           ├── poolTypesConfig.ts # Pool type configuration constants
-│   │           ├── getAvailablePoolTypes.ts # Get available pool types function
-│   │           └── getPoolTypeById.ts # Get pool type by ID function
+│   │           ├── poolTypeConfig.ts
+│   │           ├── poolTypesConfig.ts
+│   │           ├── getAvailablePoolTypes.ts
+│   │           └── getPoolTypeById.ts
 │   │
 │   └── server/                         # Fastify backend server
-│       ├── package.json               # Server-specific dependencies
-│       ├── tsconfig.json              # TypeScript configuration (extends base)
-│       ├── jest.config.js             # Jest test configuration
+│       ├── package.json               # typescript 6.0.2 in devDependencies
+│       ├── tsconfig.json              # extends base, rootDir: src
+│       ├── jest.config.js
 │       └── src/
-│           ├── server/                # Server code
-│           │   ├── server.ts          # Filtering logic and exports
-│           │   ├── server-fastify.ts  # Fastify setup and routing
-│           │   └── __tests__/
-│           │       └── server.test.ts # Unit tests (30 tests, 100% coverage)
-│           └── types/
-│               ├── poolTypeConfig.ts  # PoolTypeConfig interface
-│               ├── poolTypesConfig.ts # Pool type configuration constants
-│               ├── getAvailablePoolTypes.ts # Get available pool types function
-│               └── getPoolTypeById.ts # Get pool type by ID function
+│           ├── server/
+│           │   ├── server-fastify.ts  # Fastify setup, routing, startup
+│           │   ├── server-fastify.test.ts
+│           │   └── schemas.ts         # JSON Schema for Fastify response validation
+│           ├── api/                   # External API client services (class + singleton)
+│           │   ├── defillama.pools.api.service.ts
+│           │   ├── defillama.hacks.api.service.ts
+│           │   ├── pendle.markets.api.service.ts
+│           │   └── coingecko.stablecoins.api.service.ts
+│           ├── services/              # Business logic services
+│           │   ├── pools.service.ts   # Pool filtering and categorisation
+│           │   ├── hacks.service.ts   # Hack map building and matching
+│           │   ├── depeg.service.ts   # Stablecoin depeg detection
+│           │   ├── pool-url.service.ts # Pool URL generation
+│           │   └── cache-warmer.service.ts # Startup cache warming (class + singleton)
+│           ├── db/
+│           │   └── cache.db.ts        # SQLite cache (1h fresh TTL, 2h stale fallback)
+│           ├── types/
+│           │   ├── poolTypeConfig.ts
+│           │   ├── poolTypesConfig.ts
+│           │   ├── getAvailablePoolTypes.ts
+│           │   └── getPoolTypeById.ts
+│           └── utils/
+│               └── slug.utils.ts
 │
-├── docs/                              # Documentation
-├── CHANGELOG.md                       # Version history
-└── README.md                          # Project overview
+├── docs/
+├── CHANGELOG.md
+└── README.md
 ```
 
 ## Important Constraints
 
 ### Cache Duration
-- Backend cache: 1 hour (3,600,000ms)
-- Do NOT reduce without database support
-- In-memory cache is lost on server restart
+- Fresh TTL: 1 hour — data is re-fetched after this
+- Stale fallback: 2 hours — stale data is used if a fresh fetch fails
+- Cache is SQLite on disk (`packages/server/src/data/cache.db`) and persists across restarts
+- On startup, `cacheWarmerService` pre-fills any missing or stale entries in the background
 
 ### API Rate Limiting
 - Llama API may have rate limits
@@ -397,7 +426,7 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && 
 ## When Making Changes
 
 ### Adding New Filters
-1. Add condition to `filterPools()` function in `packages/server/src/server/server.ts`
+1. Add condition to `applyBaseFilters()` in `packages/server/src/services/pools.service.ts`
 2. Update documentation here
 3. Ensure filters make business sense (TVL, APY, risk)
 
@@ -408,7 +437,6 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && 
    - **Functions**: `getAvailablePoolTypes()` and `getPoolTypeById()` are in separate files
 2. Add the new pool type to both `packages/client/src/types/` and `packages/server/src/types/`
 3. The API endpoint, UI button, and data fetching are automatically created
-4. Both client and server use identical pool type configuration files (maintained separately for now)
 
 ### Modifying API Response
 1. Update the appropriate type file in `packages/shared/src/types/`:
@@ -421,22 +449,21 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && 
 5. Test with actual API response
 
 ### Changing Cache Duration
-1. Update `CACHE_TTL_MS` in `packages/server/src/server/server-fastify.ts`
-2. Test cache invalidation behavior
+1. Update `FRESH_TTL_MS` or `MAX_STALE_MS` in `packages/server/src/db/cache.db.ts`
+2. Test cache invalidation behaviour
 3. Document rationale
 
 ## Testing
-- No current automated tests
-- Manual testing: `npm run dev` then check `http://localhost:3000`
-- Verify both table sections display correctly
-- Test cache expiration by running backend past 1 hour
+- 137 server unit tests via Jest — run with `npm test`
+- No client tests currently configured
+- ts-node uses `transpileOnly: true` so TypeScript errors don't surface at runtime; run `tsc --noEmit` to type-check
 
 ## Deployment Notes
 - Environment variable: `PORT` (defaults to 5000 for backend)
 - Backend must run before or alongside frontend
 - Use production build: `npm run build`
-- Consider Docker for containerization
-- Add persistent cache (Redis) before scaling to multiple instances
+- Consider Docker for containerisation
+- Add persistent shared cache (Redis) before scaling to multiple instances
 
 ## Common Issues
 
@@ -451,11 +478,10 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"statusCode":400' && 
 - Log pool count to debug
 
 ### Stale cache
-- Cache lasts 1 hour; restart backend to clear
-- Consider adding cache clear endpoint for admin
+- Cache is SQLite on disk — it persists across restarts
+- Delete `packages/server/src/data/cache.db` to force a full re-fetch on next startup
 
 ## Future Enhancements
-- [ ] Persist cache to database (Redis/PostgreSQL)
 - [ ] Add more filter options (APY range, chain selector)
 - [ ] Sort and pagination for tables
 - [ ] Real-time updates (WebSocket)
