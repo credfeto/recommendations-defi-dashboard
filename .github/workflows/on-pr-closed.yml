@@ -1,5 +1,5 @@
 --- # Cleanup on PR Close
-name: 'PR: Closed'
+name: "PR: Closed"
 on:
   pull_request:
     types:
@@ -9,12 +9,12 @@ jobs:
   cleanup-cache:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Initialise Workspace'
+      - name: "Initialise Workspace"
         if: startsWith(runner.name, 'buildagent-')
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: 'Set Active Environment'
+      - name: "Set Active Environment"
         shell: bash
         run: |
           {
@@ -23,12 +23,12 @@ jobs:
           echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: 'Install extensions'
+      - name: "Install extensions"
         run: gh extension install actions/gh-actions-cache
         env:
           GH_TOKEN: ${{ secrets.SOURCE_PUSH_TOKEN }}
 
-      - name: 'Cleanup'
+      - name: "Cleanup"
         run: |
           echo "Fetching list of cache key"
           cacheKeysForPR=$(gh actions-cache list -R "$REPO" -B "$BRANCH" -L 100 | cut -f 1 )
