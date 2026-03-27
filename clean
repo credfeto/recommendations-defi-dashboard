@@ -1,0 +1,72 @@
+#! /bin/sh
+
+die() {
+    echo "$@"
+    exit 1
+}
+
+cleanNodeModules() {
+  echo "Cleaning: $1"
+  rm -rf "$1" || die "Could not get rid of $1"
+
+}
+
+BASEDIR="$(dirname "$(readlink -f "$0")")"
+
+CLEAR="none"
+while [ $# -gt 0 ]; do
+  key="$1"
+
+  case $key in
+    -a|--all)
+      CLEAR="all"
+      shift # past argument
+      ;;
+    *)    # unknown option
+      shift # past argument
+      ;;
+  esac
+done
+
+########################################################
+## for "Local" verdaccio proxy cache
+########################################################
+# npm config set registry https://npm.local:5555
+# npm config set cafile /home/markr/work/personal/credfeto-dev-package-cache/certs/npm.local.crt
+
+########################################################
+## For standard registry
+########################################################
+# npm config set registry http://registry.npmjs.org/
+
+npm config set loglevel info
+npm config set fetch-retries 3
+npm config set fetch-retry-mintimeout 15000
+npm config set fetch-retry-maxtimeout 90000
+
+cleanNodeModules "$BASEDIR/node_modules"
+
+for FOLDER in $(find "$BASEDIR" | grep "$BASEDIR/src/" | grep /node_modules$)
+do
+  cleanNodeModules "$FOLDER"
+done
+
+NPM_OPTIONS="--no-fund --no-progress --no-audit"
+
+if [ "$CLEAR" != "all" ]; then
+  NPM_OPTIONS="$NPM_OPTIONS --prefer-offline"
+fi
+
+npm i $NPM_OPTIONS || die "Failed to restore packages"
+
+if sed --version >/dev/null 2>&1; then
+  # GNU sed
+  sed -i "s|http://npm.local:5554/|https://registry.npmjs.org/|g" package-lock.json
+  sed -i "s|https://npm.local:5555/|https://registry.npmjs.org/|g" package-lock.json
+  sed -i "s|https://npm.markridgwell.com/|https://registry.npmjs.org/|g" package-lock.json
+else
+  # BSD sed (macOS)
+  sed -i '' "s|http://npm.local:5554/|https://registry.npmjs.org/|g" package-lock.json
+  sed -i '' "s|https://npm.local:5555/|https://registry.npmjs.org/|g" package-lock.json
+  sed -i '' "s|https://npm.markridgwell.com/|https://registry.npmjs.org/|g" package-lock.json
+fi
