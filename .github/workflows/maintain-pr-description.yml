@@ -361,7 +361,7 @@ jobs:
 
             // Find the Description section content (supports # / ## / ### heading levels)
             function getDescriptionSectionContent(text) {
-              const sectionRegex = /^#{1,3}\s+Description\s*\n([\s\S]*?)(?=\n#{1,3}\s|$)/m;
+              const sectionRegex = /^#{1,3}\s+Description\s*\n([\s\S]*?)(?=\n#{1,3}\s|(?![\s\S]))/m;
               const match = text.match(sectionRegex);
               return match ? match[1] : null;
             }
@@ -460,7 +460,7 @@ jobs:
               .replace(AUTO_DESC_MARKER, '');
 
             // Replace the description section content, or prepend a new section
-            const sectionRegex = /(^#{1,3}\s+Description\s*\n)([\s\S]*?)(?=\n#{1,3}\s|$)/m;
+            const sectionRegex = /(^#{1,3}\s+Description\s*\n)([\s\S]*?)(?=\n#{1,3}\s|(?![\s\S]))/m;
             const sectionMatch = updatedBody.match(sectionRegex);
 
             if (sectionMatch) {
