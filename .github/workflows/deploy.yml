@@ -1,4 +1,4 @@
-name: '!!Deploy: Using Cloudformation'
+name: "!!Deploy: Using Cloudformation"
 on:
   workflow_dispatch:
     # note MAX inputs = 10
@@ -22,16 +22,16 @@ on:
         description: '6. API Prefix'
         required: false
       AWS_LOAD_BALANCER_HOSTNAME:
-        description: '7. AWS Load Balancer match hostname'
+        description: "7. AWS Load Balancer match hostname"
         required: false
       AWS_LOAD_BALANCER_PRIORITY:
-        description: '8. AWS Load Balancer match priority'
+        description: "8. AWS Load Balancer match priority"
         required: true
       DOCKER_CONTAINER_REGISTRY:
-        description: '9. AWS container registry to retrieve package from'
+        description: "9. AWS container registry to retrieve package from"
         required: true
       BUILD_VERSION:
-        description: '10. Build Version'
+        description: "10. Build Version"
         required: true
 
 # Don't cancel anything in progress
@@ -48,10 +48,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 'Correct ownership'
+      - name: "Correct ownership"
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: 'Set Active Environment'
+      - name: "Set Active Environment"
         shell: bash
         run: |
           {
@@ -60,14 +60,14 @@ jobs:
           echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: 'Checkout'
+      - name: "Checkout"
         uses: actions/checkout@v6.0.2
         with:
           clean: true
           fetch-depth: 0
           fetch-tags: true
 
-      - name: 'Log parameters'
+      - name: "Log parameters"
         shell: bash
         run: |
           echo "CLOUD_FORMATION_STACK: ${{inputs.CLOUD_FORMATION_STACK}}"
@@ -81,19 +81,19 @@ jobs:
           echo "DOCKER_CONTAINER_REGISTRY: ${{inputs.DOCKER_CONTAINER_REGISTRY}}"
           echo "AWS_LOAD_BALANCER_PRIORITY: ${{inputs.AWS_LOAD_BALANCER_PRIORITY}}"
 
-      - name: 'Configure AWS Credentials'
+      - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v6.0.0
         with:
           aws-access-key-id: ${{secrets.AWS_DOCKER_CONTAINER_REGISTRY_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{secrets.AWS_DOCKER_CONTAINER_REGISTRY_SECRET_ACCESS_KEY}}
           aws-region: ${{vars.AWS_REGION}}
 
-      - name: 'Cloudformation Deploy'
+      - name: "Cloudformation Deploy"
         uses: ./.github/actions/cloudformation-deploy
         with:
           CLOUD_FORMATION_STACK: ${{inputs.CLOUD_FORMATION_STACK}}
           CLOUDFORMATION_SNS_ARN: ${{vars.CLOUDFORMATION_SNS_ARN}}
-          CLOUD_FORMATION_TEMPLATE_FILE: '${{github.workspace}}/${{inputs.CLOUD_FORMATION_TEMPLATE_FILE}}'
+          CLOUD_FORMATION_TEMPLATE_FILE: "${{github.workspace}}/${{inputs.CLOUD_FORMATION_TEMPLATE_FILE}}"
           DOCKER_APP_OWNER: ${{inputs.DOCKER_APP_OWNER}}
           DOCKER_APP_NAME: ${{inputs.DOCKER_APP_NAME}}
           BUILD_VERSION: ${{inputs.BUILD_VERSION}}
@@ -103,7 +103,7 @@ jobs:
           AWS_LOAD_BALANCER_PRIORITY: ${{inputs.AWS_LOAD_BALANCER_PRIORITY}}
           DOCKER_CONTAINER_REGISTRY: ${{inputs.DOCKER_CONTAINER_REGISTRY}}
 
-      - name: 'Log Build Version'
+      - name: "Log Build Version"
         uses: actions/github-script@v8.0.0
         with:
           script: |
