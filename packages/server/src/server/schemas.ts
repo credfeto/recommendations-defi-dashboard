@@ -1,3 +1,13 @@
+const auditInfoSchema = {
+  type: 'object',
+  properties: {
+    audits: { type: 'number' },
+    auditLinks: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['audits', 'auditLinks'],
+  additionalProperties: false,
+} as const;
+
 const hackInfoSchema = {
   type: 'object',
   properties: {
@@ -71,6 +81,7 @@ const poolSchema = {
     apyBaseInception: { type: ['number', 'null'] },
     hacks: { type: 'array', items: hackInfoSchema },
     depegAlerts: { type: 'array', items: depegAlertSchema },
+    auditInfo: { anyOf: [auditInfoSchema, { type: 'null' }] },
   },
   required: [
     'chain',

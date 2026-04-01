@@ -1,10 +1,12 @@
 import { Predictions } from './predictions';
+import { AuditInfo } from './auditInfo';
 import { HackInfo } from './hackInfo';
 import { DepegAlert } from './depegAlert';
 
 export interface Pool {
   hacks: HackInfo[];
   depegAlerts: DepegAlert[];
+  auditInfo: AuditInfo | null;
   url: string | null;
   chain: string;
   project: string;

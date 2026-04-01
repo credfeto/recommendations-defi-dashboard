@@ -4,6 +4,9 @@ jest.mock('../db/cache.db', () => ({ getCached: jest.fn(), setCached: jest.fn(),
 
 jest.mock('../api/defillama.pools.api.service', () => ({ defiLlamaPoolsApiService: { fetchPools: jest.fn() } }));
 jest.mock('../api/defillama.hacks.api.service', () => ({ defiLlamaHacksApiService: { fetchHacks: jest.fn() } }));
+jest.mock('../api/defillama.protocols.api.service', () => ({
+  defiLlamaProtocolsApiService: { fetchProtocols: jest.fn() },
+}));
 jest.mock('../api/pendle.markets.api.service', () => ({ pendleMarketsApiService: { fetchMarkets: jest.fn() } }));
 jest.mock('../api/coingecko.stablecoins.api.service', () => ({
   coinGeckoStablecoinsApiService: { fetchStablecoins: jest.fn(), fetchCoinList: jest.fn() },
@@ -12,6 +15,7 @@ jest.mock('../api/coingecko.stablecoins.api.service', () => ({
 import { getCached, setCached, isFresh } from '../db/cache.db';
 import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
 import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
+import { defiLlamaProtocolsApiService } from '../api/defillama.protocols.api.service';
 import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
 import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api.service';
 
@@ -40,6 +44,7 @@ describe('CacheWarmerService', () => {
       expect(defiLlamaPoolsApiService.fetchPools).not.toHaveBeenCalled();
       expect(pendleMarketsApiService.fetchMarkets).not.toHaveBeenCalled();
       expect(defiLlamaHacksApiService.fetchHacks).not.toHaveBeenCalled();
+      expect(defiLlamaProtocolsApiService.fetchProtocols).not.toHaveBeenCalled();
       expect(coinGeckoStablecoinsApiService.fetchStablecoins).not.toHaveBeenCalled();
       expect(coinGeckoStablecoinsApiService.fetchCoinList).not.toHaveBeenCalled();
     });
@@ -73,6 +78,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockResolvedValue([]);
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
 
@@ -82,6 +88,7 @@ describe('CacheWarmerService', () => {
       expect(defiLlamaPoolsApiService.fetchPools).toHaveBeenCalledTimes(1);
       expect(pendleMarketsApiService.fetchMarkets).toHaveBeenCalledTimes(1);
       expect(defiLlamaHacksApiService.fetchHacks).toHaveBeenCalledTimes(1);
+      expect(defiLlamaProtocolsApiService.fetchProtocols).toHaveBeenCalledTimes(1);
       expect(coinGeckoStablecoinsApiService.fetchStablecoins).toHaveBeenCalledTimes(1);
       expect(coinGeckoStablecoinsApiService.fetchCoinList).toHaveBeenCalledTimes(1);
     });
@@ -92,6 +99,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockResolvedValue(poolsData);
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
 
@@ -106,6 +114,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockResolvedValue([]);
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
       const logger = makeLogger();
@@ -113,10 +122,11 @@ describe('CacheWarmerService', () => {
       cacheWarmerService.warmCache(logger);
       await flushPromises();
 
-      expect(logger.info).toHaveBeenCalledTimes(5);
+      expect(logger.info).toHaveBeenCalledTimes(6);
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(CACHE_KEYS.LLAMA_POOLS));
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(CACHE_KEYS.PENDLE_POOLS));
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(CACHE_KEYS.HACKS));
+      expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(CACHE_KEYS.PROTOCOLS));
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(CACHE_KEYS.STABLECOINS));
       expect(logger.info).toHaveBeenCalledWith(expect.stringContaining(CACHE_KEYS.COIN_LIST));
     });
@@ -129,6 +139,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockResolvedValue([]);
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
 
@@ -146,6 +157,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockRejectedValue(fetchError);
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
       const logger = makeLogger();
@@ -165,6 +177,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockRejectedValue(new Error('fail'));
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
 
@@ -179,6 +192,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockRejectedValue(new Error('fail'));
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
 
@@ -187,6 +201,7 @@ describe('CacheWarmerService', () => {
 
       expect(mockSetCached).toHaveBeenCalledWith(CACHE_KEYS.PENDLE_POOLS, expect.anything());
       expect(mockSetCached).toHaveBeenCalledWith(CACHE_KEYS.HACKS, expect.anything());
+      expect(mockSetCached).toHaveBeenCalledWith(CACHE_KEYS.PROTOCOLS, expect.anything());
       expect(mockSetCached).toHaveBeenCalledWith(CACHE_KEYS.STABLECOINS, expect.anything());
       expect(mockSetCached).toHaveBeenCalledWith(CACHE_KEYS.COIN_LIST, expect.anything());
     });
@@ -196,6 +211,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockRejectedValue(new Error('fail'));
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockResolvedValue([]);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockResolvedValue([]);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockResolvedValue([]);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockResolvedValue([]);
       const logger = makeLogger();
@@ -203,7 +219,7 @@ describe('CacheWarmerService', () => {
       cacheWarmerService.warmCache(logger);
       await flushPromises();
 
-      expect(logger.info).toHaveBeenCalledTimes(4);
+      expect(logger.info).toHaveBeenCalledTimes(5);
       expect(logger.error).toHaveBeenCalledTimes(1);
     });
   });
@@ -215,6 +231,7 @@ describe('CacheWarmerService', () => {
       (defiLlamaPoolsApiService.fetchPools as jest.Mock).mockRejectedValue(err);
       (pendleMarketsApiService.fetchMarkets as jest.Mock).mockRejectedValue(err);
       (defiLlamaHacksApiService.fetchHacks as jest.Mock).mockRejectedValue(err);
+      (defiLlamaProtocolsApiService.fetchProtocols as jest.Mock).mockRejectedValue(err);
       (coinGeckoStablecoinsApiService.fetchStablecoins as jest.Mock).mockRejectedValue(err);
       (coinGeckoStablecoinsApiService.fetchCoinList as jest.Mock).mockRejectedValue(err);
       const logger = makeLogger();
@@ -222,7 +239,7 @@ describe('CacheWarmerService', () => {
       cacheWarmerService.warmCache(logger);
       await flushPromises();
 
-      expect(logger.error).toHaveBeenCalledTimes(5);
+      expect(logger.error).toHaveBeenCalledTimes(6);
       expect(mockSetCached).not.toHaveBeenCalled();
     });
   });

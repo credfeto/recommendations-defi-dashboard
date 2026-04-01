@@ -6,7 +6,9 @@ import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
 import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
 import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
 import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api.service';
+import { defiLlamaProtocolsApiService } from '../api/defillama.protocols.api.service';
 import { buildHackMap, matchHacks } from '../services/hacks.service';
+import { buildProtocolAuditMap, matchAuditInfo } from '../services/protocols.service';
 import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
@@ -30,6 +32,17 @@ const getHackMap = async () => {
   try {
     const hacks = await getCachedOrFetch(CACHE_KEYS.HACKS, () => defiLlamaHacksApiService.fetchHacks());
     return buildHackMap(hacks);
+  } catch {
+    return new Map();
+  }
+};
+
+const getProtocolAuditMap = async () => {
+  try {
+    const protocols = await getCachedOrFetch(CACHE_KEYS.PROTOCOLS, () =>
+      defiLlamaProtocolsApiService.fetchProtocols(),
+    );
+    return buildProtocolAuditMap(protocols);
   } catch {
     return new Map();
   }
@@ -82,11 +95,12 @@ export const start = async (): Promise<void> => {
     }
 
     try {
-      const [allPools, hackMap, priceMap, addressMap] = await Promise.all([
+      const [allPools, hackMap, priceMap, addressMap, protocolAuditMap] = await Promise.all([
         getAllPools(),
         getHackMap(),
         getStablecoinPriceMap(),
         getStablecoinAddressMap(),
+        getProtocolAuditMap(),
       ]);
       const pools = filterPoolsByType(allPools, poolName)
         .map((pool) => ({
@@ -94,6 +108,7 @@ export const start = async (): Promise<void> => {
           url: getPoolUrl(pool),
           hacks: matchHacks(pool.project, hackMap),
           depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
+          auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
         }))
         .filter((pool) => pool.depegAlerts.length === 0);
       reply.header('Cache-Control', CACHE_CONTROL);

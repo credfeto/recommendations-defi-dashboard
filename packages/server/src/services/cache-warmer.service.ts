@@ -1,6 +1,7 @@
 import { getCached, setCached, isFresh } from '../db/cache.db';
 import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
 import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
+import { defiLlamaProtocolsApiService } from '../api/defillama.protocols.api.service';
 import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
 import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api.service';
 
@@ -8,6 +9,7 @@ export const CACHE_KEYS = {
   LLAMA_POOLS: 'defillama_pools',
   PENDLE_POOLS: 'pendle_pools',
   HACKS: 'defillama_hacks',
+  PROTOCOLS: 'defillama_protocols',
   STABLECOINS: 'coingecko_stablecoins',
   COIN_LIST: 'coingecko_coin_list',
 } as const;
@@ -19,6 +21,7 @@ export class CacheWarmerService {
     { key: CACHE_KEYS.LLAMA_POOLS, fetcher: () => defiLlamaPoolsApiService.fetchPools() },
     { key: CACHE_KEYS.PENDLE_POOLS, fetcher: () => pendleMarketsApiService.fetchMarkets() },
     { key: CACHE_KEYS.HACKS, fetcher: () => defiLlamaHacksApiService.fetchHacks() },
+    { key: CACHE_KEYS.PROTOCOLS, fetcher: () => defiLlamaProtocolsApiService.fetchProtocols() },
     { key: CACHE_KEYS.STABLECOINS, fetcher: () => coinGeckoStablecoinsApiService.fetchStablecoins() },
     { key: CACHE_KEYS.COIN_LIST, fetcher: () => coinGeckoStablecoinsApiService.fetchCoinList() },
   ];
