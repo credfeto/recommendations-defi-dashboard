@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
 import { getCachedOrFetch } from '../db/cache.db';
@@ -18,7 +18,7 @@ const PORT = parseInt(process.env.PORT || '5000', 10);
 
 const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
 
-const getAllPools = async (): Promise<any[]> => {
+const getAllPools = async () => {
   const [llamaPools, pendlePools] = await Promise.all([
     getCachedOrFetch(CACHE_KEYS.LLAMA_POOLS, () => defiLlamaPoolsApiService.fetchPools()),
     getCachedOrFetch(CACHE_KEYS.PENDLE_POOLS, () => pendleMarketsApiService.fetchMarkets()),
@@ -59,12 +59,12 @@ const getStablecoinAddressMap = async () => {
 };
 
 export const start = async (): Promise<void> => {
-  const fastify: any = Fastify({ logger: true });
+  const fastify = Fastify({ logger: true });
 
   await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
 
-  fastify.get('/api/pools', { schema: getPoolTypesSchema }, async (_request: any, reply: any) => {
+  fastify.get('/api/pools', { schema: getPoolTypesSchema }, async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
       reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: getAvailablePoolTypesMetadata() };
@@ -73,8 +73,8 @@ export const start = async (): Promise<void> => {
     }
   });
 
-  fastify.get('/api/pools/:poolName', { schema: getPoolsByNameSchema }, async (request: any, reply: any) => {
-    const { poolName } = request.params as { poolName: string };
+  fastify.get('/api/pools/:poolName', { schema: getPoolsByNameSchema }, async (request: FastifyRequest<{ Params: { poolName: string } }>, reply: FastifyReply) => {
+    const { poolName } = request.params;
 
     const validPoolTypes = getAvailableTypes().map((pt) => pt.id);
     if (!validPoolTypes.includes(poolName.toUpperCase())) {
@@ -89,16 +89,16 @@ export const start = async (): Promise<void> => {
         getStablecoinAddressMap(),
       ]);
       const pools = filterPoolsByType(allPools, poolName)
-        .map((pool: any) => ({
+        .map((pool) => ({
           ...pool,
           url: getPoolUrl(pool),
           hacks: matchHacks(pool.project, hackMap),
           depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
         }))
-        .filter((pool: any) => pool.depegAlerts.length === 0);
+        .filter((pool) => pool.depegAlerts.length === 0);
       reply.header('Cache-Control', CACHE_CONTROL);
       return { status: 'ok', data: pools };
-    } catch (error) {
+    } catch {
       return reply.code(500).send({ error: 'Failed to fetch pools' });
     }
   });
@@ -109,7 +109,7 @@ export const start = async (): Promise<void> => {
 
 start()
   .then(() => console.log(`Server listening on port ${PORT}`))
-  .catch((err) => {
+  .catch((err: unknown) => {
     console.error(err);
     process.exit(1);
   });
