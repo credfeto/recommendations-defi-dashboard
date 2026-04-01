@@ -11,9 +11,9 @@ inputs:
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: 'Create SBOM'
+    - name: "Create SBOM"
       shell: bash
       run: echo "Create SBOM..."
 

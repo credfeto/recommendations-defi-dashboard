@@ -1,4 +1,4 @@
-name: 'PR: Update'
+name: "PR: Update"
 on:
   pull_request:
     types:
@@ -17,25 +17,37 @@ env:
   BASE_REF: ${{github.base_ref}}
 
 jobs:
+  requirements:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check Required Secrets"
+        shell: bash
+        run: |
+          if [ -z "${{secrets.SOURCE_PUSH_TOKEN}}" ]; then
+            echo "::error::SOURCE_PUSH_TOKEN is required but not set"
+            exit 1
+          fi
+
   info:
     if: endsWith(github.repository , '-template')
     runs-on: ubuntu-latest
     steps:
-      - name: 'Initialise Workspace'
-        if: startsWith(runner.name, 'buildagent-')
+      - name: "Initialise Workspace"
+        if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: 'Set Active Environment'
+      - name: "Set Active Environment"
         shell: bash
         run: |
           {
-          echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
-          echo "ACTIVE_HOSTNAME=$HOSTNAME"
-          echo "ACTIVE_USER=$USER"
+            echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
+            echo "ACTIVE_HOSTNAME=$HOSTNAME"
+            echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: 'Info'
+      - name: "Info"
         uses: actions/github-script@v8.0.0
         with:
           script: |
@@ -51,24 +63,25 @@ jobs:
             core.info('Actor: ${{github.actor}}');
 
   add-pr-label:
+    needs: [requirements]
     if: ${{github.actor != 'dependabot[bot]'}}
     runs-on: ubuntu-latest
     steps:
-      - name: 'Initialise Workspace'
-        if: startsWith(runner.name, 'buildagent-')
+      - name: "Initialise Workspace"
+        if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: 'Set Active Environment'
+      - name: "Set Active Environment"
         shell: bash
         run: |
           {
-          echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
-          echo "ACTIVE_HOSTNAME=$HOSTNAME"
-          echo "ACTIVE_USER=$USER"
+            echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
+            echo "ACTIVE_HOSTNAME=$HOSTNAME"
+            echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: 'Add Labels'
+      - name: "Add Labels"
         uses: actions/labeler@v6
         with:
           repo-token: ${{secrets.SOURCE_PUSH_TOKEN}}
@@ -76,6 +89,7 @@ jobs:
           sync-labels: true
 
   assign-to-creator:
+    needs: [requirements]
     if: |-
       ${{!github.event.pull_request.assignee.login
       && github.event_name == 'pull_request'
@@ -83,21 +97,21 @@ jobs:
       && github.actor != 'dependabot[bot]'}}
     runs-on: ubuntu-latest
     steps:
-      - name: 'Initialise Workspace'
-        if: startsWith(runner.name, 'buildagent-')
+      - name: "Initialise Workspace"
+        if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: 'Set Active Environment'
+      - name: "Set Active Environment"
         shell: bash
         run: |
           {
-          echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
-          echo "ACTIVE_HOSTNAME=$HOSTNAME"
-          echo "ACTIVE_USER=$USER"
+            echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
+            echo "ACTIVE_HOSTNAME=$HOSTNAME"
+            echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: 'Assign PR to the creator'
+      - name: "Assign PR to the creator"
         uses: thomaseizinger/assign-pr-creator-action@v1.0.0
         with:
           repo-token: ${{secrets.SOURCE_PUSH_TOKEN}}

@@ -7,13 +7,13 @@ inputs:
     required: true
 outputs:
   file:
-    description: 'The file the secret was written to'
+    description: "The file the secret was written to"
     value: ${{ steps.generate-filename.outputs.file }}
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: 'Write secret to file'
+    - name: "Write secret to file"
       shell: bash
       id: generate-filename
       run: |
@@ -21,11 +21,12 @@ runs:
       env:
         WORKSPACE: ${{github.workspace}}
 
-    - name: 'Write secret to file'
+    - name: "Write secret to file"
       shell: bash
       id: write-file
       run: |
         echo "$VALUE" > "${FILE}"
       env:
-        FILE: '${{steps.generate-filename.outputs.file}}'
-        VALUE: '${{ inputs.SECRET }}'
+        FILE: "${{steps.generate-filename.outputs.file}}"
+        VALUE: "${{ inputs.SECRET }}"
+

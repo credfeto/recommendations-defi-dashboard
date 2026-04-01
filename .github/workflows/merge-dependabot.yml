@@ -1,4 +1,4 @@
-name: 'Dependabot: Merge updates'
+name: "Dependabot: Merge updates"
 on:
   # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
   # could and should work, at least for public repos;
@@ -20,17 +20,19 @@ on:
   check_suite:
     types:
       - completed
-  status: {}
+  status: { }
 
 permissions:
   contents: read
 
 jobs:
   auto-merge-dependabot-github-actions:
+
     if: |-
       vars.DEPENDABOT_AUTOMERGE == 'true' &&
       startsWith(github.head_ref, 'dependabot/github_actions/')
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       pull-requests: write
@@ -38,27 +40,36 @@ jobs:
     # Specifically check that dependabot (or another trusted party) created this pull-request, and that it has been labelled correctly.
 
     steps:
-      - name: 'Initialise Workspace'
-        if: startsWith(runner.name, 'buildagent-')
+      - name: "Initialise Workspace"
+        if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: 'Set Active Environment'
+      - name: "Set Active Environment"
         shell: bash
         run: |
           {
-          echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
-          echo "ACTIVE_HOSTNAME=$HOSTNAME"
-          echo "ACTIVE_USER=$USER"
+            echo "ACTIVE_RUNNER_NAME=${{runner.name}}"
+            echo "ACTIVE_HOSTNAME=$HOSTNAME"
+            echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: 'Check Owner'
+      - name: "Check Owner"
         uses: actions/github-script@v8.0.0
         with:
           script: |
             core.info('Owner: ${{github.repository_owner}}');
 
-      - name: 'Auto-Merge'
+      - name: "Check Required Secrets"
+        if: github.repository_owner == 'funfair-tech'
+        shell: bash
+        run: |
+          if [ -z "${{secrets.SOURCE_PUSH_TOKEN}}" ]; then
+            echo "::error::SOURCE_PUSH_TOKEN is required but not set"
+            exit 1
+          fi
+
+      - name: "Auto-Merge"
         if: github.repository_owner == 'funfair-tech'
         uses: pascalgn/automerge-action@v0.16.4
         env:
