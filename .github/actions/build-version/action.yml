@@ -8,16 +8,16 @@ inputs:
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: 'Define Build Version'
+    - name: "Define Build Version"
       uses: ./.github/actions/dotnet-tool-run
       with:
-        WORKING_DIRECTORY: '${{github.workspace}}'
-        TOOL_NAME: 'buildversion'
-        TOOL_ARGUMENTS: '--GithubToken "${{inputs.GITHUB_TOKEN}}" --TagPrefix "github"'
+        WORKING_DIRECTORY: "${{github.workspace}}"
+        TOOL_NAME: "buildversion"
+        TOOL_ARGUMENTS: "--GithubToken \"${{inputs.GITHUB_TOKEN}}\" --TagPrefix \"github\""
 
-    - name: 'Log build version'
+    - name: "Log build version"
       shell: bash
       run: |
         echo "****************************************************************"
