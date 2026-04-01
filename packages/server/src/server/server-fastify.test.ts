@@ -339,6 +339,8 @@ describe('Server API Tests', () => {
       dataSource: 'pendle',
       hacks: [],
       depegAlerts: [],
+      auditInfo: null,
+      contractSecurity: [],
     };
 
     const defillamaPool = {
@@ -374,6 +376,8 @@ describe('Server API Tests', () => {
       dataSource: 'defillama',
       hacks: [],
       depegAlerts: [],
+      auditInfo: null,
+      contractSecurity: [],
     };
 
     let serialize: (data: unknown) => string;
@@ -421,6 +425,33 @@ describe('Server API Tests', () => {
     test('DeFiLlama pool serialization preserves null predictions', () => {
       const result = JSON.parse(serialize({ status: 'ok', data: [defillamaPool] }));
       expect(result.data[0].predictions).toBeNull();
+    });
+
+    test('contractSecurity array serializes correctly', () => {
+      const poolWithSecurity = {
+        ...pendlePool,
+        contractSecurity: [
+          {
+            chain: 'Ethereum',
+            address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
+            parentAddress: null,
+            isOpenSource: 1,
+            isHoneypot: 0,
+            isProxy: 1,
+            buyTax: 0,
+            sellTax: 0,
+            transferTax: 0,
+            cannotBuy: 0,
+            honeypotWithSameCreator: 0,
+            tokenName: 'stETH',
+            tokenSymbol: 'stETH',
+          },
+        ],
+      };
+      expect(() => serialize({ status: 'ok', data: [poolWithSecurity] })).not.toThrow();
+      const result = JSON.parse(serialize({ status: 'ok', data: [poolWithSecurity] }));
+      expect(result.data[0].contractSecurity).toHaveLength(1);
+      expect(result.data[0].contractSecurity[0].isProxy).toBe(1);
     });
   });
 });

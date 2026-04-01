@@ -3,13 +3,7 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   {
     files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 2018,
-        sourceType: 'module',
-      },
-    },
+    languageOptions: { parser: tsParser, parserOptions: { ecmaVersion: 2018, sourceType: 'module' } },
     rules: {
       // TypeScript compiler handles import resolution; the linter environment
       // does not have node_modules installed so these rules produce false positives

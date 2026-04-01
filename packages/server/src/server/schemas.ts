@@ -1,9 +1,27 @@
-const auditInfoSchema = {
+const contractSecuritySchema = {
   type: 'object',
   properties: {
-    audits: { type: 'number' },
-    auditLinks: { type: 'array', items: { type: 'string' } },
+    chain: { type: 'string' },
+    address: { type: 'string' },
+    parentAddress: { type: ['string', 'null'] },
+    isOpenSource: { type: ['number', 'null'] },
+    isHoneypot: { type: ['number', 'null'] },
+    isProxy: { type: ['number', 'null'] },
+    buyTax: { type: ['number', 'null'] },
+    sellTax: { type: ['number', 'null'] },
+    transferTax: { type: ['number', 'null'] },
+    cannotBuy: { type: ['number', 'null'] },
+    honeypotWithSameCreator: { type: ['number', 'null'] },
+    tokenName: { type: ['string', 'null'] },
+    tokenSymbol: { type: ['string', 'null'] },
   },
+  required: ['chain', 'address', 'parentAddress'],
+  additionalProperties: false,
+} as const;
+
+const auditInfoSchema = {
+  type: 'object',
+  properties: { audits: { type: 'number' }, auditLinks: { type: 'array', items: { type: 'string' } } },
   required: ['audits', 'auditLinks'],
   additionalProperties: false,
 } as const;
@@ -82,6 +100,7 @@ const poolSchema = {
     hacks: { type: 'array', items: hackInfoSchema },
     depegAlerts: { type: 'array', items: depegAlertSchema },
     auditInfo: { anyOf: [auditInfoSchema, { type: 'null' }] },
+    contractSecurity: { type: 'array', items: contractSecuritySchema },
   },
   required: [
     'chain',

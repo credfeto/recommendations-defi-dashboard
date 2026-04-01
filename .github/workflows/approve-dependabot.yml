@@ -1,4 +1,4 @@
-name: "Dependabot: Approve updates"
+name: 'Dependabot: Approve updates'
 on:
   # https://securitylab.github.com/research/github-actions-preventing-pwn-requests
   # could and should work, at least for public repos;
@@ -17,13 +17,12 @@ on:
 permissions:
   contents: read
 
-
 jobs:
   requirements:
     if: vars.DEPENDABOT_AUTOMERGE == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: "Check Required Secrets"
+      - name: 'Check Required Secrets'
         shell: bash
         run: |
           if [ -z "${{secrets.SOURCE_PUSH_TOKEN}}" ]; then
@@ -37,21 +36,19 @@ jobs:
       vars.DEPENDABOT_AUTOMERGE == 'true' &&
       startsWith(github.head_ref, 'dependabot/github_actions/')
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
 
-
     # Specifically check that dependabot (or another trusted party) created this pull-request, and that it has been labelled correctly.
 
     steps:
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         shell: bash
         run: |
           {
@@ -60,17 +57,17 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: "Check Repo Owner"
+      - name: 'Check Repo Owner'
         uses: actions/github-script@v8.0.0
         with:
           script: |
             core.info('Owner: ${{github.repository_owner}}');
 
-      - name: "Auto Merge"
+      - name: 'Auto Merge'
         uses: alexwilson/enable-github-automerge-action@2.0.0
         with:
           github-token: ${{secrets.SOURCE_PUSH_TOKEN}}
-          merge-method: "MERGE"
+          merge-method: 'MERGE'
 
   enable-auto-merge-npm:
     needs: [requirements]
@@ -78,7 +75,6 @@ jobs:
       vars.DEPENDABOT_AUTOMERGE == 'true' &&
       startsWith(github.head_ref, 'dependabot/npm_and_yarn/')
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
@@ -86,12 +82,12 @@ jobs:
     # Specifically check that dependabot (or another trusted party) created this pull-request, and that it has been labelled correctly.
 
     steps:
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         shell: bash
         run: |
           {
@@ -100,17 +96,17 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: "Check Repo Owner"
+      - name: 'Check Repo Owner'
         uses: actions/github-script@v8.0.0
         with:
           script: |
             core.info('Owner: ${{github.repository_owner}}');
 
-      - name: "Auto Merge"
+      - name: 'Auto Merge'
         uses: alexwilson/enable-github-automerge-action@2.0.0
         with:
           github-token: ${{secrets.SOURCE_PUSH_TOKEN}}
-          merge-method: "MERGE"
+          merge-method: 'MERGE'
 
   auto-approve-dependabot-gitub-actions:
     needs: [requirements]
@@ -118,18 +114,17 @@ jobs:
       vars.DEPENDABOT_AUTOMERGE == 'true' &&
       startsWith(github.head_ref, 'dependabot/github_actions/')
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
 
     steps:
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         shell: bash
         run: |
           {
@@ -138,13 +133,13 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: "Check Repo Owner"
+      - name: 'Check Repo Owner'
         uses: actions/github-script@v8.0.0
         with:
           script: |
             core.info('Owner: ${{github.repository_owner}}');
 
-      - name: "Approve"
+      - name: 'Approve'
         uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{secrets.SOURCE_PUSH_TOKEN}}
@@ -155,18 +150,17 @@ jobs:
       vars.DEPENDABOT_AUTOMERGE == 'true' &&
       startsWith(github.head_ref, 'dependabot/npm_and_yarn/')
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
 
     steps:
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         shell: bash
         run: |
           {
@@ -175,13 +169,13 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: "Check Repo Owner"
+      - name: 'Check Repo Owner'
         uses: actions/github-script@v8.0.0
         with:
           script: |
             core.info('Owner: ${{github.repository_owner}}');
 
-      - name: "Approve"
+      - name: 'Approve'
         uses: hmarr/auto-approve-action@v4
         with:
           github-token: ${{secrets.SOURCE_PUSH_TOKEN}}

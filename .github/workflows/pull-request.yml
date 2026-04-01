@@ -1,12 +1,12 @@
-name: "PR: Create"
+name: 'PR: Create'
 on:
   push:
     branches-ignore:
       - master
       - main
       - develop
-      - "release/**"
-      - "hotfix/**"
+      - 'release/**'
+      - 'hotfix/**'
 
 permissions:
   contents: read
@@ -26,12 +26,12 @@ jobs:
   info:
     runs-on: ubuntu-latest
     steps:
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         id: active-env
         shell: bash
         run: |
@@ -41,7 +41,7 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_OUTPUT"
 
-      - name: "Info"
+      - name: 'Info'
         uses: actions/github-script@v8.0.0
         with:
           script: |
@@ -58,12 +58,12 @@ jobs:
       REPO_STATUS: private
 
     steps:
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         id: active-env
         shell: bash
         run: |
@@ -73,20 +73,20 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_OUTPUT"
 
-      - name: "Checkout source"
+      - name: 'Checkout source'
         uses: actions/checkout@v6.0.2
         with:
           clean: true
           fetch-depth: 1
           fetch-tags: true
 
-      - name: "Find PR For branch"
+      - name: 'Find PR For branch'
         uses: juliangruber/find-pull-request-action@v1.11.0
         id: findPr
         with:
           branch: ${{github.ref_name}}
 
-      - name: "Existing PR Information"
+      - name: 'Existing PR Information'
         if: steps.findPr.outputs.number != ''
         uses: actions/github-script@v8.0.0
         with:
@@ -94,14 +94,14 @@ jobs:
             core.info('Pull request already exists with id: ${{steps.findPr.outputs.number}}');
             core.info('URL: https://github.com/${{env.REPO}}/pull/${{steps.findPr.outputs.number}}');
 
-      - name: "Read PR Template"
+      - name: 'Read PR Template'
         if: steps.findPr.outputs.number == ''
         id: pr-template
         uses: juliangruber/read-file-action@v1.1.8
         with:
           path: ./.github/PULL_REQUEST_TEMPLATE.md
 
-      - name: "Get last commit info"
+      - name: 'Get last commit info'
         if: steps.findPr.outputs.number == ''
         id: commit-info
         shell: bash
@@ -109,7 +109,7 @@ jobs:
           title="$(git log -1 --pretty=%s)"
           echo "commit-title=$title" >> "$GITHUB_OUTPUT"
 
-      - name: "Check Required Secrets"
+      - name: 'Check Required Secrets'
         if: env.REPO_STATUS == '' &&steps.findPr.outputs.number == ''
         shell: bash
         run: |
@@ -118,7 +118,7 @@ jobs:
             exit 1
           fi
 
-      - name: "Check Repo Visibility"
+      - name: 'Check Repo Visibility'
         if: env.REPO_STATUS == '' &&steps.findPr.outputs.number == ''
         uses: credfeto/action-repo-visibility@v1.2.0
         id: visibility
@@ -126,7 +126,7 @@ jobs:
           repository: ${{env.REPO}}
           token: ${{secrets.SOURCE_PUSH_TOKEN}}
 
-      - name: "Override DRAFT Flag"
+      - name: 'Override DRAFT Flag'
         id: draft-flag
         if: |-
           steps.findPr.outputs.number == ''
@@ -135,7 +135,7 @@ jobs:
         shell: bash
         run: echo "create-draft=false" >> "$GITHUB_OUTPUT"
 
-      - name: "Status"
+      - name: 'Status'
         uses: actions/github-script@v8.0.0
         with:
           script: |
@@ -146,21 +146,21 @@ jobs:
             core.info('Owner OK: ${{env.REPO_OWNER != 'funfair-tech'}}');
             core.info('Status OK: ${{env.REPO_STATUS == 'private'}}');
 
-      - name: "Create Pull Request"
+      - name: 'Create Pull Request'
         if: steps.findPr.outputs.number == ''
         id: open-pr
         uses: repo-sync/pull-request@v2.12
         with:
-          source_branch: ""                     # If blank, default: triggered branch
-          destination_branch: "main"            # If blank, default: master
-          pr_assignee: ${{github.actor}}      # Comma-separated list (no spaces)
-          pr_label: "auto-pr"                   # Comma-separated list (no spaces)
-          pr_draft: ${{steps.draft-flag.outputs.create-draft || env.CREATE_DRAFT}}                        # Creates pull request as draft
+          source_branch: '' # If blank, default: triggered branch
+          destination_branch: 'main' # If blank, default: master
+          pr_assignee: ${{github.actor}} # Comma-separated list (no spaces)
+          pr_label: 'auto-pr' # Comma-separated list (no spaces)
+          pr_draft: ${{steps.draft-flag.outputs.create-draft || env.CREATE_DRAFT}} # Creates pull request as draft
           pr_title: ${{steps.commit-info.outputs.commit-title}}
           pr_body: ${{steps.pr-template.outputs.content}}
           github_token: ${{github.token}}
 
-      - name: "New PR Details"
+      - name: 'New PR Details'
         if: steps.findPr.outputs.number == ''
         uses: actions/github-script@v8.0.0
         with:
@@ -169,7 +169,7 @@ jobs:
             core.info('PR: ${{steps.open-pr.outputs.pr_number}}');
             core.info('CF: ${{steps.open-pr.outputs.has_changed_files}}');
 
-      - name: "Check Required Secrets"
+      - name: 'Check Required Secrets'
         if: steps.findPr.outputs.number == ''
         shell: bash
         run: |
@@ -178,7 +178,7 @@ jobs:
             exit 1
           fi
 
-      - name: "Sync Labels"
+      - name: 'Sync Labels'
         if: steps.findPr.outputs.number == ''
         uses: actions/labeler@v6
         with:

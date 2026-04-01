@@ -5,21 +5,9 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 const mockProtocols: RawProtocol[] = [
-  {
-    slug: 'aave-v3',
-    audits: '2',
-    audit_links: ['https://aave.com/security'],
-  },
-  {
-    slug: 'lido',
-    audits: '2',
-    audit_links: ['https://github.com/lidofinance/audits'],
-  },
-  {
-    slug: 'unknown-protocol',
-    audits: '0',
-    audit_links: null,
-  },
+  { slug: 'aave-v3', audits: '2', audit_links: ['https://aave.com/security'] },
+  { slug: 'lido', audits: '2', audit_links: ['https://github.com/lidofinance/audits'] },
+  { slug: 'unknown-protocol', audits: '0', audit_links: null },
 ];
 
 describe('DefiLlamaProtocolsApiService', () => {

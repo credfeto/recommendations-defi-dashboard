@@ -1,5 +1,6 @@
 // Re-export shared types
 export * from './types/auditInfo';
+export * from './types/contractSecurityInfo';
 export * from './types/depegAlert';
 export * from './types/hackInfo';
 export * from './types/predictions';

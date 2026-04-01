@@ -9,10 +9,7 @@ export function buildProtocolAuditMap(protocols: RawProtocol[]): ProtocolAuditMa
 
   for (const p of protocols) {
     if (!p.slug) continue;
-    const info: AuditInfo = {
-      audits: parseInt(p.audits ?? '0', 10) || 0,
-      auditLinks: p.audit_links ?? [],
-    };
+    const info: AuditInfo = { audits: parseInt(p.audits ?? '0', 10) || 0, auditLinks: p.audit_links ?? [] };
     map.set(p.slug, info);
 
     const base = baseSlug(p.slug);

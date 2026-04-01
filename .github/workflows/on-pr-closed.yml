@@ -1,5 +1,5 @@
 --- # Cleanup on PR Close
-name: "PR: Closed"
+name: 'PR: Closed'
 on:
   pull_request:
     types:
@@ -9,7 +9,7 @@ jobs:
   cleanup-cache:
     runs-on: ubuntu-latest
     steps:
-      - name: "Check Required Secrets"
+      - name: 'Check Required Secrets'
         shell: bash
         run: |
           if [ -z "${{secrets.SOURCE_PUSH_TOKEN}}" ]; then
@@ -17,12 +17,12 @@ jobs:
             exit 1
           fi
 
-      - name: "Initialise Workspace"
+      - name: 'Initialise Workspace'
         if: runner.environment == 'self-hosted'
         shell: bash
         run: sudo chown -R "$USER:$USER" "$GITHUB_WORKSPACE"
 
-      - name: "Set Active Environment"
+      - name: 'Set Active Environment'
         shell: bash
         run: |
           {
@@ -31,13 +31,13 @@ jobs:
             echo "ACTIVE_USER=$USER"
           } >> "$GITHUB_ENV"
 
-      - name: "Install extensions"
+      - name: 'Install extensions'
         shell: bash
         run: gh extension install actions/gh-actions-cache
         env:
           GH_TOKEN: ${{secrets.SOURCE_PUSH_TOKEN}}
 
-      - name: "Cleanup"
+      - name: 'Cleanup'
         shell: bash
         run: |
           echo "Fetching list of cache key"

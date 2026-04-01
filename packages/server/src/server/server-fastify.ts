@@ -9,6 +9,7 @@ import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api
 import { defiLlamaProtocolsApiService } from '../api/defillama.protocols.api.service';
 import { buildHackMap, matchHacks } from '../services/hacks.service';
 import { buildProtocolAuditMap, matchAuditInfo } from '../services/protocols.service';
+import { getContractSecurityForAddresses } from '../services/contract-security.service';
 import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
@@ -39,9 +40,7 @@ const getHackMap = async () => {
 
 const getProtocolAuditMap = async () => {
   try {
-    const protocols = await getCachedOrFetch(CACHE_KEYS.PROTOCOLS, () =>
-      defiLlamaProtocolsApiService.fetchProtocols(),
-    );
+    const protocols = await getCachedOrFetch(CACHE_KEYS.PROTOCOLS, () => defiLlamaProtocolsApiService.fetchProtocols());
     return buildProtocolAuditMap(protocols);
   } catch {
     return new Map();
@@ -86,37 +85,50 @@ export const start = async (): Promise<void> => {
     }
   });
 
-  fastify.get('/api/pools/:poolName', { schema: getPoolsByNameSchema }, async (request: FastifyRequest<{ Params: { poolName: string } }>, reply: FastifyReply) => {
-    const { poolName } = request.params;
+  fastify.get(
+    '/api/pools/:poolName',
+    { schema: getPoolsByNameSchema },
+    async (request: FastifyRequest<{ Params: { poolName: string } }>, reply: FastifyReply) => {
+      const { poolName } = request.params;
 
-    const validPoolTypes = getAvailableTypes().map((pt) => pt.id);
-    if (!validPoolTypes.includes(poolName.toUpperCase())) {
-      return reply.code(400).send({ error: `Invalid pool name. Valid options: ${validPoolTypes.join(', ')}` });
-    }
+      const validPoolTypes = getAvailableTypes().map((pt) => pt.id);
+      if (!validPoolTypes.includes(poolName.toUpperCase())) {
+        return reply.code(400).send({ error: `Invalid pool name. Valid options: ${validPoolTypes.join(', ')}` });
+      }
 
-    try {
-      const [allPools, hackMap, priceMap, addressMap, protocolAuditMap] = await Promise.all([
-        getAllPools(),
-        getHackMap(),
-        getStablecoinPriceMap(),
-        getStablecoinAddressMap(),
-        getProtocolAuditMap(),
-      ]);
-      const pools = filterPoolsByType(allPools, poolName)
-        .map((pool) => ({
-          ...pool,
-          url: getPoolUrl(pool),
-          hacks: matchHacks(pool.project, hackMap),
-          depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
-          auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
-        }))
-        .filter((pool) => pool.depegAlerts.length === 0);
-      reply.header('Cache-Control', CACHE_CONTROL);
-      return { status: 'ok', data: pools };
-    } catch {
-      return reply.code(500).send({ error: 'Failed to fetch pools' });
-    }
-  });
+      try {
+        const [allPools, hackMap, priceMap, addressMap, protocolAuditMap] = await Promise.all([
+          getAllPools(),
+          getHackMap(),
+          getStablecoinPriceMap(),
+          getStablecoinAddressMap(),
+          getProtocolAuditMap(),
+        ]);
+        const pools = filterPoolsByType(allPools, poolName)
+          .map((pool) => ({
+            ...pool,
+            url: getPoolUrl(pool),
+            hacks: matchHacks(pool.project, hackMap),
+            depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
+            auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
+          }))
+          .filter((pool) => pool.depegAlerts.length === 0);
+
+        // Enrich each pool with contract security info (DB-cached, 24h TTL)
+        const enriched = await Promise.all(
+          pools.map(async (pool) => ({
+            ...pool,
+            contractSecurity: await getContractSecurityForAddresses(pool.chain, pool.underlyingTokens ?? []),
+          })),
+        );
+
+        reply.header('Cache-Control', CACHE_CONTROL);
+        return { status: 'ok', data: enriched };
+      } catch {
+        return reply.code(500).send({ error: 'Failed to fetch pools' });
+      }
+    },
+  );
 
   await fastify.listen({ port: PORT, host: '0.0.0.0' });
   cacheWarmerService.warmCache(fastify.log);
