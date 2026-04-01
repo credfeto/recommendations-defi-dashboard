@@ -8,7 +8,7 @@
     "packages/server"
   ],
   "devDependencies": {
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.2.1",
     "husky": "^9.1.7",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2"
