@@ -12,8 +12,8 @@ log:
 
   # the log level; note: detailed logging suppress the ETUI
   # SYFT_LOG_LEVEL env var
-  level: 'error'
+  level: "error"
 
   # location to write the log file (default is not to have a log file)
   # SYFT_LOG_FILE env var
-  file: ''
+  file: ""
