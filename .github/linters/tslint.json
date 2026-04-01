@@ -1,15 +1,32 @@
 {
   "extends": ["rxjs-tslint-rules"],
-  "linterOptions": { "exclude": ["node_modules/**", "**/*.json", "**/*.spec.ts", "**/*.mock.ts", "./src/ABI/**/*"] },
+  "linterOptions": {
+    "exclude": [
+      "node_modules/**",
+      "**/*.json",
+      "**/*.spec.ts",
+      "**/*.mock.ts",
+      "./src/ABI/**/*"
+    ]
+  },
   "rulesDirectory": ["node_modules/codelyzer"],
   "rules": {
-    "rxjs-prefer-observer": { "options": [{ "allowNext": true }], "severity": "error" },
+    "rxjs-prefer-observer": {
+      "options": [
+        {
+          "allowNext": true
+        }
+      ],
+      "severity": "error"
+    },
     "arrow-return-shorthand": true,
     "callable-types": true,
     "class-name": true,
     "comment-format": [true, "check-space"],
     "curly": true,
-    "deprecation": { "severity": "warn" },
+    "deprecation": {
+      "severity": "warn"
+    },
     "eofline": true,
     "forin": true,
     "import-blacklist": [true, "rxjs/Rx"],
@@ -19,7 +36,17 @@
     "label-position": true,
     "max-line-length": [true, 140],
     "member-access": true,
-    "member-ordering": [true, { "order": ["static-field", "instance-field", "static-method", "instance-method"] }],
+    "member-ordering": [
+      true,
+      {
+        "order": [
+          "static-field",
+          "instance-field",
+          "static-method",
+          "instance-method"
+        ]
+      }
+    ],
     "no-arg": true,
     "no-any": true,
     "no-bitwise": false,
@@ -43,7 +70,13 @@
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "object-literal-sort-keys": false,
-    "one-line": [true, "check-open-brace", "check-catch", "check-else", "check-whitespace"],
+    "one-line": [
+      true,
+      "check-open-brace",
+      "check-catch",
+      "check-else",
+      "check-whitespace"
+    ],
     "prefer-const": true,
     "quotemark": [true, "single"],
     "radix": true,
@@ -69,7 +102,14 @@
     ],
     "unified-signatures": true,
     "variable-name": false,
-    "whitespace": [true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type"],
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type"
+    ],
     "no-output-on-prefix": true,
     "no-inputs-metadata-property": true,
     "no-outputs-metadata-property": true,
