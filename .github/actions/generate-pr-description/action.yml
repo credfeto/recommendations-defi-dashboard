@@ -30,7 +30,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: 'Generate description from diff'
+    - name: "Generate description from diff"
       id: generate
       uses: actions/github-script@v8
       env:
