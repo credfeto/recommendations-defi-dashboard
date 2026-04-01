@@ -1,95 +1,96 @@
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: ''
-    schedule:
-      interval: daily
-      time: '03:00'
-      timezone: 'Europe/London'
-    open-pull-requests-limit: 99
-    assignees:
-      - credfeto
-    commit-message:
-      prefix: '[Dependencies]'
-    labels:
-      - 'npm'
-      - 'dependencies'
-      - 'Changelog Not Required'
-    versioning-strategy: increase-if-necessary
-    allow:
-      - dependency-type: all
 
-  - package-ecosystem: npm
-    directory: '/packages/client'
-    schedule:
-      interval: daily
-      time: '03:00'
-      timezone: 'Europe/London'
-    open-pull-requests-limit: 99
-    assignees:
-      - credfeto
-    commit-message:
-      prefix: '[Dependencies]'
-    labels:
-      - 'npm'
-      - 'dependencies'
-      - 'Changelog Not Required'
-    versioning-strategy: increase-if-necessary
-    allow:
-      - dependency-type: all
+- package-ecosystem: npm
+  directory: ""
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: "Europe/London"
+  open-pull-requests-limit: 99
+  assignees:
+  - credfeto
+  commit-message:
+    prefix: "[Dependencies]"
+  labels:
+  - "npm"
+  - "dependencies"
+  - "Changelog Not Required"
+  versioning-strategy: increase-if-necessary
+  allow:
+  - dependency-type: all
 
-  - package-ecosystem: npm
-    directory: '/packages/shared'
-    schedule:
-      interval: daily
-      time: '03:00'
-      timezone: 'Europe/London'
-    open-pull-requests-limit: 99
-    assignees:
-      - credfeto
-    commit-message:
-      prefix: '[Dependencies]'
-    labels:
-      - 'npm'
-      - 'dependencies'
-      - 'Changelog Not Required'
-    versioning-strategy: increase-if-necessary
-    allow:
-      - dependency-type: all
+- package-ecosystem: npm
+  directory: "/packages/client"
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: "Europe/London"
+  open-pull-requests-limit: 99
+  assignees:
+  - credfeto
+  commit-message:
+    prefix: "[Dependencies]"
+  labels:
+  - "npm"
+  - "dependencies"
+  - "Changelog Not Required"
+  versioning-strategy: increase-if-necessary
+  allow:
+  - dependency-type: all
 
-  - package-ecosystem: npm
-    directory: '/packages/server'
-    schedule:
-      interval: daily
-      time: '03:00'
-      timezone: 'Europe/London'
-    open-pull-requests-limit: 99
-    assignees:
-      - credfeto
-    commit-message:
-      prefix: '[Dependencies]'
-    labels:
-      - 'npm'
-      - 'dependencies'
-      - 'Changelog Not Required'
-    versioning-strategy: increase-if-necessary
-    allow:
-      - dependency-type: all
+- package-ecosystem: npm
+  directory: "/packages/shared"
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: "Europe/London"
+  open-pull-requests-limit: 99
+  assignees:
+  - credfeto
+  commit-message:
+    prefix: "[Dependencies]"
+  labels:
+  - "npm"
+  - "dependencies"
+  - "Changelog Not Required"
+  versioning-strategy: increase-if-necessary
+  allow:
+  - dependency-type: all
 
-  - package-ecosystem: github-actions
-    directory: '/'
-    schedule:
-      interval: daily
-      time: '03:00'
-      timezone: 'Europe/London'
-    open-pull-requests-limit: 99
-    assignees:
-      - credfeto
-    commit-message:
-      prefix: '[Dependencies]'
-    labels:
-      - 'github-actions'
-      - 'dependencies'
-      - 'Changelog Not Required'
-    allow:
-      - dependency-type: all
+- package-ecosystem: npm
+  directory: "/packages/server"
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: "Europe/London"
+  open-pull-requests-limit: 99
+  assignees:
+  - credfeto
+  commit-message:
+    prefix: "[Dependencies]"
+  labels:
+  - "npm"
+  - "dependencies"
+  - "Changelog Not Required"
+  versioning-strategy: increase-if-necessary
+  allow:
+  - dependency-type: all
+
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: "Europe/London"
+  open-pull-requests-limit: 99
+  assignees:
+  - credfeto
+  commit-message:
+    prefix: "[Dependencies]"
+  labels:
+  - "github-actions"
+  - "dependencies"
+  - "Changelog Not Required"
+  allow:
+  - dependency-type: all
