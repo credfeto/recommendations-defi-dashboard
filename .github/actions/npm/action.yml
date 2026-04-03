@@ -1,4 +1,5 @@
 --- # Build and deploy packages
+# ci-trigger: re-run build check (2026-04-03)
 name: 'Build using NPM'
 description: 'Builds using NPM'
 inputs:
