@@ -33,6 +33,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Changed
 
+- Bump @emnapi/core from 1.9.1 to 1.9.2
 - **Server restructured** into distinct layers:
   - `api/` — third-party API clients (`defillama.pools.api.service.ts`, `defillama.hacks.api.service.ts`, `pendle.markets.api.service.ts`)
   - `db/` — SQLite persistent cache (`cache.db.ts`) via `better-sqlite3`
