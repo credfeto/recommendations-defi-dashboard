@@ -30,6 +30,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - PR description template and automated maintenance workflow to initialize and update descriptions for draft pull requests
 - Auto-generate PR descriptions using GitHub Models API (gpt-4o-mini) when the Description section is empty; description is maintained by regenerating on new commits unless manually edited
 - Warm API cache on startup — missing or stale cache entries are fetched in the background when the server starts; errors are logged per entry and do not block other fetches or server startup
+- Add MCP server exposing get_pool_types, get_pools, and check_contract_security tools
 
 ### Fixed
 
