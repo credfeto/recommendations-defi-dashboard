@@ -1,0 +1,8 @@
+node_modules
+packages/*/node_modules
+packages/client/build
+packages/server/dist
+.git
+.github
+*.md
+docs
