@@ -423,6 +423,10 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"error"' && echo "✓
 - No client tests currently configured
 - ts-node uses `transpileOnly: true` so TypeScript errors don't surface at runtime; run `tsc --noEmit` to type-check
 
+### Integration / E2E Test Assertions
+- Integration tests must include at least minimal assertions on the returned shape and values — it is not sufficient to assert only that no exception was thrown. At minimum, verify that required fields are present and have the expected types (e.g. numeric fields are finite numbers, string fields are non-empty).
+- Console logging in integration tests is allowed for debugging, but must be gated behind a debug flag (e.g. `process.env.DEBUG`) so the test output is clean when run locally without that flag set and in CI.
+
 ## Deployment Notes
 - Environment variable: `PORT` (defaults to 5000 for backend)
 - Backend must run before or alongside frontend
