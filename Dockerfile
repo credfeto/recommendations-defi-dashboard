@@ -44,7 +44,7 @@ RUN rm -f /etc/nginx/http.d/default.conf
 COPY --from=client-builder /build/packages/client/build /app/client
 
 # ── Server: install workspace deps for production ─────────────────────────────
-WORKDIR /app/server
+WORKDIR /app
 
 # Copy workspace manifests and base tsconfig (needed for ts-node path resolution)
 COPY package.json package-lock.json tsconfig.base.json /app/
@@ -53,7 +53,7 @@ COPY packages/client/package.json /app/packages/client/
 COPY packages/server/package.json /app/packages/server/
 
 # Install all deps (ts-node + tsconfig-paths are devDeps needed at runtime)
-RUN cd /app && npm ci --include=dev
+RUN npm ci --include=dev
 
 # Copy server and shared source
 COPY packages/server /app/packages/server/
