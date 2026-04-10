@@ -1,0 +1,57 @@
+# MCP Server — JSON-RPC Examples
+#
+# The MCP server communicates over stdin/stdout using newline-delimited JSON-RPC 2.0.
+# To send these manually, run the server and pipe messages via stdin:
+#
+#   npx ts-node -r tsconfig-paths/register \
+#     --project packages/server/tsconfig.json \
+#     packages/server/src/mcp.ts
+#
+# Then paste one message per line.  Alternatively, use the MCP Inspector:
+#   npx @modelcontextprotocol/inspector npx ts-node ...
+#
+# Claude Code picks up the server automatically via .mcp.json in the repo root.
+
+# ── 1. Initialise (required first message) ───────────────────────────────────
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"manual-test","version":"1.0.0"}}}
+
+# ── 2. Confirm initialisation ────────────────────────────────────────────────
+{"jsonrpc":"2.0","method":"notifications/initialized"}
+
+# ── 3. List available tools ──────────────────────────────────────────────────
+{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
+
+# Expected response:
+# {
+#   "result": {
+#     "tools": [
+#       { "name": "get_pool_types",          "description": "List the available DeFi pool categories..." },
+#       { "name": "get_pools",               "description": "Fetch enriched DeFi pool recommendations..." },
+#       { "name": "check_contract_security", "description": "Check GoPlus contract security info..." }
+#     ]
+#   }
+# }
+
+# ── 4. get_pool_types ────────────────────────────────────────────────────────
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_pool_types","arguments":{}}}
+
+# Expected: JSON array of { id, name, description } for each category:
+#   ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP
+
+# ── 5. get_pools — stablecoin pools, top 5 ──────────────────────────────────
+{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"get_pools","arguments":{"poolType":"STABLES","limit":5}}}
+
+# Other valid poolType values: ETH | HIGH_YIELD | LOW_TVL | BLUE_CHIP
+# limit defaults to 10, max 50
+
+# ── 6. get_pools — ETH / liquid staking pools ───────────────────────────────
+{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"get_pools","arguments":{"poolType":"ETH","limit":10}}}
+
+# ── 7. check_contract_security — single address ──────────────────────────────
+{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"check_contract_security","arguments":{"chain":"Ethereum","addresses":["0xae7ab96520de3a18e5e111b5eaab095312d7fe84"]}}}
+
+# ── 8. check_contract_security — batch (up to 10 addresses) ─────────────────
+{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"check_contract_security","arguments":{"chain":"Arbitrum","addresses":["0x82af49447d8a07e3bd95bd0d56f35241523fbab1","0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"]}}}
+
+# Supported chain values match GoPlus chain names:
+#   Ethereum, Arbitrum, Base, Optimism, Polygon, BSC, Avalanche, ...
