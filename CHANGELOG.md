@@ -12,6 +12,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Added
 
+- **Dockerfile** — multi-stage Docker build: Stage 1 builds the React client with Vite; Stage 2 produces a runtime image combining nginx (reverse proxy with self-signed TLS for `defi.local`/`localhost`) and Node/ts-node for the Fastify server; nginx serves static assets on port 443, proxies `/api/*` to port 5000, and applies appropriate `Cache-Control` headers (1h for regular assets, immutable for hashed bundles)
+- **GitHub Actions docker.yml workflow** — builds the Docker image and pushes `credfeto/defi:latest` to the configured registry on every push to `main`; registry credentials are read from `DOCKER_REGISTRY_URL`, `DOCKER_REGISTRY_USERNAME`, and `DOCKER_REGISTRY_PASSWORD` secrets
+- **`DB_DIR` environment variable** — the SQLite cache database path is now configurable via `DB_DIR` (defaults to the existing relative path); set `DB_DIR=/app/data` in production to isolate the DB in a dedicated directory that can be bind-mounted
+
 - **Stablecoin depeg monitoring** — for pools marked as stablecoins, individual token symbols are looked up against the CoinGecko stablecoins market data; pools whose tokens deviate >0.5% from their $1 peg show a ⚠️ warning badge; deviations >2% show a 🚨 critical badge with token symbol, live price, and percentage deviation in the tooltip
 - **Depeg check extended to all pools via underlyingTokens** — depeg checking now runs on all pools; a CoinGecko coin list (address→stablecoin mapping) is fetched and cached, allowing `underlyingTokens` contract addresses to be resolved to stablecoin prices and checked for depeg; pools with any depeg alert are excluded from all responses
 - **CoinGecko stablecoins API service** — new `coingecko.stablecoins.api.service.ts` fetches all stablecoin prices (paginated) and is cached in SQLite for up to 1 hour following the same cache policy as other third-party data sources

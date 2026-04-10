@@ -9,6 +9,24 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Whenever this file changes, re-revaluate your memory against it
 - If there is a massive difference between your memory and this file then stop and ask for clarification and update this file and your memory.
 
+## Git Identity Check (MANDATORY before any commit)
+
+Before making any git commit, verify the configured identity is correct and GPG signing is enabled:
+
+```bash
+CURRENT_EMAIL=$(git config user.email)
+if [ "$CURRENT_EMAIL" = "andy@nanoclaw.ai" ] || [ -z "$CURRENT_EMAIL" ]; then
+  echo "ERROR: Git is configured with the wrong identity ($CURRENT_EMAIL). Aborting."
+  exit 1
+fi
+if [ "$(git config commit.gpgsign)" != "true" ]; then
+  echo "ERROR: GPG signing is not enabled. Aborting."
+  exit 1
+fi
+```
+
+**If either check fails: stop all work immediately, do not commit, and report the misconfiguration.**
+
 ## Architecture
 
 ### Documentation ###
