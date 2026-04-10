@@ -1,5 +1,5 @@
 # ─── Stage 1: Build client ─────────────────────────────────────────────────────
-FROM node:22-alpine AS client-builder
+FROM node:25-alpine AS client-builder
 
 WORKDIR /build
 
@@ -19,7 +19,7 @@ COPY packages/ ./packages/
 RUN npm --workspace=@defi-dashboard/client run build
 
 # ─── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 
 # Install nginx and openssl (for self-signed cert generation)
 RUN apk add --no-cache nginx openssl
