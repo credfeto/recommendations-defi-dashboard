@@ -1,7 +1,9 @@
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { getCachedOrFetch } from '../db/cache.db';
+import { createMcpServer } from '../mcp';
 import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
 import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
 import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
@@ -75,6 +77,25 @@ export const start = async (): Promise<void> => {
 
   await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
+
+  // ── MCP endpoint (Streamable HTTP, stateless) ──────────────────────────
+  // sessionIdGenerator omitted → stateless mode (no session tracking).
+  // The `as any` casts work around exactOptionalPropertyTypes incompatibilities
+  // in the MCP SDK types; behaviour is correct at runtime.
+  const mcpServer = createMcpServer();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mcpTransport = new StreamableHTTPServerTransport({} as any);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await mcpServer.connect(mcpTransport as any);
+
+  const handleMcp = async (request: FastifyRequest, reply: FastifyReply) => {
+    reply.hijack();
+    await mcpTransport.handleRequest(request.raw, reply.raw, request.body);
+  };
+
+  fastify.post('/mcp', handleMcp);
+  fastify.get('/mcp', handleMcp);
+  fastify.delete('/mcp', handleMcp);
 
   fastify.get('/api/pools', { schema: getPoolTypesSchema }, async (_request: FastifyRequest, reply: FastifyReply) => {
     try {

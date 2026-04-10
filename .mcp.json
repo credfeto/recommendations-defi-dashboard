@@ -1,11 +1,8 @@
 {
   "mcpServers": {
     "defi-dashboard": {
-      "command": "npx",
-      "args": ["ts-node", "-r", "tsconfig-paths/register", "packages/server/src/mcp.ts"],
-      "env": {
-        "TS_NODE_PROJECT": "packages/server/tsconfig.json"
-      }
+      "type": "http",
+      "url": "http://localhost:5000/mcp"
     }
   }
 }

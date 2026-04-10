@@ -1,5 +1,4 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { getCachedOrFetch } from './db/cache.db';
 import { defiLlamaPoolsApiService } from './api/defillama.pools.api.service';
@@ -151,18 +150,3 @@ export function createMcpServer(): McpServer {
   return server;
 }
 
-// ── entrypoint ─────────────────────────────────────────────────────────────
-
-if (require.main === module) {
-  const server = createMcpServer();
-
-  const main = async () => {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-  };
-
-  main().catch((err: unknown) => {
-    console.error(err);
-    process.exit(1);
-  });
-}

@@ -50,6 +50,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Sorting by APY descending then TVL
 - Enable HTTP response caching (15s TTL with stale-while-revalidate) and brotli/gzip compression via @fastify/compress
 - Replace react-scripts (CRA) and craco with Vite, eliminating webpack-dev-server deprecation warnings
+- Switch MCP server from stdio to HTTP, mounted on existing Fastify server at POST /mcp
 
 ### Removed
 
