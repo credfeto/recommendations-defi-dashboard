@@ -1,0 +1,19 @@
+services:
+  defi:
+    image: credfeto/defi:latest
+    container_name: defi
+    ports:
+      - "443:443"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+  watchtower:
+    image: nickfedor/watchtower:latest
+    container_name: watchtower
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=900
+      - WATCHTOWER_CONTAINER_LIST=defi
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
