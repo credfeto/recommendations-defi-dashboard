@@ -95,9 +95,7 @@ describe('get_pools tool', () => {
   });
 
   test('respects the limit parameter', async () => {
-    mockPoolsOnly(
-      Array.from({ length: 20 }, (_, i) => makePool({ pool: `pool-${i}`, apy: 10 + i, stablecoin: true })),
-    );
+    mockPoolsOnly(Array.from({ length: 20 }, (_, i) => makePool({ pool: `pool-${i}`, apy: 10 + i, stablecoin: true })));
 
     const { client } = await createTestClient();
     const result = await client.callTool({ name: 'get_pools', arguments: { poolType: 'STABLES', limit: 3 } });
@@ -107,9 +105,7 @@ describe('get_pools tool', () => {
   });
 
   test('uses default limit of 10 when not specified', async () => {
-    mockPoolsOnly(
-      Array.from({ length: 15 }, (_, i) => makePool({ pool: `pool-${i}`, apy: 10 + i, stablecoin: true })),
-    );
+    mockPoolsOnly(Array.from({ length: 15 }, (_, i) => makePool({ pool: `pool-${i}`, apy: 10 + i, stablecoin: true })));
 
     const { client } = await createTestClient();
     const result = await client.callTool({ name: 'get_pools', arguments: { poolType: 'STABLES' } });
@@ -168,7 +164,7 @@ describe('check_contract_security tool', () => {
 
     expect(result.isError).toBeFalsy();
     const text = (result.content as Array<{ type: string; text: string }>)[0].text;
-    const results = JSON.parse(text) as typeof securityInfo[];
+    const results = JSON.parse(text) as (typeof securityInfo)[];
     expect(results).toHaveLength(1);
     expect(results[0].tokenSymbol).toBe('stETH');
     expect(results[0].isHoneypot).toBe(0);

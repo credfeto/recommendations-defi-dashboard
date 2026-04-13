@@ -1,8 +1,1 @@
-{
-  "mcpServers": {
-    "defi-dashboard": {
-      "type": "http",
-      "url": "http://localhost:5000/mcp"
-    }
-  }
-}
+{ "mcpServers": { "defi-dashboard": { "type": "http", "url": "http://localhost:5000/mcp" } } }

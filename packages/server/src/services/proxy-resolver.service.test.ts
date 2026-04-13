@@ -39,7 +39,7 @@ describe('resolveProxyImplementation', () => {
   test('falls through to beacon slot when EIP-1967 is zero', async () => {
     mockedGetRpcUrl.mockReturnValue('https://rpc.example.com');
     mockedAxios.post
-      .mockResolvedValueOnce({ data: { result: ZERO_SLOT } })       // EIP-1967 slot: zero
+      .mockResolvedValueOnce({ data: { result: ZERO_SLOT } }) // EIP-1967 slot: zero
       .mockResolvedValueOnce({ data: { result: IMPL_SLOT_VALUE } }); // beacon slot: match
 
     const result = await resolveProxyImplementation('Ethereum', '0xproxy');
@@ -51,8 +51,8 @@ describe('resolveProxyImplementation', () => {
   test('falls through to OZ legacy slot when EIP-1967 and beacon are zero', async () => {
     mockedGetRpcUrl.mockReturnValue('https://rpc.example.com');
     mockedAxios.post
-      .mockResolvedValueOnce({ data: { result: ZERO_SLOT } })       // EIP-1967: zero
-      .mockResolvedValueOnce({ data: { result: ZERO_SLOT } })       // beacon: zero
+      .mockResolvedValueOnce({ data: { result: ZERO_SLOT } }) // EIP-1967: zero
+      .mockResolvedValueOnce({ data: { result: ZERO_SLOT } }) // beacon: zero
       .mockResolvedValueOnce({ data: { result: IMPL_SLOT_VALUE } }); // OZ legacy: match
 
     const result = await resolveProxyImplementation('Ethereum', '0xproxy');
@@ -87,10 +87,7 @@ describe('resolveProxyImplementation', () => {
 
     expect(mockedAxios.post).toHaveBeenCalledWith(
       'https://rpc.example.com',
-      expect.objectContaining({
-        method: 'eth_getStorageAt',
-        params: expect.arrayContaining(['0xproxy', 'latest']),
-      }),
+      expect.objectContaining({ method: 'eth_getStorageAt', params: expect.arrayContaining(['0xproxy', 'latest']) }),
     );
   });
 });

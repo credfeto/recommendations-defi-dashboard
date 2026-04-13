@@ -43,11 +43,7 @@ async function createHttpClient(): Promise<{ client: Client; close: () => Promis
       const result = await client.callTool({ name: 'get_pools', arguments: { poolType: 'STABLES', limit: 3 } });
       expect(result.isError).toBeFalsy();
       const text = (result.content as Array<{ type: string; text: string }>)[0].text;
-      const pools = JSON.parse(text) as Array<{
-        apy: number;
-        depegAlerts: unknown[];
-        contractSecurity: unknown;
-      }>;
+      const pools = JSON.parse(text) as Array<{ apy: number; depegAlerts: unknown[]; contractSecurity: unknown }>;
       expect(Array.isArray(pools)).toBe(true);
       expect(pools.length).toBeGreaterThan(0);
       expect(pools.length).toBeLessThanOrEqual(3);

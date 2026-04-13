@@ -80,13 +80,11 @@ export const start = async (): Promise<void> => {
 
   // ── MCP endpoint (Streamable HTTP, stateless) ──────────────────────────
   // sessionIdGenerator omitted → stateless mode (no session tracking).
-  // The `as any` casts work around exactOptionalPropertyTypes incompatibilities
-  // in the MCP SDK types; behaviour is correct at runtime.
+  const mcpTransport = new StreamableHTTPServerTransport({});
   const mcpServer = createMcpServer();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mcpTransport = new StreamableHTTPServerTransport({} as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await mcpServer.connect(mcpTransport as any);
+  // @ts-expect-error: StreamableHTTPServerTransport.sessionId types are incompatible with
+  // Transport interface under exactOptionalPropertyTypes — safe to suppress, runtime is correct.
+  await mcpServer.connect(mcpTransport);
 
   const handleMcp = async (request: FastifyRequest, reply: FastifyReply) => {
     reply.hijack();
