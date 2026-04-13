@@ -68,6 +68,14 @@ fi
 - Optimize everything for performance where possible
 - Use a functional style where all objects are immutable
 
+### Multi-Agent Implementation and Review Pattern ###
+
+All implementation work uses a two-agent loop:
+
+1. **Implementer agent** — reads `.ai-instructions`, implements the issue, commits (GPG signed), pushes, opens PR.
+2. **Reviewer agent** — reads `.ai-instructions`, runs `git diff origin/main...HEAD`, checks every change against every rule, fixes violations, commits, pushes. Reports `clean` if no violations found.
+3. **Repeat** the reviewer step until it reports `clean` (capped at 5 iterations).
+
 ### Committing ###
 - Do not commit directly to main.
 - Before making any changes, make sure current branch is main and is up-to-date with origin.
@@ -77,6 +85,8 @@ fi
 - Use best practices for git commit messages
 - Always include the user's original prompt verbatim in the commit description (body), prefixed with `Prompt: `. Do not include it in the commit title.
 - **Never amend a commit** — always create a new commit, even if its only purpose is to fix or move something from a prior commit
+- **Never push empty commits** — always verify there are actual staged changes before committing; if nothing is staged, do not commit
+- **One commit per review comment** — when addressing PR review comments, each individual comment must be resolved in its own separate commit; do not batch multiple review comments into one commit
 - `git rebase main` is allowed (and preferred over merge) to bring upstream changes into a feature branch; interactive rebase (`rebase -i`) is not
 - Use the following format for commit messages:
   - **feat**: A new feature
