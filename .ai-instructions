@@ -68,6 +68,14 @@ fi
 - Optimize everything for performance where possible
 - Use a functional style where all objects are immutable
 
+### Multi-Agent Implementation and Review Pattern ###
+
+All implementation work uses a two-agent loop:
+
+1. **Implementer agent** — reads `.ai-instructions`, implements the issue, commits (GPG signed), pushes, opens PR.
+2. **Reviewer agent** — reads `.ai-instructions`, runs `git diff origin/main...HEAD`, checks every change against every rule, fixes violations, commits, pushes. Reports `clean` if no violations found.
+3. **Repeat** the reviewer step until it reports `clean` (capped at 5 iterations).
+
 ### Committing ###
 - Do not commit directly to main.
 - Before making any changes, make sure current branch is main and is up-to-date with origin.
