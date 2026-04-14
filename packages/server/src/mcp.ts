@@ -68,7 +68,7 @@ const getStablecoinAddressMap = async () => {
 // ── server factory ─────────────────────────────────────────────────────────
 
 export function createMcpServer(): McpServer {
-  const server = new McpServer({ name: 'defi-dashboard', version: '1.0.0' });
+  const server = new McpServer({ name: 'defi-dashboard', version: '0.1.0' });
 
   server.registerTool(
     'get_pool_types',
