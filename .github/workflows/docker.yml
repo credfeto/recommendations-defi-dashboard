@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fix/typescript-strict-build-errors
 
 permissions:
   contents: read
