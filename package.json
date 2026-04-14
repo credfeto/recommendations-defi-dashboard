@@ -21,6 +21,6 @@
     "test": "npm --workspace=@defi-dashboard/server test",
     "test:coverage": "npm --workspace=@defi-dashboard/server run test:coverage",
     "test:watch": "npm --workspace=@defi-dashboard/server run test:watch",
-    "prepare": "husky"
+    "prepare": "[ -f node_modules/.bin/husky ] && husky || true"
   }
 }

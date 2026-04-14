@@ -36,6 +36,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Fixed
 
+- Docker runtime stage no longer errors with `sh: husky: not found` when installing production-only dependencies; the root `prepare` script now checks for the husky binary before running, so `npm ci --omit=dev` completes cleanly without needing `--ignore-scripts` or mutation of `package.json`
 - TypeScript strict mode errors in `packages/server`: index-access safety for `RPC_ENV` in `rpc.config.ts`, optional-chaining for `process.env['PORT']` in `server-fastify.ts`, and explicit `underlyingTokens` type casts in `server-fastify.ts` and `poolTypesConfig.ts`
 - Server endpoints returning 500 when the DefiLlama hacks API responded with HTTP 429 (rate limit); now degrades gracefully to an empty hack map so pool data still loads
 - Reduced Docker image size by using multi-stage build to compile TypeScript and installing only production dependencies in the final image
