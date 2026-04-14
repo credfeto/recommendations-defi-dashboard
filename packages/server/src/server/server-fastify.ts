@@ -2,75 +2,21 @@ import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { getCachedOrFetch } from '../db/cache.db';
 import { createMcpServer } from '../mcp';
-import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
-import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
-import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
-import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api.service';
-import { defiLlamaProtocolsApiService } from '../api/defillama.protocols.api.service';
-import { buildHackMap, matchHacks } from '../services/hacks.service';
-import { buildProtocolAuditMap, matchAuditInfo } from '../services/protocols.service';
+import { getAllPools, getHackMap, getProtocolAuditMap, getStablecoinPriceMap, getStablecoinAddressMap } from '../services/pool-enrichment.service';
+import { matchHacks } from '../services/hacks.service';
+import { matchAuditInfo } from '../services/protocols.service';
 import { getContractSecurityForAddresses } from '../services/contract-security.service';
-import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '../services/depeg.service';
+import { checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
-import { CACHE_KEYS, cacheWarmerService } from '../services/cache-warmer.service';
+import { cacheWarmerService } from '../services/cache-warmer.service';
 
 const PORT = parseInt(process.env.PORT || '5000', 10);
 
 const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
-
-const getAllPools = async () => {
-  const [llamaPools, pendlePools] = await Promise.all([
-    getCachedOrFetch(CACHE_KEYS.LLAMA_POOLS, () => defiLlamaPoolsApiService.fetchPools()),
-    getCachedOrFetch(CACHE_KEYS.PENDLE_POOLS, () => pendleMarketsApiService.fetchMarkets()),
-  ]);
-  return [...llamaPools, ...pendlePools];
-};
-
-const getHackMap = async () => {
-  try {
-    const hacks = await getCachedOrFetch(CACHE_KEYS.HACKS, () => defiLlamaHacksApiService.fetchHacks());
-    return buildHackMap(hacks);
-  } catch {
-    return new Map();
-  }
-};
-
-const getProtocolAuditMap = async () => {
-  try {
-    const protocols = await getCachedOrFetch(CACHE_KEYS.PROTOCOLS, () => defiLlamaProtocolsApiService.fetchProtocols());
-    return buildProtocolAuditMap(protocols);
-  } catch {
-    return new Map();
-  }
-};
-
-const getStablecoinPriceMap = async () => {
-  try {
-    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, () =>
-      coinGeckoStablecoinsApiService.fetchStablecoins(),
-    );
-    return buildStablecoinPriceMap(coins);
-  } catch {
-    return new Map<string, number>();
-  }
-};
-
-const getStablecoinAddressMap = async () => {
-  try {
-    const [coins, coinList] = await Promise.all([
-      getCachedOrFetch(CACHE_KEYS.STABLECOINS, () => coinGeckoStablecoinsApiService.fetchStablecoins()),
-      getCachedOrFetch(CACHE_KEYS.COIN_LIST, () => coinGeckoStablecoinsApiService.fetchCoinList()),
-    ]);
-    return buildStablecoinAddressMap(coins, coinList);
-  } catch {
-    return new Map<string, string>();
-  }
-};
 
 export const start = async (): Promise<void> => {
   const fastify = Fastify({ logger: true });
