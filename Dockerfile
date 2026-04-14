@@ -18,7 +18,31 @@ COPY packages/ ./packages/
 # Build React client → packages/client/build/
 RUN npm --workspace=@defi-dashboard/client run build
 
-# ─── Stage 2: Runtime ──────────────────────────────────────────────────────────
+# ─── Stage 2: Build server ─────────────────────────────────────────────────────
+FROM node:25-alpine AS server-builder
+
+WORKDIR /build
+
+# Copy workspace manifests first for better layer caching
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/client/package.json ./packages/client/
+COPY packages/server/package.json ./packages/server/
+
+# Install all workspace dependencies (including devDeps for TypeScript compiler)
+RUN npm ci --include=dev
+
+# Copy source packages
+COPY packages/shared ./packages/shared/
+COPY packages/server ./packages/server/
+
+# Compile shared → packages/shared/dist/
+RUN npm --workspace=@defi-dashboard/shared run build
+
+# Compile server → packages/server/dist/ (with path alias rewriting via tsc-alias)
+RUN npm --workspace=@defi-dashboard/server run build
+
+# ─── Stage 3: Runtime ──────────────────────────────────────────────────────────
 FROM node:25-alpine AS runtime
 
 # Install nginx and openssl (for self-signed cert generation)
@@ -43,21 +67,21 @@ RUN rm -f /etc/nginx/http.d/default.conf
 # ── Client static files ────────────────────────────────────────────────────────
 COPY --from=client-builder /build/packages/client/build /app/client
 
-# ── Server: install workspace deps for production ─────────────────────────────
+# ── Server: install production dependencies only ──────────────────────────────
 WORKDIR /app
 
-# Copy workspace manifests and base tsconfig (needed for ts-node path resolution)
-COPY package.json package-lock.json tsconfig.base.json /app/
-COPY packages/shared/package.json /app/packages/shared/
-COPY packages/client/package.json /app/packages/client/
-COPY packages/server/package.json /app/packages/server/
+# Copy workspace manifests for production install
+COPY package.json package-lock.json ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/client/package.json ./packages/client/
+COPY packages/server/package.json ./packages/server/
 
-# Install all deps (ts-node + tsconfig-paths are devDeps needed at runtime)
-RUN npm ci --include=dev
+# Install production dependencies only (no devDeps: no ts-node, typescript, jest, etc.)
+RUN npm ci --omit=dev
 
-# Copy server and shared source
-COPY packages/server /app/packages/server/
-COPY packages/shared /app/packages/shared/
+# ── Copy compiled server and shared output from build stage ───────────────────
+COPY --from=server-builder /build/packages/server/dist /app/packages/server/dist
+COPY --from=server-builder /build/packages/shared/dist /app/packages/shared/dist
 
 # ── Data directory for SQLite DB (volume-mount point) ─────────────────────────
 RUN mkdir -p /app/data

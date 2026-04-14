@@ -2,7 +2,16 @@ node_modules
 packages/*/node_modules
 packages/client/build
 packages/server/dist
+packages/shared/dist
 .git
 .github
 *.md
 docs
+**/*.test.ts
+**/*.spec.ts
+**/*.tsbuildinfo
+jest.config.js
+packages/*/jest*.config.js
+.husky
+.eslintrc*
+.prettierrc*
