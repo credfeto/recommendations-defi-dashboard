@@ -36,6 +36,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Fixed
 
 - Server endpoints returning 500 when the DefiLlama hacks API responded with HTTP 429 (rate limit); now degrades gracefully to an empty hack map so pool data still loads
+- Reduced Docker image size by using multi-stage build to compile TypeScript and installing only production dependencies in the final image
 
 ### Changed
 
