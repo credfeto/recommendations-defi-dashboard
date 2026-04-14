@@ -142,9 +142,7 @@ export function getContractSecurity(
   address: string,
 ): (ContractSecurityInfo & { checkedAt: number }) | null {
   const row = db
-    .prepare<[string, string], ContractSecurityRow>(
-      'SELECT * FROM contract_security WHERE chain = ? AND address = ?',
-    )
+    .prepare<[string, string], ContractSecurityRow>('SELECT * FROM contract_security WHERE chain = ? AND address = ?')
     .get(chain, address.toLowerCase());
   return row ? rowToInfo(row) : null;
 }
@@ -180,9 +178,10 @@ export function getContractSecurityChildren(
   parentAddress: string,
 ): (ContractSecurityInfo & { checkedAt: number })[] {
   const rows = db
-    .prepare<[string, string], ContractSecurityRow>(
-      'SELECT * FROM contract_security WHERE chain = ? AND parent_address = ?',
-    )
+    .prepare<
+      [string, string],
+      ContractSecurityRow
+    >('SELECT * FROM contract_security WHERE chain = ? AND parent_address = ?')
     .all(chain, parentAddress.toLowerCase());
   return rows.map(rowToInfo);
 }

@@ -6,9 +6,16 @@ jest.mock('../db/cache.db');
 
 import { goPlusApiService } from '../api/goplus.api.service';
 import { resolveProxyImplementation } from './proxy-resolver.service';
-import { getContractSecurity, setContractSecurity, getContractSecurityChildren, CONTRACT_SECURITY_TTL_MS } from '../db/cache.db';
+import {
+  getContractSecurity,
+  setContractSecurity,
+  getContractSecurityChildren,
+  CONTRACT_SECURITY_TTL_MS,
+} from '../db/cache.db';
 
-const mockFetch = goPlusApiService.fetchTokenSecurity as jest.MockedFunction<typeof goPlusApiService.fetchTokenSecurity>;
+const mockFetch = goPlusApiService.fetchTokenSecurity as jest.MockedFunction<
+  typeof goPlusApiService.fetchTokenSecurity
+>;
 const mockResolveProxy = resolveProxyImplementation as jest.MockedFunction<typeof resolveProxyImplementation>;
 const mockGetSecurity = getContractSecurity as jest.MockedFunction<typeof getContractSecurity>;
 const mockSetSecurity = setContractSecurity as jest.MockedFunction<typeof setContractSecurity>;
