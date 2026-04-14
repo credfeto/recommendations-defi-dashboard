@@ -73,11 +73,11 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/client/package.json ./packages/client/
 COPY packages/server/package.json ./packages/server/
 
-# Install production dependencies for server only (excludes client deps such as React)
-# Remove the prepare script (which calls husky) before installing — husky is a devDep
-# and is not present in --omit=dev installs, causing a "command not found" exit 127.
-# better-sqlite3 still compiles correctly since install scripts run normally.
-RUN npm pkg delete scripts.prepare && npm ci --omit=dev --workspace=@defi-dashboard/server
+# Install production dependencies for server only (excludes client deps such as React).
+# --ignore-scripts skips the root prepare hook (which calls husky, a devDep not present
+# in a --omit=dev install). npm rebuild then recompiles native modules (better-sqlite3).
+RUN npm ci --omit=dev --ignore-scripts --workspace=@defi-dashboard/server && \
+    npm rebuild --workspace=@defi-dashboard/server
 
 # ── Copy compiled server and shared output from build stage ───────────────────
 COPY --from=server-builder /build/packages/server/dist /app/packages/server/dist
