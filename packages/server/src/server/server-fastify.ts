@@ -21,7 +21,7 @@ import { getAvailablePoolTypesMetadata } from '@shared';
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
 import { cacheWarmerService } from '../services/cache-warmer.service';
 
-const PORT = parseInt(process.env.PORT || '5000', 10);
+const PORT = parseInt(process.env['PORT'] ?? '5000', 10);
 
 const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
 
@@ -86,13 +86,17 @@ export const start = async (): Promise<void> => {
           getProtocolAuditMap(),
         ]);
         const pools = filterPoolsByType(allPools, poolName)
-          .map((pool) => ({
-            ...pool,
-            url: getPoolUrl(pool),
-            hacks: matchHacks(pool.project, hackMap),
-            depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
-            auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
-          }))
+          .map((pool) => {
+            const underlyingTokens = pool['underlyingTokens'] as string[] | undefined;
+            return {
+              ...pool,
+              underlyingTokens,
+              url: getPoolUrl(pool),
+              hacks: matchHacks(pool.project, hackMap),
+              depegAlerts: checkDepeg(pool.symbol, priceMap, underlyingTokens ?? null, addressMap),
+              auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
+            };
+          })
           .filter((pool) => pool.depegAlerts.length === 0);
 
         // Enrich each pool with contract security info (DB-cached, 24h TTL)
