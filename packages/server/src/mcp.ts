@@ -86,7 +86,12 @@ export function createMcpServer(): McpServer {
         'Fetch enriched DeFi pool recommendations for a given category. Returns pools with APY, TVL, hack history, depeg alerts, audit info, and contract security.',
       inputSchema: {
         poolType: z
-          .enum(['ETH', 'STABLES', 'HIGH_YIELD', 'LOW_TVL', 'BLUE_CHIP'])
+          .string()
+          .refine((value) => getAvailableTypes().some((t) => t.id === value), {
+            message: `Invalid pool category. Valid options: ${getAvailableTypes()
+              .map((t) => t.id)
+              .join(', ')}`,
+          })
           .describe('The pool category to fetch'),
         limit: z
           .number()
