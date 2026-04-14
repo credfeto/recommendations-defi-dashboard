@@ -36,9 +36,8 @@ RUN npm ci --include=dev
 COPY packages/shared ./packages/shared/
 COPY packages/server ./packages/server/
 
-# Compile shared then server (path alias rewriting via tsc-alias)
-RUN npm --workspace=@defi-dashboard/shared run build && \
-    npm --workspace=@defi-dashboard/server run build
+# Build server — TypeScript project references compile shared automatically
+RUN npm --workspace=@defi-dashboard/server run build
 
 # ─── Stage 3: Runtime ──────────────────────────────────────────────────────────
 FROM node:25-alpine AS runtime
@@ -74,8 +73,8 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/client/package.json ./packages/client/
 COPY packages/server/package.json ./packages/server/
 
-# Install production dependencies only (no devDeps: no ts-node, typescript, jest, etc.)
-RUN npm ci --omit=dev
+# Install production dependencies for server only (excludes client deps such as React)
+RUN npm ci --omit=dev --workspace=@defi-dashboard/server
 
 # ── Copy compiled server and shared output from build stage ───────────────────
 COPY --from=server-builder /build/packages/server/dist /app/packages/server/dist

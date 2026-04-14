@@ -3,10 +3,8 @@
   "compilerOptions": {
     "noEmit": false,
     "sourceMap": false,
-    "paths": {
-      "@shared": ["../shared/dist"],
-      "@shared/*": ["../shared/dist/*"]
-    }
+    "paths": { "@shared": ["../shared/dist"], "@shared/*": ["../shared/dist/*"] }
   },
+  "references": [{ "path": "../shared/tsconfig.build.json" }],
   "exclude": ["**/*.test.ts", "**/*.spec.ts"]
 }
