@@ -213,21 +213,6 @@ For detailed development instructions, see [DEVELOPMENT.md](./docs/DEVELOPMENT.m
 
 ## Deployment
 
-### Docker (recommended)
-
-A `docker-compose.yml` is provided for easy local or self-hosted deployment:
-
-```bash
-docker compose up -d
-```
-
-This brings up two services:
-
-- **defi** — the DeFi dashboard image (`credfeto/defi:latest`) on port `443` (HTTPS). The SQLite cache is persisted in `./data/` so it survives container restarts.
-- **watchtower** — automatically polls Docker Hub every 15 minutes and updates the `defi` container whenever a new image is pushed.
-
-The `./data/` directory is created automatically on first run.
-
 ### Frontend
 
 Deploy the `build/` folder to any static hosting:
