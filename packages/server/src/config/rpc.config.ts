@@ -25,5 +25,8 @@ export function getRpcUrl(chain: string): string | null {
 
 /** Chain names that have RPC support configured. */
 export function getSupportedRpcChains(): string[] {
-  return Object.keys(RPC_ENV).filter((chain) => !!process.env[RPC_ENV[chain]]);
+  return Object.keys(RPC_ENV).filter((chain) => {
+    const envKey = RPC_ENV[chain];
+    return !!envKey && !!process.env[envKey];
+  });
 }
