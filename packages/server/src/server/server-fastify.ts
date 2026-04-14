@@ -2,6 +2,7 @@ import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { createMcpServer } from '../mcp';
 import {
   getAllPools,
@@ -34,9 +35,10 @@ export const start = async (): Promise<void> => {
   // sessionIdGenerator omitted → stateless mode (no session tracking).
   const mcpTransport = new StreamableHTTPServerTransport({});
   const mcpServer = createMcpServer();
-  // @ts-expect-error: StreamableHTTPServerTransport.sessionId types are incompatible with
-  // Transport interface under exactOptionalPropertyTypes — safe to suppress, runtime is correct.
-  await mcpServer.connect(mcpTransport);
+  // StreamableHTTPServerTransport satisfies the Transport interface at runtime but its
+  // sessionId getter returns `string | undefined` while Transport declares `sessionId?: string`.
+  // Under exactOptionalPropertyTypes these differ at the type level only — the cast is safe.
+  await mcpServer.connect(mcpTransport as unknown as Transport);
 
   const handleMcp = async (request: FastifyRequest, reply: FastifyReply) => {
     reply.hijack();
