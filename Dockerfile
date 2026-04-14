@@ -36,11 +36,9 @@ RUN npm ci --include=dev
 COPY packages/shared ./packages/shared/
 COPY packages/server ./packages/server/
 
-# Compile shared → packages/shared/dist/
-RUN npm --workspace=@defi-dashboard/shared run build
-
-# Compile server → packages/server/dist/ (with path alias rewriting via tsc-alias)
-RUN npm --workspace=@defi-dashboard/server run build
+# Compile shared then server (path alias rewriting via tsc-alias)
+RUN npm --workspace=@defi-dashboard/shared run build && \
+    npm --workspace=@defi-dashboard/server run build
 
 # ─── Stage 3: Runtime ──────────────────────────────────────────────────────────
 FROM node:25-alpine AS runtime
