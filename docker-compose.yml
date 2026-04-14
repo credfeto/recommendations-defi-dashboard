@@ -3,9 +3,9 @@ services:
     image: credfeto/defi:latest
     container_name: defi
     ports:
-      - "443:443"
+      - '443:443'
     volumes:
-      - ./data:/app/data
+      - defi-data:/app/data
     restart: unless-stopped
 
   watchtower:
@@ -17,3 +17,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+
+volumes:
+  defi-data:
+    external: true
