@@ -3,7 +3,13 @@ import cors from '@fastify/cors';
 import compress from '@fastify/compress';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpServer } from '../mcp';
-import { getAllPools, getHackMap, getProtocolAuditMap, getStablecoinPriceMap, getStablecoinAddressMap } from '../services/pool-enrichment.service';
+import {
+  getAllPools,
+  getHackMap,
+  getProtocolAuditMap,
+  getStablecoinPriceMap,
+  getStablecoinAddressMap,
+} from '../services/pool-enrichment.service';
 import { matchHacks } from '../services/hacks.service';
 import { matchAuditInfo } from '../services/protocols.service';
 import { getContractSecurityForAddresses } from '../services/contract-security.service';
@@ -34,7 +40,15 @@ export const start = async (): Promise<void> => {
 
   const handleMcp = async (request: FastifyRequest, reply: FastifyReply) => {
     reply.hijack();
-    await mcpTransport.handleRequest(request.raw, reply.raw, request.body);
+    try {
+      await mcpTransport.handleRequest(request.raw, reply.raw, request.body);
+    } catch (err) {
+      fastify.log.error(err, 'MCP transport error');
+      if (!reply.raw.headersSent) {
+        reply.raw.writeHead(500, { 'Content-Type': 'application/json' });
+      }
+      reply.raw.end(JSON.stringify({ error: 'Internal MCP server error' }));
+    }
   };
 
   fastify.post('/mcp', handleMcp);
