@@ -85,6 +85,7 @@ All implementation work uses a two-agent loop:
 - Use best practices for git commit messages
 - Always include the user's original prompt verbatim in the commit description (body), prefixed with `Prompt: `. Do not include it in the commit title.
 - **Never amend a commit** — always create a new commit, even if its only purpose is to fix or move something from a prior commit
+- **Never squash commits** — do not squash, fixup, or rewrite history to make the path look cleaner; the full commit history must be preserved so the complete journey is visible, no matter how messy
 - **Never push empty commits** — always verify there are actual staged changes before committing; if nothing is staged, do not commit
 - **Run tests before every push** — run `npm test` and confirm all tests pass before pushing any commit; fix failures before pushing, never push broken code
 - **Monitor CI after every push** — after pushing, check the PR's CI status; if any check fails, read the failure logs, fix the cause locally, re-run tests, and push again; report to the user if CI fails 3 times on the same PR without resolution
