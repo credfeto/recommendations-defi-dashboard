@@ -43,6 +43,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Changed
 
+- Bump @sinonjs/fake-timers from 15.2.1 to 15.3.0
 - Bump ts-jest from 29.4.6 to 29.4.9
 - Bump @emnapi/core from 1.9.1 to 1.9.2
 - Bump @emnapi/runtime from 1.9.1 to 1.9.2
