@@ -2,12 +2,7 @@ import axios from 'axios';
 
 const GOPLUS_BASE = 'https://api.gopluslabs.io/api/v1/token_security';
 
-export const CHAIN_NAME_TO_ID: Record<string, number> = {
-  Ethereum: 1,
-  Arbitrum: 42161,
-  Base: 8453,
-  BSC: 56,
-};
+export const CHAIN_NAME_TO_ID: Record<string, number> = { Ethereum: 1, Arbitrum: 42161, Base: 8453, BSC: 56 };
 
 export interface GoPlusTokenResult {
   is_open_source?: string;
@@ -28,10 +23,7 @@ export class GoPlusApiService {
    * Returns a map of lowercased address -> raw result.
    * Returns an empty map if the chain is unsupported or the request fails.
    */
-  public async fetchTokenSecurity(
-    chain: string,
-    addresses: string[],
-  ): Promise<Map<string, GoPlusTokenResult>> {
+  public async fetchTokenSecurity(chain: string, addresses: string[]): Promise<Map<string, GoPlusTokenResult>> {
     const chainId = CHAIN_NAME_TO_ID[chain];
     if (!chainId || addresses.length === 0) return new Map();
 

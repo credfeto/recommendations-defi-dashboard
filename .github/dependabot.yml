@@ -77,6 +77,24 @@ updates:
   allow:
   - dependency-type: all
 
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "03:00"
+    timezone: "Europe/London"
+  open-pull-requests-limit: 99
+  assignees:
+  - credfeto
+  commit-message:
+    prefix: "[Dependencies]"
+  labels:
+  - "docker"
+  - "dependencies"
+  - "Changelog Not Required"
+  allow:
+  - dependency-type: all
+
 - package-ecosystem: github-actions
   directory: "/"
   schedule:

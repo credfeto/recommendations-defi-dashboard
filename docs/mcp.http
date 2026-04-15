@@ -1,0 +1,128 @@
+# MCP Server — HTTP Examples
+#
+# The MCP server is mounted on the existing Fastify server at POST /mcp.
+# It uses the MCP Streamable HTTP transport (stateless mode).
+#
+# Compatible with the VS Code REST Client extension.
+# Start the server first: npm run dev (port 5000)
+#
+# Claude Code connects automatically via .mcp.json in the repo root.
+
+@baseUrl = http://localhost:5000
+
+# ── 1. Initialise (required first request per client session) ────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {},
+    "clientInfo": { "name": "rest-client", "version": "1.0.0" }
+  }
+}
+
+###
+
+# ── 2. List available tools ──────────────────────────────────────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/list",
+  "params": {}
+}
+
+###
+
+# ── 3. get_pool_types ────────────────────────────────────────────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "get_pool_types",
+    "arguments": {}
+  }
+}
+
+###
+
+# ── 4. get_pools — stablecoin pools, top 5 ──────────────────────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "get_pools",
+    "arguments": { "poolType": "STABLES", "limit": 5 }
+  }
+}
+
+###
+
+# ── 5. get_pools — ETH / liquid staking pools ───────────────────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "get_pools",
+    "arguments": { "poolType": "ETH", "limit": 10 }
+  }
+}
+
+###
+
+# ── 6. check_contract_security — single address ──────────────────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "check_contract_security",
+    "arguments": {
+      "chain": "Ethereum",
+      "addresses": ["0xae7ab96520de3a18e5e111b5eaab095312d7fe84"]
+    }
+  }
+}
+
+###
+
+# ── 7. check_contract_security — batch (up to 10 addresses) ─────────────────
+POST {{baseUrl}}/mcp
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "check_contract_security",
+    "arguments": {
+      "chain": "Arbitrum",
+      "addresses": [
+        "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
+        "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
+      ]
+    }
+  }
+}

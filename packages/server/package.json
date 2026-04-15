@@ -6,23 +6,26 @@
   "dependencies": {
     "@fastify/compress": "^8.3.1",
     "@fastify/cors": "^11.2.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@types/better-sqlite3": "^7.6.13",
-    "axios": "^1.14.0",
-    "better-sqlite3": "^12.8.0",
-    "fastify": "^5.8.4"
+    "axios": "^1.15.0",
+    "better-sqlite3": "^12.9.0",
+    "fastify": "^5.8.5"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "jest": "^30.3.0",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^6.0.2"
   },
   "scripts": {
     "start": "node -r tsconfig-paths/register -r ts-node/register src/server/server-fastify.ts",
     "dev": "ts-node -O '{\"module\": \"commonjs\"}' src/server/server-fastify.ts",
+    "build": "tsc -b tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
