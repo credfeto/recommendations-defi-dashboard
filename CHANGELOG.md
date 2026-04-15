@@ -40,6 +40,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - TypeScript strict mode errors in `packages/server`: index-access safety for `RPC_ENV` in `rpc.config.ts`, optional-chaining for `process.env['PORT']` in `server-fastify.ts`, and explicit `underlyingTokens` type casts in `server-fastify.ts` and `poolTypesConfig.ts`
 - Server endpoints returning 500 when the DefiLlama hacks API responded with HTTP 429 (rate limit); now degrades gracefully to an empty hack map so pool data still loads
 - Reduced Docker image size by using multi-stage build to compile TypeScript and installing only production dependencies in the final image
+- Docker build: removed copy of non-existent workspace-level node_modules directory (npm workspaces hoists all dependencies to root node_modules)
+- Docker Dockerfile: consolidated consecutive RUN instructions to satisfy hadolint DL3059 rule
 
 ### Changed
 

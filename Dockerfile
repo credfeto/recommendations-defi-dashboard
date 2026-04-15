@@ -17,13 +17,11 @@ RUN HUSKY=0 npm ci
 COPY packages/ ./packages/
 
 # Build React client → packages/client/build/
-RUN npm --workspace=@defi-dashboard/client run build
-
 # Build server (tsc -b compiles shared automatically via project references)
-RUN npm --workspace=@defi-dashboard/server run build
-
 # Prune to production deps only — no lifecycle scripts are triggered by prune
-RUN npm prune --omit=dev
+RUN npm --workspace=@defi-dashboard/client run build && \
+    npm --workspace=@defi-dashboard/server run build && \
+    npm prune --omit=dev
 
 # ─── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM node:25-alpine AS runtime
@@ -54,12 +52,13 @@ COPY --from=builder /build/packages/server/dist /app/packages/server/dist
 COPY --from=builder /build/packages/shared/dist /app/packages/shared/dist
 
 # ── Production node_modules (already pruned in builder stage) ─────────────────
-# package.json files are needed for npm workspace module resolution at runtime
+# package.json files are needed for npm workspace module resolution at runtime.
+# npm workspaces hoists all dependencies to the root node_modules; there are no
+# package-level node_modules directories to copy.
 COPY --from=builder /build/package.json /app/package.json
 COPY --from=builder /build/packages/server/package.json /app/packages/server/package.json
 COPY --from=builder /build/packages/shared/package.json /app/packages/shared/package.json
 COPY --from=builder /build/node_modules /app/node_modules
-COPY --from=builder /build/packages/server/node_modules /app/packages/server/node_modules
 
 # ── Data directory for SQLite DB (volume-mount point) ─────────────────────────
 RUN mkdir -p /app/data
