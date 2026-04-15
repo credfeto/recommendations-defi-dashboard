@@ -1,0 +1,30 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  docker:
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_REGISTRY_URL }}/credfeto/defi:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
