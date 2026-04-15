@@ -1,80 +1,61 @@
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
-import { getCachedOrFetch } from '../db/cache.db';
-import { defiLlamaPoolsApiService } from '../api/defillama.pools.api.service';
-import { defiLlamaHacksApiService } from '../api/defillama.hacks.api.service';
-import { pendleMarketsApiService } from '../api/pendle.markets.api.service';
-import { coinGeckoStablecoinsApiService } from '../api/coingecko.stablecoins.api.service';
-import { defiLlamaProtocolsApiService } from '../api/defillama.protocols.api.service';
-import { buildHackMap, matchHacks } from '../services/hacks.service';
-import { buildProtocolAuditMap, matchAuditInfo } from '../services/protocols.service';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import { createMcpServer } from '../mcp';
+import {
+  getAllPools,
+  getHackMap,
+  getProtocolAuditMap,
+  getStablecoinPriceMap,
+  getStablecoinAddressMap,
+} from '../services/pool-enrichment.service';
+import { matchHacks } from '../services/hacks.service';
+import { matchAuditInfo } from '../services/protocols.service';
 import { getContractSecurityForAddresses } from '../services/contract-security.service';
-import { buildStablecoinPriceMap, buildStablecoinAddressMap, checkDepeg } from '../services/depeg.service';
+import { checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
 import { getAvailablePoolTypesMetadata } from '@shared';
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
-import { CACHE_KEYS, cacheWarmerService } from '../services/cache-warmer.service';
+import { cacheWarmerService } from '../services/cache-warmer.service';
 
-const PORT = parseInt(process.env.PORT || '5000', 10);
+const PORT = parseInt(process.env['PORT'] ?? '5000', 10);
 
 const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
-
-const getAllPools = async () => {
-  const [llamaPools, pendlePools] = await Promise.all([
-    getCachedOrFetch(CACHE_KEYS.LLAMA_POOLS, () => defiLlamaPoolsApiService.fetchPools()),
-    getCachedOrFetch(CACHE_KEYS.PENDLE_POOLS, () => pendleMarketsApiService.fetchMarkets()),
-  ]);
-  return [...llamaPools, ...pendlePools];
-};
-
-const getHackMap = async () => {
-  try {
-    const hacks = await getCachedOrFetch(CACHE_KEYS.HACKS, () => defiLlamaHacksApiService.fetchHacks());
-    return buildHackMap(hacks);
-  } catch {
-    return new Map();
-  }
-};
-
-const getProtocolAuditMap = async () => {
-  try {
-    const protocols = await getCachedOrFetch(CACHE_KEYS.PROTOCOLS, () => defiLlamaProtocolsApiService.fetchProtocols());
-    return buildProtocolAuditMap(protocols);
-  } catch {
-    return new Map();
-  }
-};
-
-const getStablecoinPriceMap = async () => {
-  try {
-    const coins = await getCachedOrFetch(CACHE_KEYS.STABLECOINS, () =>
-      coinGeckoStablecoinsApiService.fetchStablecoins(),
-    );
-    return buildStablecoinPriceMap(coins);
-  } catch {
-    return new Map<string, number>();
-  }
-};
-
-const getStablecoinAddressMap = async () => {
-  try {
-    const [coins, coinList] = await Promise.all([
-      getCachedOrFetch(CACHE_KEYS.STABLECOINS, () => coinGeckoStablecoinsApiService.fetchStablecoins()),
-      getCachedOrFetch(CACHE_KEYS.COIN_LIST, () => coinGeckoStablecoinsApiService.fetchCoinList()),
-    ]);
-    return buildStablecoinAddressMap(coins, coinList);
-  } catch {
-    return new Map<string, string>();
-  }
-};
 
 export const start = async (): Promise<void> => {
   const fastify = Fastify({ logger: true });
 
   await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
+
+  // ── MCP endpoint (Streamable HTTP, stateless) ──────────────────────────
+  // sessionIdGenerator omitted → stateless mode (no session tracking).
+  const mcpTransport = new StreamableHTTPServerTransport({});
+  const mcpServer = createMcpServer();
+  // StreamableHTTPServerTransport satisfies the Transport interface at runtime but its
+  // sessionId getter returns `string | undefined` while Transport declares `sessionId?: string`.
+  // Under exactOptionalPropertyTypes these differ at the type level only — the cast is safe.
+  await mcpServer.connect(mcpTransport as unknown as Transport);
+
+  const handleMcp = async (request: FastifyRequest, reply: FastifyReply) => {
+    reply.hijack();
+    try {
+      await mcpTransport.handleRequest(request.raw, reply.raw, request.body);
+    } catch (err) {
+      fastify.log.error(err, 'MCP transport error');
+      if (!reply.raw.headersSent) {
+        reply.raw.writeHead(500, { 'Content-Type': 'application/json' });
+      }
+      reply.raw.end(JSON.stringify({ error: 'Internal MCP server error' }));
+    }
+  };
+
+  fastify.post('/mcp', handleMcp);
+  fastify.get('/mcp', handleMcp);
+  fastify.delete('/mcp', handleMcp);
 
   fastify.get('/api/pools', { schema: getPoolTypesSchema }, async (_request: FastifyRequest, reply: FastifyReply) => {
     try {
@@ -105,13 +86,17 @@ export const start = async (): Promise<void> => {
           getProtocolAuditMap(),
         ]);
         const pools = filterPoolsByType(allPools, poolName)
-          .map((pool) => ({
-            ...pool,
-            url: getPoolUrl(pool),
-            hacks: matchHacks(pool.project, hackMap),
-            depegAlerts: checkDepeg(pool.symbol, priceMap, pool.underlyingTokens ?? null, addressMap),
-            auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
-          }))
+          .map((pool) => {
+            const underlyingTokens = pool['underlyingTokens'] as string[] | undefined;
+            return {
+              ...pool,
+              underlyingTokens,
+              url: getPoolUrl(pool),
+              hacks: matchHacks(pool.project, hackMap),
+              depegAlerts: checkDepeg(pool.symbol, priceMap, underlyingTokens ?? null, addressMap),
+              auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
+            };
+          })
           .filter((pool) => pool.depegAlerts.length === 0);
 
         // Enrich each pool with contract security info (DB-cached, 24h TTL)

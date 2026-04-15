@@ -4,5 +4,8 @@
   "description": "Shared types and utilities for DeFi Dashboard",
   "types": "src/index.ts",
   "main": "src/index.ts",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
 }
