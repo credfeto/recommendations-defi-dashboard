@@ -43,6 +43,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Changed
 
+- Bump ts-jest from 29.4.6 to 29.4.9
 - Bump @emnapi/core from 1.9.1 to 1.9.2
 - Bump @emnapi/runtime from 1.9.1 to 1.9.2
 - Bump caniuse-lite from 1.0.30001782 to 1.0.30001784
