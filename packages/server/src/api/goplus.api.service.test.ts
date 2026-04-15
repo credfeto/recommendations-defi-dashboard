@@ -46,9 +46,7 @@ describe('GoPlusApiService', () => {
 
     expect(mockedAxios.get).toHaveBeenCalledWith(
       'https://api.gopluslabs.io/api/v1/token_security/1',
-      expect.objectContaining({
-        params: { contract_addresses: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' },
-      }),
+      expect.objectContaining({ params: { contract_addresses: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' } }),
     );
   });
 
