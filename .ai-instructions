@@ -90,6 +90,7 @@ All implementation work uses a two-agent loop:
 - **Run tests before every push** — run `npm test` and confirm all tests pass before pushing any commit; fix failures before pushing, never push broken code
 - **Monitor CI after every push** — after pushing, check the PR's CI status; if any check fails, read the failure logs, fix the cause locally, re-run tests, and push again; report to the user if CI fails 3 times on the same PR without resolution
 - **One commit per review comment** — when addressing PR review comments, each individual comment must be resolved in its own separate commit; do not batch multiple review comments into one commit
+- **Delete branches when closing PRs** — when closing (abandoning) a PR, always delete the associated remote branch immediately after: `gh pr close <number> && git push origin --delete <branch>`
 - `git rebase main` is allowed (and preferred over merge) to bring upstream changes into a feature branch; interactive rebase (`rebase -i`) is not
 - Use the following format for commit messages:
   - **feat**: A new feature
