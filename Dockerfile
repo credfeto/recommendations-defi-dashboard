@@ -74,9 +74,9 @@ COPY packages/client/package.json ./packages/client/
 COPY packages/server/package.json ./packages/server/
 
 # Install production dependencies for server only (excludes client deps such as React).
-# HUSKY=0 suppresses the root prepare script from invoking husky, which is a devDependency
-# not present in this production install.
-RUN HUSKY=0 npm ci --omit=dev --workspace=@defi-dashboard/server
+# --ignore-scripts skips the root prepare lifecycle script (which calls husky, a devDependency
+# not present in this production install) without relying on husky-specific env vars.
+RUN npm ci --omit=dev --ignore-scripts --workspace=@defi-dashboard/server
 
 # ── Copy compiled server and shared output from build stage ───────────────────
 COPY --from=server-builder /build/packages/server/dist /app/packages/server/dist
