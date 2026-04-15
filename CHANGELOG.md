@@ -33,6 +33,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Warm API cache on startup — missing or stale cache entries are fetched in the background when the server starts; errors are logged per entry and do not block other fetches or server startup
 - Add MCP server exposing get_pool_types, get_pools, and check_contract_security tools
 - Add unit tests, e2e tests, and JSON-RPC examples for the MCP server
+- Never squash commits rule added to AI instructions
 
 ### Fixed
 
