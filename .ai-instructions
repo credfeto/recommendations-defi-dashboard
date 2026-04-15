@@ -9,6 +9,24 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Whenever this file changes, re-revaluate your memory against it
 - If there is a massive difference between your memory and this file then stop and ask for clarification and update this file and your memory.
 
+## Git Identity Check (MANDATORY before any commit)
+
+Before making any git commit, verify the configured identity is correct and GPG signing is enabled:
+
+```bash
+CURRENT_EMAIL=$(git config user.email)
+if [ "$CURRENT_EMAIL" = "andy@nanoclaw.ai" ] || [ -z "$CURRENT_EMAIL" ]; then
+  echo "ERROR: Git is configured with the wrong identity ($CURRENT_EMAIL). Aborting."
+  exit 1
+fi
+if [ "$(git config commit.gpgsign)" != "true" ]; then
+  echo "ERROR: GPG signing is not enabled. Aborting."
+  exit 1
+fi
+```
+
+**If either check fails: stop all work immediately, do not commit, and report the misconfiguration.**
+
 ## Architecture
 
 ### Documentation ###
@@ -50,6 +68,14 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Optimize everything for performance where possible
 - Use a functional style where all objects are immutable
 
+### Multi-Agent Implementation and Review Pattern ###
+
+All implementation work uses a two-agent loop:
+
+1. **Implementer agent** — reads `.ai-instructions`, implements the issue, commits (GPG signed), pushes, opens PR.
+2. **Reviewer agent** — reads `.ai-instructions`, runs `git diff origin/main...HEAD`, checks every change against every rule, fixes violations, commits, pushes. Reports `clean` if no violations found.
+3. **Repeat** the reviewer step until it reports `clean` (capped at 5 iterations).
+
 ### Committing ###
 - Do not commit directly to main.
 - Before making any changes, make sure current branch is main and is up-to-date with origin.
@@ -59,6 +85,10 @@ This is a React-based DeFi (Decentralized Finance) dashboard that displays liqui
 - Use best practices for git commit messages
 - Always include the user's original prompt verbatim in the commit description (body), prefixed with `Prompt: `. Do not include it in the commit title.
 - **Never amend a commit** — always create a new commit, even if its only purpose is to fix or move something from a prior commit
+- **Never push empty commits** — always verify there are actual staged changes before committing; if nothing is staged, do not commit
+- **Run tests before every push** — run `npm test` and confirm all tests pass before pushing any commit; fix failures before pushing, never push broken code
+- **Monitor CI after every push** — after pushing, check the PR's CI status; if any check fails, read the failure logs, fix the cause locally, re-run tests, and push again; report to the user if CI fails 3 times on the same PR without resolution
+- **One commit per review comment** — when addressing PR review comments, each individual comment must be resolved in its own separate commit; do not batch multiple review comments into one commit
 - `git rebase main` is allowed (and preferred over merge) to bring upstream changes into a feature branch; interactive rebase (`rebase -i`) is not
 - Use the following format for commit messages:
   - **feat**: A new feature
@@ -422,6 +452,10 @@ curl -s http://localhost:5000/api/pools/INVALID | grep -q '"error"' && echo "✓
 - 137 server unit tests via Jest — run with `npm test`
 - No client tests currently configured
 - ts-node uses `transpileOnly: true` so TypeScript errors don't surface at runtime; run `tsc --noEmit` to type-check
+
+### Integration / E2E Test Assertions
+- Integration tests must include at least minimal assertions on the returned shape and values — it is not sufficient to assert only that no exception was thrown. At minimum, verify that required fields are present and have the expected types (e.g. numeric fields are finite numbers, string fields are non-empty).
+- Console logging in integration tests is allowed for debugging, but must be gated behind a debug flag (e.g. `process.env.DEBUG`) so the test output is clean when run locally without that flag set and in CI.
 
 ## Deployment Notes
 - Environment variable: `PORT` (defaults to 5000 for backend)
