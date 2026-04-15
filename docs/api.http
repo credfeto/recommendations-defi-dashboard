@@ -1,0 +1,42 @@
+# REST API — HTTP Examples
+#
+# The REST API is served by the Fastify server on port 5000.
+#
+# Compatible with the VS Code REST Client extension.
+# Start the server first: npm run dev (port 5000)
+
+@baseUrl = http://localhost:5000
+
+# ── 1. Get available pool types ──────────────────────────────────────────────
+# Returns the list of all supported pool type identifiers and their metadata.
+GET {{baseUrl}}/api/pools
+
+###
+
+# ── 2. Get ETH / liquid staking pools ───────────────────────────────────────
+# Returns enriched pool data for ETH and liquid staking tokens (e.g. stETH, rETH).
+GET {{baseUrl}}/api/pools/ETH
+
+###
+
+# ── 3. Get stablecoin pools ──────────────────────────────────────────────────
+# Returns enriched pool data for stablecoin pairs (e.g. USDC, USDT, DAI).
+GET {{baseUrl}}/api/pools/STABLES
+
+###
+
+# ── 4. Get high-yield pools ──────────────────────────────────────────────────
+# Returns enriched pool data for pools with elevated APY (typically >20%).
+GET {{baseUrl}}/api/pools/HIGH_YIELD
+
+###
+
+# ── 5. Get low-TVL pools ─────────────────────────────────────────────────────
+# Returns enriched pool data for pools with lower total value locked.
+GET {{baseUrl}}/api/pools/LOW_TVL
+
+###
+
+# ── 6. Get blue-chip pools ───────────────────────────────────────────────────
+# Returns enriched pool data for established, high-TVL blue-chip protocols.
+GET {{baseUrl}}/api/pools/BLUE_CHIP
