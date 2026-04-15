@@ -45,6 +45,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 - Bump @emnapi/core from 1.9.1 to 1.9.2
 - Bump @emnapi/runtime from 1.9.1 to 1.9.2
+- Bump caniuse-lite from 1.0.30001782 to 1.0.30001784
 - **Server restructured** into distinct layers:
   - `api/` — third-party API clients (`defillama.pools.api.service.ts`, `defillama.hacks.api.service.ts`, `pendle.markets.api.service.ts`)
   - `db/` — SQLite persistent cache (`cache.db.ts`) via `better-sqlite3`
