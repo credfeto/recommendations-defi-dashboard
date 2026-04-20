@@ -1,6 +1,6 @@
 services:
   defi:
-    image: credfeto/defi:latest
+    image: docker-registry.markridgwell.com/credfeto/defi:latest
     container_name: defi
     ports:
       - '443:443'
