@@ -1,5 +1,6 @@
 import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../services/pools.service';
-import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared';
+import { getAvailablePoolTypesMetadata } from '../types/getAvailablePoolTypesMetadata';
+import { POOL_TYPES_METADATA } from '../types/poolTypesMetadataConfig';
 import { getPoolsByNameSchema } from './schemas';
 import fastJsonStringify from 'fast-json-stringify';
 
