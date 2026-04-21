@@ -38,6 +38,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Fixed
 
+- Docker container "cannot find module @shared" runtime error: removed the separate `packages/shared` workspace package and moved shared types directly into `packages/server/src/shared/`; server imports now use relative paths, eliminating the need for `tsc-alias` and project references; client Vite alias updated to resolve `@shared` from `packages/server/src/shared`
 - Docker runtime stage no longer errors with `sh: husky: not found` when installing production-only dependencies; the root `prepare` script now guards the `husky` call with `[ -d .git ]` so it is a no-op in Docker (no `.git` directory) while continuing to set up git hooks normally in development
 - TypeScript strict mode errors in `packages/server`: index-access safety for `RPC_ENV` in `rpc.config.ts`, optional-chaining for `process.env['PORT']` in `server-fastify.ts`, and explicit `underlyingTokens` type casts in `server-fastify.ts` and `poolTypesConfig.ts`
 - Server endpoints returning 500 when the DefiLlama hacks API responded with HTTP 429 (rate limit); now degrades gracefully to an empty hack map so pool data still loads

@@ -17,7 +17,7 @@ import { getContractSecurityForAddresses } from '../services/contract-security.s
 import { checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
-import { getAvailablePoolTypesMetadata } from '@shared';
+import { getAvailablePoolTypesMetadata } from '../shared';
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
 import { cacheWarmerService } from '../services/cache-warmer.service';
 

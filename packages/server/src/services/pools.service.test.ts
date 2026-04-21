@@ -1,5 +1,5 @@
 import { applyBaseFilters, filterPoolsByType } from './pools.service';
-import { PoolData } from '@shared/types/poolData';
+import { PoolData } from '../shared/types/poolData';
 
 const makePool = (overrides: Partial<PoolData> = {}): PoolData => ({
   chain: 'Ethereum',

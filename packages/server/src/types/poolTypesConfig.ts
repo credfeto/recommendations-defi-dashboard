@@ -1,6 +1,6 @@
 import { PoolTypeConfig } from './poolTypeConfig';
 
-import { PoolData } from '@shared/types/poolData';
+import { PoolData } from '../shared/types/poolData';
 
 export const POOL_TYPES: Record<string, PoolTypeConfig> = {
   ETH: {
