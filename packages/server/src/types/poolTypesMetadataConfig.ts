@@ -1,4 +1,4 @@
-import { PoolTypeMetadata } from './poolTypeMetadata';
+import { PoolTypeMetadata } from '@shared/types/poolTypeMetadata';
 
 export const POOL_TYPES_METADATA: Record<string, PoolTypeMetadata> = {
   ETH: { name: 'ETH', displayName: 'Ethereum' },

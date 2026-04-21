@@ -5,7 +5,6 @@ WORKDIR /build
 
 # Copy workspace manifests first for better layer caching
 COPY package.json package-lock.json tsconfig.base.json ./
-COPY packages/shared/package.json ./packages/shared/
 COPY packages/client/package.json ./packages/client/
 COPY packages/server/package.json ./packages/server/
 
@@ -17,7 +16,7 @@ RUN HUSKY=0 npm ci
 COPY packages/ ./packages/
 
 # Build React client → packages/client/build/
-# Build server (tsc -b compiles shared automatically via project references)
+# Build server — shared types are compiled directly into packages/server/dist/
 # Prune to production deps only — no lifecycle scripts are triggered by prune
 RUN npm --workspace=@defi-dashboard/client run build && \
     npm --workspace=@defi-dashboard/server run build && \
@@ -47,17 +46,13 @@ RUN rm -f /etc/nginx/http.d/default.conf
 # ── Client static files ────────────────────────────────────────────────────────
 COPY --from=builder /build/packages/client/build /app/client
 
-# ── Server compiled output ─────────────────────────────────────────────────────
+# ── Server compiled output (shared types compiled in under dist/shared/) ───────
 COPY --from=builder /build/packages/server/dist /app/packages/server/dist
-COPY --from=builder /build/packages/shared/dist /app/packages/shared/dist
 
 # ── Production node_modules (already pruned in builder stage) ─────────────────
-# package.json files are needed for npm workspace module resolution at runtime.
-# npm workspaces hoists all dependencies to the root node_modules; there are no
-# package-level node_modules directories to copy.
+# package.json is needed for npm workspace module resolution at runtime.
 COPY --from=builder /build/package.json /app/package.json
 COPY --from=builder /build/packages/server/package.json /app/packages/server/package.json
-COPY --from=builder /build/packages/shared/package.json /app/packages/shared/package.json
 COPY --from=builder /build/node_modules /app/node_modules
 
 # ── Data directory for SQLite DB (volume-mount point) ─────────────────────────

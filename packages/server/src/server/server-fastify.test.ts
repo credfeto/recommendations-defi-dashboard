@@ -1,8 +1,8 @@
 import { filterPools, getPoolsByType, applyBaseFilters, filterPoolsByType } from '../services/pools.service';
-import { getAvailablePoolTypesMetadata, POOL_TYPES_METADATA } from '@shared';
+import { getAvailablePoolTypesMetadata } from '../types/getAvailablePoolTypesMetadata';
+import { POOL_TYPES_METADATA } from '../types/poolTypesMetadataConfig';
 import { getPoolsByNameSchema } from './schemas';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fastJsonStringify = require('fast-json-stringify');
+import fastJsonStringify from 'fast-json-stringify';
 
 interface MockPool {
   chain: string;

@@ -18,14 +18,13 @@
     "jest": "^30.3.0",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^6.0.2"
   },
   "scripts": {
     "start": "node -r tsconfig-paths/register -r ts-node/register src/server/server-fastify.ts",
     "dev": "ts-node -O '{\"module\": \"commonjs\"}' src/server/server-fastify.ts",
-    "build": "tsc -b tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
