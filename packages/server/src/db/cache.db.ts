@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
-import { ContractSecurityInfo } from '../shared';
+import { ContractSecurityInfo } from '@shared';
 
 const DB_DIR = process.env['DB_DIR'] ?? path.join(__dirname, '../../data');
 const DB_PATH = path.join(DB_DIR, 'cache.db');

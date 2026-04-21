@@ -1,4 +1,4 @@
-import { ContractSecurityInfo } from '../shared';
+import { ContractSecurityInfo } from '@shared';
 import { goPlusApiService, GoPlusTokenResult } from '../api/goplus.api.service';
 import { resolveProxyImplementation } from './proxy-resolver.service';
 import {

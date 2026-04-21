@@ -1,4 +1,4 @@
-import { PoolData } from '../shared/types/poolData';
+import { PoolData } from '@shared/types/poolData';
 
 export interface PoolTypeConfig {
   id: string;

@@ -1,4 +1,4 @@
-import { DepegAlert } from '../shared';
+import { DepegAlert } from '@shared';
 import { CoinGeckoStablecoin, CoinGeckoCoinPlatforms } from '../api/coingecko.stablecoins.api.service';
 
 /** Assumed peg for all USD stablecoins */

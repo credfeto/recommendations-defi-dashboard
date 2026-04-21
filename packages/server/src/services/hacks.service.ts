@@ -1,4 +1,4 @@
-import { HackInfo } from '../shared';
+import { HackInfo } from '@shared';
 import { RawHack } from '../api/defillama.hacks.api.service';
 import { toSlug, baseSlug } from '../utils/slug.utils';
 

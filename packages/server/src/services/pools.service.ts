@@ -1,4 +1,4 @@
-import { PoolData } from '../shared/types/poolData';
+import { PoolData } from '@shared/types/poolData';
 import { PoolTypeConfig } from '../types/poolTypeConfig';
 import { getPoolTypeById } from '../types/getPoolTypeById';
 import { getAvailablePoolTypes } from '../types/getAvailablePoolTypes';

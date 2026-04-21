@@ -1,4 +1,4 @@
-import { AuditInfo } from '../shared';
+import { AuditInfo } from '@shared';
 import { RawProtocol } from '../api/defillama.protocols.api.service';
 import { baseSlug } from '../utils/slug.utils';
 

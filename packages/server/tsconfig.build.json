@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "paths": { "@shared": ["./dist/shared"], "@shared/*": ["./dist/shared/*"] }
   },
   "exclude": ["**/*.test.ts", "**/*.spec.ts"]
 }
