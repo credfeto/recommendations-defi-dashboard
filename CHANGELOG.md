@@ -69,6 +69,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - MCP server mounted on existing Fastify server at POST /mcp (Streamable HTTP, stateless)
 
 ### Removed
+- Removed husky pre-commit hooks
 
 ### Deployment Changes
 

@@ -8,7 +8,6 @@
   ],
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "husky": "^9.1.7",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2"
   },
@@ -19,7 +18,6 @@
     "build": "npm --workspace=@defi-dashboard/client run build",
     "test": "npm --workspace=@defi-dashboard/server test",
     "test:coverage": "npm --workspace=@defi-dashboard/server run test:coverage",
-    "test:watch": "npm --workspace=@defi-dashboard/server run test:watch",
-    "prepare": "[ -d .git ] && husky || true"
+    "test:watch": "npm --workspace=@defi-dashboard/server run test:watch"
   }
 }
