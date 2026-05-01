@@ -22,16 +22,14 @@ export const FetchPools: React.FC = () => {
     const fetchPoolTypesAndData = async () => {
       try {
         // First, fetch available pool types from server
-        const typesResponse = await axios.get<{ status: string; data: PoolTypeMetadata[] }>(
-          'http://localhost:5000/api/pools',
-        );
+        const typesResponse = await axios.get<{ status: string; data: PoolTypeMetadata[] }>('/api/pools');
         const availableTypes = typesResponse.data.data || [];
         setAvailablePoolTypes(availableTypes);
 
         // Map server types to local types for data fetching
         const requests = availableTypes.map((serverType) =>
           axios
-            .get<PoolsResponse>(`http://localhost:5000/api/pools/${serverType.name}`)
+            .get<PoolsResponse>(`/api/pools/${serverType.name}`)
             .then((res) => ({ typeId: serverType.name, data: res.data.data || [] }))
             .catch(() => ({ typeId: serverType.name, data: [] })),
         );
