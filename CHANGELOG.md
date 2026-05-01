@@ -67,6 +67,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Enable HTTP response caching (15s TTL with stale-while-revalidate) and brotli/gzip compression via @fastify/compress
 - Replace react-scripts (CRA) and craco with Vite, eliminating webpack-dev-server deprecation warnings
 - MCP server mounted on existing Fastify server at POST /mcp (Streamable HTTP, stateless)
+- docker: build runs on all branches; push to registry only on main
 
 ### Removed
 - Removed husky pre-commit hooks
