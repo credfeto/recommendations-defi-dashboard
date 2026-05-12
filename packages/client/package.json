@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/node": "^25.6.2",
     "@vitejs/plugin-react": "^6.0.1",
-    "vite": "^8.0.11"
+    "vite": "^8.0.12"
   },
   "scripts": {
     "start": "vite",
