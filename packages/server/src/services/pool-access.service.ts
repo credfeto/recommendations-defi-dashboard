@@ -88,7 +88,6 @@ function detectLockup(poolMeta: string | null): string | null {
 export function derivePoolAccessInfo(
   project: string,
   poolMeta: string | null,
-  exposure: string | null,
 ): PoolAccessInfo {
   const kycFromMeta = hasKycMeta(poolMeta);
   const kycFromProject = KYC_ENTRY_PROJECTS.has(project.toLowerCase());

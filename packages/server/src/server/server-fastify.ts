@@ -97,7 +97,7 @@ export const start = async (): Promise<void> => {
               hacks: matchHacks(pool.project, hackMap),
               depegAlerts: checkDepeg(pool.symbol, priceMap, underlyingTokens ?? null, addressMap),
               auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
-              accessInfo: derivePoolAccessInfo(pool.project, pool['poolMeta'] as string | null, pool['exposure'] as string | null),
+              accessInfo: derivePoolAccessInfo(pool.project, pool['poolMeta'] as string | null),
               contractAddresses: buildContractAddresses(pool),
             };
           })
