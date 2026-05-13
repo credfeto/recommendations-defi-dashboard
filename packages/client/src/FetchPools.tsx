@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Pool, PoolsResponse, PoolTypeMetadata, HackInfo } from '@shared';
+import { Pool, PoolsResponse, PoolTypeMetadata, HackInfo, PoolAccessInfo } from '@shared';
 import { PoolTypeConfig } from './types/poolTypeConfig';
 import { getAvailablePoolTypes } from './types/getAvailablePoolTypes';
 import './FetchPools.css';
@@ -75,6 +75,36 @@ export const FetchPools: React.FC = () => {
   const currentLocalType = poolTypes.find((t) => t.id === selectedType);
   const currentPools = poolsByType[selectedType] || [];
 
+  const renderTriState = (value: boolean | null, trueLabel = '✓', falseLabel = '✗', nullLabel = '?'): React.ReactNode => {
+    if (value === true) return <span className='tri-true' title='Yes'>{trueLabel}</span>;
+    if (value === false) return <span className='tri-false' title='No'>{falseLabel}</span>;
+    return <span className='tri-unknown' title='Unknown'>{nullLabel}</span>;
+  };
+
+  const renderAccessInfo = (accessInfo: PoolAccessInfo | undefined): React.ReactNode => {
+    if (!accessInfo) return <span className='tri-unknown'>?</span>;
+    const liquidLabel = accessInfo.lockupDescription
+      ? `🔒 ${accessInfo.lockupDescription}`
+      : accessInfo.isLiquid === false ? '🔒' : accessInfo.isLiquid === true ? '✓' : '?';
+    return (
+      <span title={accessInfo.lockupDescription ?? undefined}>
+        {liquidLabel}
+      </span>
+    );
+  };
+
+  const renderContractAddresses = (addresses: string[] | undefined): React.ReactNode => {
+    if (!addresses || addresses.length === 0) return <span className='tri-unknown'>—</span>;
+    return (
+      <span
+        className='contract-addresses'
+        title={addresses.join('\n')}
+      >
+        {addresses.length} address{addresses.length > 1 ? 'es' : ''}
+      </span>
+    );
+  };
+
   return (
     <div className='pools-container'>
       <header className='pools-header'>
@@ -129,6 +159,11 @@ export const FetchPools: React.FC = () => {
                         <th>APY Base</th>
                         <th>APY Reward</th>
                         <th>Stablecoin</th>
+                        <th title='KYC required for entry'>KYC Entry</th>
+                        <th title='KYC required for exit'>KYC Exit</th>
+                        <th title='Can use DEX swap to exit'>Swap Exit</th>
+                        <th title='Immediately liquid (no lockup)'>Liquid</th>
+                        <th title='On-chain contract addresses'>Contracts</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -170,6 +205,11 @@ export const FetchPools: React.FC = () => {
                           <td>{pool.apyBase !== null ? pool.apyBase.toFixed(2) : '-'}%</td>
                           <td>{pool.apyReward !== null ? pool.apyReward.toFixed(2) : '-'}%</td>
                           <td className='stablecoin'>{pool.stablecoin ? '✓' : '—'}</td>
+                          <td className='access-kyc'>{renderTriState(pool.accessInfo?.kycRequiredForEntry ?? null)}</td>
+                          <td className='access-kyc'>{renderTriState(pool.accessInfo?.kycRequiredForExit ?? null)}</td>
+                          <td className='access-swap'>{renderTriState(pool.accessInfo?.canSwapToExit ?? null)}</td>
+                          <td className='access-liquid'>{renderAccessInfo(pool.accessInfo)}</td>
+                          <td className='contract-addr'>{renderContractAddresses(pool.contractAddresses)}</td>
                         </tr>
                       ))}
                     </tbody>

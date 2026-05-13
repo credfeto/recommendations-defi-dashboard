@@ -12,6 +12,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Added
 
+- **Pool access information** — each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool address field); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API, MCP `get_pools` tool, and five new UI columns (KYC Entry, KYC Exit, Swap Exit, Liquid, Contracts)
+- **`PoolAccessInfo` shared type** — new interface with `kycEntryRequired`, `kycExitRequired`, `canUseSwapToExit`, `isLiquid` (`boolean | null`), and `lockupDescription` (`string | null`); `null` means unknown rather than false
+- **Package-level `.gitignore` files** — `packages/client/.gitignore` ignores `build/` and `packages/server/.gitignore` ignores `dist/`; both ignore `*.tsbuildinfo` incremental build cache files
+
 - **`docs/api.http`** — VS Code REST Client examples for all REST API endpoints (`GET /api/pools` and `GET /api/pools/:poolName` for all five pool types: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP)
 
 - **`docker-compose.yml`** — local deployment config bringing up the `defi` service (image `credfeto/defi:latest`, port `443:443`, `./data:/app/data` volume for SQLite persistence) alongside `watchtower` (image `nickfedor/watchtower:latest`, 15-minute poll interval, monitors only the `defi` container via `WATCHTOWER_CONTAINER_LIST`)

@@ -7,6 +7,8 @@ import { getContractSecurityForAddresses } from './services/contract-security.se
 import { checkDepeg } from './services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from './services/pools.service';
 import { getPoolUrl } from './services/pool-url.service';
+import { derivePoolAccessInfo } from './services/pool-access.service';
+import { buildContractAddresses } from './utils/contract-address.utils';
 
 // ── server factory ─────────────────────────────────────────────────────────
 
@@ -26,7 +28,7 @@ export function createMcpServer(): McpServer {
     'get_pools',
     {
       description:
-        'Fetch enriched DeFi pool recommendations for a given category. Returns pools with APY, TVL, hack history, depeg alerts, audit info, and contract security.',
+        'Fetch enriched DeFi pool recommendations for a given category. Returns pools with APY, TVL, hack history, depeg alerts, audit info, contract security, contract addresses, KYC requirements, and liquidity/exit info.',
       inputSchema: {
         poolType: z
           .string()
@@ -63,6 +65,8 @@ export function createMcpServer(): McpServer {
           hacks: matchHacks(pool.project, hackMap),
           depegAlerts: checkDepeg(pool.symbol, priceMap, pool['underlyingTokens'] ?? null, addressMap),
           auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
+          accessInfo: derivePoolAccessInfo(pool.project, pool['poolMeta'] as string | null),
+          contractAddresses: buildContractAddresses(pool),
         }))
         .filter((pool) => pool.depegAlerts.length === 0);
 

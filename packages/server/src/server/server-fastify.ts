@@ -17,6 +17,8 @@ import { getContractSecurityForAddresses } from '../services/contract-security.s
 import { checkDepeg } from '../services/depeg.service';
 import { filterPoolsByType, getAvailableTypes } from '../services/pools.service';
 import { getPoolUrl } from '../services/pool-url.service';
+import { derivePoolAccessInfo } from '../services/pool-access.service';
+import { buildContractAddresses } from '../utils/contract-address.utils';
 import { getAvailablePoolTypesMetadata } from '../types/getAvailablePoolTypesMetadata';
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
 import { cacheWarmerService } from '../services/cache-warmer.service';
@@ -95,6 +97,8 @@ export const start = async (): Promise<void> => {
               hacks: matchHacks(pool.project, hackMap),
               depegAlerts: checkDepeg(pool.symbol, priceMap, underlyingTokens ?? null, addressMap),
               auditInfo: matchAuditInfo(pool.project, protocolAuditMap),
+              accessInfo: derivePoolAccessInfo(pool.project, pool['poolMeta'] as string | null),
+              contractAddresses: buildContractAddresses(pool),
             };
           })
           .filter((pool) => pool.depegAlerts.length === 0);

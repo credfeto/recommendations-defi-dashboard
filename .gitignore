@@ -338,7 +338,7 @@ src/Data
 # Mac files
 .DS_Store
 
-# Dotnet 
+# Dotnet
 .dotnet/
 
 # Jetbrains

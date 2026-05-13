@@ -3,12 +3,16 @@ import { AuditInfo } from './auditInfo';
 import { ContractSecurityInfo } from './contractSecurityInfo';
 import { HackInfo } from './hackInfo';
 import { DepegAlert } from './depegAlert';
+import { PoolAccessInfo } from './poolAccessInfo';
 
 export interface Pool {
   hacks: HackInfo[];
   depegAlerts: DepegAlert[];
   auditInfo: AuditInfo | null;
   contractSecurity: ContractSecurityInfo[];
+  accessInfo: PoolAccessInfo;
+  /** On-chain contract addresses for this pool: underlying tokens, reward tokens, and pool contract where available. */
+  contractAddresses: string[];
   url: string | null;
   chain: string;
   project: string;
