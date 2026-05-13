@@ -356,9 +356,6 @@ src/Data
 # GitHub Copilot persisted chat sessions
 /copilot/chatSessions
 
-# AI tool generated files
-/.ai/
-
 # Server packaging
 server-dist/
 
