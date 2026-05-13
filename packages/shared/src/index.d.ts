@@ -5,6 +5,7 @@ export * from './types/depegAlert';
 export * from './types/hackInfo';
 export * from './types/predictions';
 export * from './types/pool';
+export * from './types/poolAccessInfo';
 export * from './types/poolsResponse';
 export * from './types/poolTypeMetadata';
 export * from './types/poolData';
