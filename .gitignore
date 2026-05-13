@@ -338,7 +338,7 @@ src/Data
 # Mac files
 .DS_Store
 
-# Dotnet 
+# Dotnet
 .dotnet/
 
 # Jetbrains
@@ -355,6 +355,9 @@ src/Data
 
 # GitHub Copilot persisted chat sessions
 /copilot/chatSessions
+
+# AI tool generated files
+/.ai/
 
 # Server packaging
 server-dist/
