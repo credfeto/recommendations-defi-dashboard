@@ -46,6 +46,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Docker build: removed copy of non-existent workspace-level node_modules directory (npm workspaces hoists all dependencies to root node_modules)
 - Docker Dockerfile: consolidated consecutive RUN instructions to satisfy hadolint DL3059 rule
 - MCP endpoint now accessible at public URL by proxying /mcp through nginx
+- Docker builder stage now installs python3, make, and g++ so better-sqlite3 native module compiles correctly on Alpine
 
 ### Changed
 

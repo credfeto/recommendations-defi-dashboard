@@ -3,6 +3,9 @@ FROM node:26-alpine AS builder
 
 WORKDIR /build
 
+# Install native build tools required by better-sqlite3 (node-gyp)
+RUN apk add --no-cache python3 make g++
+
 # Copy workspace manifests first for better layer caching
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/client/package.json ./packages/client/
