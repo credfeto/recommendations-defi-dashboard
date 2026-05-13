@@ -1,4 +1,1 @@
-ignored:
-  - DL3008
-  - DL3009
-  - DL3018
+.github/linters/.hadolint.yaml
