@@ -1,3 +1,4 @@
+---
 services:
   defi:
     image: docker-registry.markridgwell.com/credfeto/defi:latest
