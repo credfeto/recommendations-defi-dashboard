@@ -14,5 +14,4 @@ This is an index of local instructions that apply to just this project.
 
 ## Instruction Files
 <!-- Locally Maintained -->
-
 * [npm.instructions.md](npm.instructions.md) — NPM fixed package versions; use exact pinned versions, no semver ranges, explicit updates only.
