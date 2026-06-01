@@ -74,7 +74,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 
 ### Removed
 - Removed husky pre-commit hooks
-- Client package and nginx — server now exposes HTTP directly on port 3000
+- Client package and nginx — server handles TLS directly via self-signed cert on port 443
 
 ### Deployment Changes
 - `better-sqlite3` added as a server dependency (requires native build tools)

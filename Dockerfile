@@ -25,6 +25,8 @@ RUN npm --workspace=@defi-dashboard/server run build && \
 # ─── Stage 2: Runtime ────────────────────────────────────────────────────────
 FROM node:26-alpine AS runtime
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # ── Server compiled output (shared types compiled in under dist/shared/) ─────
@@ -39,12 +41,18 @@ COPY --from=builder /build/node_modules /app/node_modules
 # ── Data directory for SQLite DB (volume-mount point) ─────────────────────────
 RUN mkdir -p /app/data
 
-EXPOSE 3000
+# ── Startup script ────────────────────────────────────────────────────────────
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 443
 
 ENV DB_DIR=/app/data \
-    PORT=3000 \
+    PORT=443 \
+    TLS_KEY_PATH=/etc/ssl/defi/server.key \
+    TLS_CERT_PATH=/etc/ssl/defi/server.crt \
     NODE_ENV=production
 
 WORKDIR /app/packages/server
 
-CMD ["node", "dist/server/server-fastify.js"]
+ENTRYPOINT ["docker-entrypoint.sh"]
