@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     A single market entry from the Pendle API.
 /// </summary>
 [DebuggerDisplay("{SimpleSymbol} chainId={ChainId} isActive={IsActive}")]
-public sealed record PendleMarket
+internal sealed record PendleMarket
 {
     [JsonPropertyName("address")]
     public string Address { get; init; } = string.Empty;

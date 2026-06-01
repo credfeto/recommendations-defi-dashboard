@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Describes entry and exit access restrictions for a pool.
 /// </summary>
 [DebuggerDisplay("KycEntry={KycRequiredForEntry} Liquid={IsLiquid}")]
-public sealed record PoolAccessInfo
+internal sealed record PoolAccessInfo
 {
     /// <summary>
     ///     Whether KYC or accreditation is required to enter (deposit into) the pool.

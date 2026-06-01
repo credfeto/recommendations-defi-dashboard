@@ -164,12 +164,7 @@ public sealed class DefiMcpToolsTests : TestBase, IDisposable
     [Fact]
     public void GetPoolTypes_ReturnsExactlyFivePoolTypes()
     {
-        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
-        using HttpClient httpClient = new(handler);
-
-        DefiMcpTools tools = this.CreateMcpTools(httpClient);
-
-        PoolTypeMetadata[] types = tools.GetPoolTypes();
+        PoolTypeMetadata[] types = DefiMcpTools.GetPoolTypes();
 
         Assert.Equal(expected: 5, actual: types.Length);
     }

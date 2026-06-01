@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Information about a DeFi protocol exploit or hack.
 /// </summary>
 [DebuggerDisplay("{Name} ({Date}) ${AmountUsd}")]
-public sealed record HackInfo
+internal sealed record HackInfo
 {
     /// <summary>
     ///     Name of the protocol that was hacked.

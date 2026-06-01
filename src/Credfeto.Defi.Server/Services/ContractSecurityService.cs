@@ -12,7 +12,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Fetches and caches GoPlus contract security information for pool token addresses.
 /// </summary>
-public sealed class ContractSecurityService
+internal sealed class ContractSecurityService
 {
     private readonly ContractSecurityCacheService _cache;
     private readonly GoPlusClient _goPlusClient;

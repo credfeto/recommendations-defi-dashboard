@@ -9,7 +9,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Builds and queries a slug-keyed map of protocol hacks.
 /// </summary>
-public static class HacksService
+internal static class HacksService
 {
     /// <summary>
     ///     Builds a map from protocol slug to hack list from raw DefiLlama hack data.
@@ -74,7 +74,7 @@ public static class HacksService
             foreach (HackInfo hack in entry.Value)
             {
                 string seenKey = $"{hack.Name}|{hack.Date}";
-                seen.TryAdd(key: seenKey, value: hack);
+                _ = seen.TryAdd(key: seenKey, value: hack);
             }
         }
 
@@ -114,7 +114,7 @@ public static class HacksService
         foreach (HackInfo h in items)
         {
             string seenKey = $"{h.Name}|{h.Date}";
-            seen.TryAdd(key: seenKey, value: h);
+            _ = seen.TryAdd(key: seenKey, value: h);
         }
     }
 }

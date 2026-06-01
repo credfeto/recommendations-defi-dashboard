@@ -15,17 +15,17 @@ namespace Credfeto.Defi.Server.ApiClients.DefiLlama;
 /// <summary>
 ///     Fetches yield pool data from the DefiLlama API.
 /// </summary>
-public sealed class DefiLlamaPoolsClient
+internal sealed class DefiLlamaPoolsClient
 {
     private const string LLAMA_POOLS_URL = "https://yields.llama.fi/pools";
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<DefiLlamaPoolsClient> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="DefiLlamaPoolsClient" />.
     /// </summary>
-    public DefiLlamaPoolsClient(IHttpClientFactory httpClientFactory, ILogger<DefiLlamaPoolsClient> logger)
+    public DefiLlamaPoolsClient(IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;

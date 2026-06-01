@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Top-level response from the DefiLlama yields API.
 /// </summary>
 [DebuggerDisplay("Count={Data?.Length}")]
-public sealed record DefiLlamaPoolsResponse
+internal sealed record DefiLlamaPoolsResponse
 {
     [JsonPropertyName("data")]
     public RawPool[]? Data { get; init; }

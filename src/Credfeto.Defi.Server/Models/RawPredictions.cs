@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Raw predictions object from DefiLlama API.
 /// </summary>
 [DebuggerDisplay("PredictedClass={PredictedClass}")]
-public sealed record RawPredictions
+internal sealed record RawPredictions
 {
     [JsonPropertyName("predictedClass")]
     public string? PredictedClass { get; init; }

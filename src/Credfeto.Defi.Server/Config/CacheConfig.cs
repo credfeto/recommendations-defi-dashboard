@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Config;
 ///     Configuration for the SQLite API cache.
 /// </summary>
 [DebuggerDisplay("DbDirectory={DbDirectory}")]
-public sealed class CacheConfig
+internal sealed class CacheConfig
 {
     /// <summary>
     ///     Directory where the SQLite database file will be stored.

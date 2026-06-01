@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Metadata describing a pool category exposed via the API.
 /// </summary>
 [DebuggerDisplay("{Id}: {Name}")]
-public sealed record PoolTypeMetadata
+internal sealed record PoolTypeMetadata
 {
     /// <summary>
     ///     Machine-readable identifier for the pool category (e.g. "ETH").

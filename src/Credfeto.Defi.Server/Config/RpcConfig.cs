@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Config;
 ///     Used for resolving proxy implementation addresses via eth_getStorageAt.
 /// </summary>
 [DebuggerDisplay("Ethereum={Ethereum} Arbitrum={Arbitrum} Base={Base} Bsc={Bsc}")]
-public sealed class RpcConfig
+internal sealed class RpcConfig
 {
     /// <summary>
     ///     RPC URL for Ethereum mainnet, or empty string if not configured.

@@ -14,7 +14,7 @@ namespace Credfeto.Defi.Server.Mcp;
 ///     MCP tool implementations for the DeFi Dashboard.
 /// </summary>
 [McpServerToolType]
-public sealed class DefiMcpTools
+internal sealed class DefiMcpTools
 {
     private readonly ContractSecurityService _contractSecurityService;
     private readonly PoolEnrichmentService _enrichmentService;
@@ -32,7 +32,7 @@ public sealed class DefiMcpTools
     ///     Returns the available DeFi pool categories that can be queried.
     /// </summary>
     [McpServerTool(Name = "get_pool_types", Title = "Get Pool Types")]
-    public PoolTypeMetadata[] GetPoolTypes()
+    public static PoolTypeMetadata[] GetPoolTypes()
     {
         return PoolTypeService.GetAllPoolTypes();
     }

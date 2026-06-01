@@ -14,7 +14,7 @@ namespace Credfeto.Defi.Server.Cache;
 ///     SQLite-backed cache for GoPlus contract security data.
 ///     TTL: 24 hours.
 /// </summary>
-public sealed class ContractSecurityCacheService : IDisposable
+internal sealed class ContractSecurityCacheService : IDisposable
 {
     private static readonly TimeSpan SecurityTtl = TimeSpan.FromHours(24);
 
@@ -33,7 +33,7 @@ public sealed class ContractSecurityCacheService : IDisposable
 
         if (!Directory.Exists(dbDirectory))
         {
-            Directory.CreateDirectory(dbDirectory);
+            _ = Directory.CreateDirectory(dbDirectory);
         }
 
         string dbPath = Path.Combine(path1: dbDirectory, path2: "cache.db");
@@ -72,7 +72,7 @@ public sealed class ContractSecurityCacheService : IDisposable
                 checked_at                  INTEGER NOT NULL,
                 PRIMARY KEY (chain, address)
             )";
-        cmd.ExecuteNonQuery();
+        _ = cmd.ExecuteNonQuery();
     }
 
     /// <summary>
@@ -251,50 +251,37 @@ public sealed class ContractSecurityCacheService : IDisposable
                  @buyTax, @sellTax, @transferTax, @cannotBuy, @honeypotWithSameCreator,
                  @tokenName, @tokenSymbol, @checkedAt)";
 
+        object isOpenSourceValue = info.IsOpenSource.HasValue ? info.IsOpenSource.Value : DBNull.Value;
+        object isHoneypotValue = info.IsHoneypot.HasValue ? info.IsHoneypot.Value : DBNull.Value;
+        object isProxyValue = info.IsProxy.HasValue ? info.IsProxy.Value : DBNull.Value;
+        object buyTaxValue = info.BuyTax.HasValue ? info.BuyTax.Value : DBNull.Value;
+        object sellTaxValue = info.SellTax.HasValue ? info.SellTax.Value : DBNull.Value;
+        object transferTaxValue = info.TransferTax.HasValue ? info.TransferTax.Value : DBNull.Value;
+        object cannotBuyValue = info.CannotBuy.HasValue ? info.CannotBuy.Value : DBNull.Value;
+        object honeypotWithSameCreatorValue = info.HoneypotWithSameCreator.HasValue
+            ? info.HoneypotWithSameCreator.Value
+            : DBNull.Value;
+
         _ = cmd.Parameters.AddWithValue(parameterName: "@chain", value: info.Chain);
         _ = cmd.Parameters.AddWithValue(parameterName: "@address", value: info.Address.ToLowerInvariant());
         _ = cmd.Parameters.AddWithValue(
             parameterName: "@parentAddress",
             value: (object?)info.ParentAddress ?? DBNull.Value
         );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@isOpenSource",
-            value: info.IsOpenSource.HasValue ? info.IsOpenSource.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@isHoneypot",
-            value: info.IsHoneypot.HasValue ? info.IsHoneypot.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@isProxy",
-            value: info.IsProxy.HasValue ? info.IsProxy.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@buyTax",
-            value: info.BuyTax.HasValue ? info.BuyTax.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@sellTax",
-            value: info.SellTax.HasValue ? info.SellTax.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@transferTax",
-            value: info.TransferTax.HasValue ? info.TransferTax.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@cannotBuy",
-            value: info.CannotBuy.HasValue ? info.CannotBuy.Value : DBNull.Value
-        );
-        _ = cmd.Parameters.AddWithValue(
-            parameterName: "@honeypotWithSameCreator",
-            value: info.HoneypotWithSameCreator.HasValue ? info.HoneypotWithSameCreator.Value : DBNull.Value
-        );
+        _ = cmd.Parameters.AddWithValue(parameterName: "@isOpenSource", value: isOpenSourceValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@isHoneypot", value: isHoneypotValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@isProxy", value: isProxyValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@buyTax", value: buyTaxValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@sellTax", value: sellTaxValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@transferTax", value: transferTaxValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@cannotBuy", value: cannotBuyValue);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@honeypotWithSameCreator", value: honeypotWithSameCreatorValue);
         _ = cmd.Parameters.AddWithValue(parameterName: "@tokenName", value: (object?)info.TokenName ?? DBNull.Value);
         _ = cmd.Parameters.AddWithValue(
             parameterName: "@tokenSymbol",
             value: (object?)info.TokenSymbol ?? DBNull.Value
         );
         _ = cmd.Parameters.AddWithValue(parameterName: "@checkedAt", value: checkedAtMs);
-        cmd.ExecuteNonQuery();
+        _ = cmd.ExecuteNonQuery();
     }
 }

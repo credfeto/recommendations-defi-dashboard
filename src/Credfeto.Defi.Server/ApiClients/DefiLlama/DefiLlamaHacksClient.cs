@@ -14,17 +14,17 @@ namespace Credfeto.Defi.Server.ApiClients.DefiLlama;
 /// <summary>
 ///     Fetches recorded DeFi exploit data from the DefiLlama hacks API.
 /// </summary>
-public sealed class DefiLlamaHacksClient
+internal sealed class DefiLlamaHacksClient
 {
     private const string HACKS_URL = "https://api.llama.fi/hacks";
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<DefiLlamaHacksClient> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="DefiLlamaHacksClient" />.
     /// </summary>
-    public DefiLlamaHacksClient(IHttpClientFactory httpClientFactory, ILogger<DefiLlamaHacksClient> logger)
+    public DefiLlamaHacksClient(IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;

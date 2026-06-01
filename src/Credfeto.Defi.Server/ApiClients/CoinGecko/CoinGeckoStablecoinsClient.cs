@@ -15,18 +15,18 @@ namespace Credfeto.Defi.Server.ApiClients.CoinGecko;
 /// <summary>
 ///     Fetches stablecoin price data and the full coin list from CoinGecko.
 /// </summary>
-public sealed class CoinGeckoStablecoinsClient
+internal sealed class CoinGeckoStablecoinsClient
 {
     private const string BASE_URL = "https://api.coingecko.com/api/v3";
     private const int PER_PAGE = 250;
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<CoinGeckoStablecoinsClient> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="CoinGeckoStablecoinsClient" />.
     /// </summary>
-    public CoinGeckoStablecoinsClient(IHttpClientFactory httpClientFactory, ILogger<CoinGeckoStablecoinsClient> logger)
+    public CoinGeckoStablecoinsClient(IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;

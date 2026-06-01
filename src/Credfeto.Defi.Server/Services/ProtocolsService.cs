@@ -9,7 +9,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Builds and queries a slug-keyed map of protocol audit information.
 /// </summary>
-public static class ProtocolsService
+internal static class ProtocolsService
 {
     /// <summary>
     ///     Builds a map from protocol slug to audit information.
@@ -38,13 +38,13 @@ public static class ProtocolsService
                 AuditLinks = p.AuditLinks ?? [],
             };
 
-            map.TryAdd(key: p.Slug, value: info);
+            _ = map.TryAdd(key: p.Slug, value: info);
 
             string baseSlug = SlugUtils.BaseSlug(p.Slug);
 
             if (!string.Equals(a: baseSlug, b: p.Slug, comparisonType: StringComparison.OrdinalIgnoreCase))
             {
-                map.TryAdd(key: baseSlug, value: info);
+                _ = map.TryAdd(key: baseSlug, value: info);
             }
         }
 
@@ -63,14 +63,10 @@ public static class ProtocolsService
 
         string baseSlug = SlugUtils.BaseSlug(projectSlug);
 
-        if (
+        return
             !string.Equals(a: baseSlug, b: projectSlug, comparisonType: StringComparison.OrdinalIgnoreCase)
             && protocolMap.TryGetValue(key: baseSlug, out AuditInfo? baseInfo)
-        )
-        {
-            return baseInfo;
-        }
-
-        return null;
+            ? baseInfo
+            : null;
     }
 }

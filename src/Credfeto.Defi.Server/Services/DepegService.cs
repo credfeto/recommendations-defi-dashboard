@@ -9,14 +9,14 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Builds stablecoin price maps and detects depeg risk for pool tokens.
 /// </summary>
-public static partial class DepegService
+internal static partial class DepegService
 {
     private const decimal USD_PEG = 1.0m;
     private const decimal WARN_THRESHOLD = 0.005m; // 0.5%
     private const decimal CRITICAL_THRESHOLD = 0.02m; // 2%
 
     [GeneratedRegex(pattern: "[-/+\\s]+", options: RegexOptions.ExplicitCapture, matchTimeoutMilliseconds: 500)]
-    private static partial Regex TokenSplitRegex();
+    private static partial Regex TokenSplitRegex { get; }
 
     /// <summary>
     ///     Builds a normalised symbol → current price map from CoinGecko stablecoin data.
@@ -30,7 +30,7 @@ public static partial class DepegService
         {
             if (coin.CurrentPrice.HasValue)
             {
-                map.TryAdd(key: coin.Symbol.ToLowerInvariant(), value: coin.CurrentPrice.Value);
+                _ = map.TryAdd(key: coin.Symbol.ToLowerInvariant(), value: coin.CurrentPrice.Value);
             }
         }
 
@@ -52,7 +52,7 @@ public static partial class DepegService
         {
             if (coin.CurrentPrice.HasValue)
             {
-                idToSymbol.TryAdd(key: coin.Id, value: coin.Symbol.ToLowerInvariant());
+                _ = idToSymbol.TryAdd(key: coin.Id, value: coin.Symbol.ToLowerInvariant());
             }
         }
 
@@ -77,7 +77,7 @@ public static partial class DepegService
                 )
             )
             {
-                addressMap.TryAdd(key: address.ToLowerInvariant(), value: symbol);
+                _ = addressMap.TryAdd(key: address.ToLowerInvariant(), value: symbol);
             }
         }
 
@@ -93,7 +93,7 @@ public static partial class DepegService
     {
         return
         [
-            .. TokenSplitRegex()
+            .. TokenSplitRegex
                 .Split(poolSymbol)
                 .Select(static p => p.Trim())
                 .Where(static p => !string.IsNullOrEmpty(p)),
@@ -117,10 +117,12 @@ public static partial class DepegService
         IReadOnlyDictionary<string, string>? addressMap
     )
     {
+        string[]? underlyingTokensArray = underlyingTokens.IsEmpty ? null : underlyingTokens.ToArray();
+
         return CheckDepeg(
             poolSymbol: poolSymbol,
             priceMap: priceMap,
-            underlyingTokens: underlyingTokens.IsEmpty ? null : underlyingTokens.ToArray(),
+            underlyingTokens: underlyingTokensArray,
             addressMap: addressMap
         );
     }
@@ -206,13 +208,15 @@ public static partial class DepegService
             return null;
         }
 
+        string severity = absDeviation >= CRITICAL_THRESHOLD ? "critical" : "warning";
+
         return new DepegAlert
         {
             Symbol = symbol,
             CurrentPrice = price,
             PegPrice = USD_PEG,
             Deviation = deviation,
-            Severity = absDeviation >= CRITICAL_THRESHOLD ? "critical" : "warning",
+            Severity = severity,
         };
     }
 }

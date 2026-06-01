@@ -9,7 +9,6 @@ using Credfeto.Defi.Server.Json;
 using Credfeto.Defi.Server.Mcp;
 using Credfeto.Defi.Server.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Credfeto.Defi.Server;
@@ -17,17 +16,19 @@ namespace Credfeto.Defi.Server;
 /// <summary>
 ///     Registers all application services.
 /// </summary>
-public static class ServiceRegistration
+internal static class ServiceRegistration
 {
     /// <summary>
     ///     Adds all DeFi Dashboard services to the dependency injection container.
     /// </summary>
     public static WebApplicationBuilder AddDefiServices(this WebApplicationBuilder builder)
     {
+        _ = builder.Services.AddOptions<CacheConfig>().BindConfiguration("Cache");
+
+        _ = builder.Services.AddOptions<RpcConfig>().BindConfiguration("Rpc");
+
         _ = builder
-            .Services.Configure<CacheConfig>(builder.Configuration.GetSection("Cache"))
-            .Configure<RpcConfig>(builder.Configuration.GetSection("Rpc"))
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .Services.AddSingleton<TimeProvider>(TimeProvider.System)
             .AddSingleton<ApiCacheService>()
             .AddSingleton<ContractSecurityCacheService>()
             .AddHttpClient()

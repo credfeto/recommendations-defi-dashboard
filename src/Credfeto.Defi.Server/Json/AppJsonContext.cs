@@ -54,4 +54,4 @@ namespace Credfeto.Defi.Server.Json;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 )]
-public sealed partial class AppJsonContext : JsonSerializerContext { }
+internal sealed partial class AppJsonContext : JsonSerializerContext { }

@@ -12,7 +12,7 @@ namespace Credfeto.Defi.Server.Endpoints;
 /// <summary>
 ///     Maps the /api/pools REST endpoints.
 /// </summary>
-public static class PoolsEndpoints
+internal static class PoolsEndpoints
 {
     private const string CACHE_CONTROL = "public, max-age=15, s-maxage=15, stale-while-revalidate=5";
 

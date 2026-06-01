@@ -15,7 +15,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Resolves the implementation address of upgradeable proxy contracts via raw JSON-RPC calls.
 /// </summary>
-public sealed class ProxyResolverService
+internal sealed class ProxyResolverService
 {
     /// <summary>
     ///     EIP-1967 implementation slot (keccak256("eip1967.proxy.implementation") - 1).
@@ -41,17 +41,13 @@ public sealed class ProxyResolverService
     private static readonly string[] ProxySlots = [SLOT_EIP1967, SLOT_EIP1967_BEACON, SLOT_OZ_LEGACY];
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ProxyResolverService> _logger;
+    private readonly ILogger _logger;
     private readonly RpcConfig _rpcConfig;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="ProxyResolverService" />.
     /// </summary>
-    public ProxyResolverService(
-        IOptions<RpcConfig> rpcConfig,
-        IHttpClientFactory httpClientFactory,
-        ILogger<ProxyResolverService> logger
-    )
+    public ProxyResolverService(IOptions<RpcConfig> rpcConfig, IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._rpcConfig = rpcConfig.Value;
         this._httpClientFactory = httpClientFactory;
@@ -117,12 +113,12 @@ public sealed class ProxyResolverService
             return string.IsNullOrEmpty(this._rpcConfig.Base) ? null : this._rpcConfig.Base;
         }
 
-        if (string.Equals(a: chain, b: "BSC", comparisonType: StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(a: chain, b: "BSC", comparisonType: StringComparison.OrdinalIgnoreCase))
         {
-            return string.IsNullOrEmpty(this._rpcConfig.Bsc) ? null : this._rpcConfig.Bsc;
+            return null;
         }
 
-        return null;
+        return string.IsNullOrEmpty(this._rpcConfig.Bsc) ? null : this._rpcConfig.Bsc;
     }
 
     private async ValueTask<string?> GetStorageAtAsync(
@@ -193,18 +189,10 @@ public sealed class ProxyResolverService
         }
 
         string addr = "0x" + hex[^40..];
+        string zeroAddress = "0x" + new string(c: '0', count: 40);
 
-        if (
-            string.Equals(
-                a: addr,
-                b: "0x" + new string(c: '0', count: 40),
-                comparisonType: StringComparison.OrdinalIgnoreCase
-            )
-        )
-        {
-            return null;
-        }
-
-        return addr.ToLowerInvariant();
+        return string.Equals(a: addr, b: zeroAddress, comparisonType: StringComparison.OrdinalIgnoreCase)
+            ? null
+            : addr.ToLowerInvariant();
     }
 }

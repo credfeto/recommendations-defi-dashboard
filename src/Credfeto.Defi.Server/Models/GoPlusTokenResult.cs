@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Security analysis result for a single token from GoPlus.
 /// </summary>
 [DebuggerDisplay("{TokenSymbol} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
-public sealed record GoPlusTokenResult
+internal sealed record GoPlusTokenResult
 {
     [JsonPropertyName("is_open_source")]
     public string? IsOpenSource { get; init; }

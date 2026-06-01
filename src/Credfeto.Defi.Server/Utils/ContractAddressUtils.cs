@@ -9,21 +9,21 @@ namespace Credfeto.Defi.Server.Utils;
 /// <summary>
 ///     Utilities for extracting on-chain contract addresses from pool data.
 /// </summary>
-public static partial class ContractAddressUtils
+internal static partial class ContractAddressUtils
 {
     [GeneratedRegex(
         pattern: "^0x[0-9a-fA-F]{40}$",
         options: RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex EthAddressRegex();
+    private static partial Regex EthAddressRegex { get; }
 
     /// <summary>
     ///     Returns true if the given string looks like an Ethereum-style hex address.
     /// </summary>
     public static bool IsContractAddress(string value)
     {
-        return EthAddressRegex().IsMatch(value);
+        return EthAddressRegex.IsMatch(value);
     }
 
     /// <summary>
@@ -42,19 +42,19 @@ public static partial class ContractAddressUtils
 
         foreach (string addr in underlying)
         {
-            addresses.Add(addr.ToLowerInvariant());
+            _ = addresses.Add(addr.ToLowerInvariant());
         }
 
         IEnumerable<string> rewards = pool.RewardTokens?.Where(IsContractAddress) ?? [];
 
         foreach (string addr in rewards)
         {
-            addresses.Add(addr.ToLowerInvariant());
+            _ = addresses.Add(addr.ToLowerInvariant());
         }
 
         if (IsContractAddress(pool.PoolId))
         {
-            addresses.Add(pool.PoolId.ToLowerInvariant());
+            _ = addresses.Add(pool.PoolId.ToLowerInvariant());
         }
 
         string[] result = new string[addresses.Count];

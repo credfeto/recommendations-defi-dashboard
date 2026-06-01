@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     JSON-RPC 2.0 request payload.
 /// </summary>
 [DebuggerDisplay("{Method} id={Id}")]
-public sealed record RpcRequest
+internal sealed record RpcRequest
 {
     [JsonPropertyName("jsonrpc")]
     public string Jsonrpc { get; init; } = "2.0";

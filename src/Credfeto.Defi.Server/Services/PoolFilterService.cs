@@ -8,7 +8,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Applies pool type category filters and base quality filters.
 /// </summary>
-public static class PoolFilterService
+internal static class PoolFilterService
 {
     private const double MIN_TVL = 1_000_000;
 
@@ -116,12 +116,8 @@ public static class PoolFilterService
             return pool.TvlUsd < 10_000_000;
         }
 
-        if (string.Equals(a: poolType, b: "BLUE_CHIP", comparisonType: StringComparison.OrdinalIgnoreCase))
-        {
-            return pool.TvlUsd > 100_000_000;
-        }
-
-        return false;
+        return string.Equals(a: poolType, b: "BLUE_CHIP", comparisonType: StringComparison.OrdinalIgnoreCase)
+            && pool.TvlUsd > 100_000_000;
     }
 
     private static bool MatchesEthCategory(RawPool pool)
@@ -133,13 +129,11 @@ public static class PoolFilterService
             return true;
         }
 
-        if (pool.UnderlyingTokens is null)
-        {
-            return false;
-        }
-
-        return pool.UnderlyingTokens.Any(token =>
-            LstSymbols.Any(s => token.ToUpperInvariant().Contains(value: s, comparisonType: StringComparison.Ordinal))
-        );
+        return pool.UnderlyingTokens is not null
+            && pool.UnderlyingTokens.Any(token =>
+                LstSymbols.Any(s =>
+                    token.ToUpperInvariant().Contains(value: s, comparisonType: StringComparison.Ordinal)
+                )
+            );
     }
 }

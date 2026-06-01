@@ -8,7 +8,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Coin list entry from CoinGecko, including on-chain contract addresses keyed by platform ID.
 /// </summary>
 [DebuggerDisplay("{Id} ({Symbol})")]
-public sealed record CoinGeckoCoinPlatforms
+internal sealed record CoinGeckoCoinPlatforms
 {
     [JsonPropertyName("id")]
     public string Id { get; init; } = string.Empty;

@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Raw pool data as returned by the DefiLlama yields API before enrichment.
 /// </summary>
 [DebuggerDisplay("{Project}/{Symbol} ({Chain})")]
-public sealed record RawPool
+internal sealed record RawPool
 {
     [JsonPropertyName("chain")]
     public string Chain { get; init; } = string.Empty;

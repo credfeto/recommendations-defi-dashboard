@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Machine-learning APY predictions from DefiLlama.
 /// </summary>
 [DebuggerDisplay("PredictedClass={PredictedClass} Probability={PredictedProbability}")]
-public sealed record Predictions
+internal sealed record Predictions
 {
     /// <summary>
     ///     Predicted class label (e.g. "stable").

@@ -13,7 +13,7 @@ namespace Credfeto.Defi.Server;
 /// <summary>
 ///     Application entry point.
 /// </summary>
-public static class Program
+internal static class Program
 {
     /// <summary>
     ///     Main entry point.
@@ -31,7 +31,7 @@ public static class Program
 
             ConfigureLogging(builder);
 
-            builder.AddDefiServices();
+            _ = builder.AddDefiServices();
 
             await using WebApplication app = builder.Build();
 

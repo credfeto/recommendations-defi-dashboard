@@ -16,7 +16,7 @@ namespace Credfeto.Defi.Server.ApiClients.GoPlus;
 /// <summary>
 ///     Fetches contract security information from the GoPlus Labs API.
 /// </summary>
-public sealed class GoPlusClient
+internal sealed class GoPlusClient
 {
     private const string GOPLUS_BASE = "https://api.gopluslabs.io/api/v1/token_security";
 
@@ -31,12 +31,12 @@ public sealed class GoPlusClient
     };
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GoPlusClient> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="GoPlusClient" />.
     /// </summary>
-    public GoPlusClient(IHttpClientFactory httpClientFactory, ILogger<GoPlusClient> logger)
+    public GoPlusClient(IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
