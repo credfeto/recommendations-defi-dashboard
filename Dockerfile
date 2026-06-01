@@ -1,6 +1,7 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
+COPY .globalconfig ./
 COPY src/ ./
 RUN dotnet publish Credfeto.Defi.Server/Credfeto.Defi.Server.csproj \
     -c Release \
