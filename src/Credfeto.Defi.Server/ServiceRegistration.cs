@@ -1,13 +1,17 @@
-﻿using System;
-using Credfeto.Defi.Server.ApiClients.CoinGecko;
-using Credfeto.Defi.Server.ApiClients.DefiLlama;
-using Credfeto.Defi.Server.ApiClients.GoPlus;
-using Credfeto.Defi.Server.ApiClients.Pendle;
-using Credfeto.Defi.Server.Cache;
-using Credfeto.Defi.Server.Config;
-using Credfeto.Defi.Server.Json;
-using Credfeto.Defi.Server.Mcp;
-using Credfeto.Defi.Server.Services;
+using System;
+using Credfeto.Defi.ApiClients.CoinGecko;
+using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
+using Credfeto.Defi.ApiClients.DefiLlama;
+using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
+using Credfeto.Defi.ApiClients.GoPlus;
+using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
+using Credfeto.Defi.ApiClients.Pendle;
+using Credfeto.Defi.ApiClients.Pendle.Interfaces;
+using Credfeto.Defi.Data.Models.Config;
+using Credfeto.Defi.Data.Models.Json;
+using Credfeto.Defi.Database;
+using Credfeto.Defi.Mcp;
+using Credfeto.Defi.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,12 +36,12 @@ internal static class ServiceRegistration
             .AddSingleton<ApiCacheService>()
             .AddSingleton<ContractSecurityCacheService>()
             .AddHttpClient()
-            .AddSingleton<DefiLlamaPoolsClient>()
-            .AddSingleton<DefiLlamaHacksClient>()
-            .AddSingleton<DefiLlamaProtocolsClient>()
-            .AddSingleton<CoinGeckoStablecoinsClient>()
-            .AddSingleton<PendleMarketsClient>()
-            .AddSingleton<GoPlusClient>()
+            .AddSingleton<IDefiLlamaPoolsClient, DefiLlamaPoolsClient>()
+            .AddSingleton<IDefiLlamaHacksClient, DefiLlamaHacksClient>()
+            .AddSingleton<IDefiLlamaProtocolsClient, DefiLlamaProtocolsClient>()
+            .AddSingleton<ICoinGeckoStablecoinsClient, CoinGeckoStablecoinsClient>()
+            .AddSingleton<IPendleMarketsClient, PendleMarketsClient>()
+            .AddSingleton<IGoPlusClient, GoPlusClient>()
             .AddSingleton<ProxyResolverService>()
             .AddSingleton<ContractSecurityService>()
             .AddSingleton<PoolEnrichmentService>()

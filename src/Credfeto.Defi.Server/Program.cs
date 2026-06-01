@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Server.Endpoints;
 using Credfeto.Defi.Server.Helpers;
-using Credfeto.Defi.Server.Mcp;
 using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

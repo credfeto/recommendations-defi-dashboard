@@ -1,5 +1,5 @@
-﻿using Credfeto.Defi.Server.Models;
-using Credfeto.Defi.Server.Utils;
+﻿using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Services.Utils;
 using FunFair.Test.Common;
 using Xunit;
 

@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <Description>DeFi Dashboard GoPlus API Client Interfaces</Description>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Features>strict;flow-analysis</Features>
+    <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+    <LangVersion>latest</LangVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <NuGetAuditMode>direct</NuGetAuditMode>
+    <Nullable>enable</Nullable>
+    <DebuggerSupport>true</DebuggerSupport>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
+    <IsPublishable>false</IsPublishable>
+    <OutputType>Library</OutputType>
+    <RunAOTCompilation>false</RunAOTCompilation>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredPGO>true</TieredPGO>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <ValidateExecutableReferencesMatchSelfContained>true</ValidateExecutableReferencesMatchSelfContained>
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+    <RepositoryUrl>https://github.com/credfeto/recommendations-defi-dashboard</RepositoryUrl>
+    <TargetFramework>net10.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="FunFair.CodeAnalysis" Version="7.2.0.1978" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.98" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Philips.CodeAnalysis.DuplicateCodeAnalyzer" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Philips.CodeAnalysis.MaintainabilityAnalyzers" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0" PrivateAssets="All" ExcludeAssets="runtime" Condition="Exists('$(SolutionDir)DoesNotExist.props')" />
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="SmartAnalyzers.CSharpExtensions.Annotations" Version="4.2.11" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>

@@ -1,4 +1,4 @@
-using Credfeto.Defi.Server.Utils;
+using Credfeto.Defi.Services.Utils;
 using FunFair.Test.Common;
 using Xunit;
 
