@@ -1,5 +1,9 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Install native AOT prerequisites: clang (linker) and zlib1g-dev (compression)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends clang zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /source
 COPY .globalconfig ./
 COPY src/ ./
