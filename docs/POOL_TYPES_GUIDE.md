@@ -58,20 +58,6 @@ To use the new pool type, call the API endpoint:
 GET /api/pools/YOUR_TYPE
 ```
 
-## Frontend Integration
-
-The React component (`src/FetchPools.tsx`) automatically fetches data for all available pool types using:
-
-```typescript
-const poolTypes = getAvailablePoolTypes();
-```
-
-The component will:
-
-1. Display a button for each pool type in the sidebar
-2. Fetch data for all types on load
-3. Show pool details when a type is selected
-
 ## Core Concepts
 
 ### PoolTypeConfig Interface

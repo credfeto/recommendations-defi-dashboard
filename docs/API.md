@@ -2,8 +2,8 @@
 
 ## Base URL
 
-```
-http://localhost:5000
+```text
+http://localhost:3000
 ```
 
 ## Endpoints
@@ -12,7 +12,7 @@ http://localhost:5000
 
 **Endpoint:**
 
-```
+```text
 GET /api/pools/:poolName
 ```
 
@@ -40,13 +40,13 @@ Retrieve filtered pools of a specific type, with base filters applied (IL risk =
 
 ```bash
 # Get ETH-based pools
-curl http://localhost:5000/api/pools/ETH
+curl http://localhost:3000/api/pools/ETH
 
 # Get stablecoin pools
-curl http://localhost:5000/api/pools/STABLES
+curl http://localhost:3000/api/pools/STABLES
 
 # Get high-yield pools
-curl http://localhost:5000/api/pools/HIGH_YIELD
+curl http://localhost:3000/api/pools/HIGH_YIELD
 ```
 
 **Success Response:**
@@ -174,7 +174,7 @@ Currently no rate limiting implemented. The 1-hour cache reduces load on the ups
 
 CORS is enabled for development:
 
-```
+```text
 Access-Control-Allow-Origin: *
 ```
 
@@ -199,7 +199,7 @@ interface PoolsResponse {
 }
 
 // Fetch ETH-based pools
-const response = await axios.get<PoolsResponse>('http://localhost:5000/api/pools/ETH');
+const response = await axios.get<PoolsResponse>('http://localhost:3000/api/pools/ETH');
 
 if (response.data.status === 'ok') {
   response.data.data.forEach((pool) => {
@@ -212,10 +212,10 @@ if (response.data.status === 'ok') {
 
 ```bash
 # Get all liquid staking pools
-curl -X GET http://localhost:5000/api/pools/LST | jq '.data[] | {symbol, apy, tvlUsd}'
+curl -X GET http://localhost:3000/api/pools/LST | jq '.data[] | {symbol, apy, tvlUsd}'
 
 # Get blue chip pools with high TVL
-curl -X GET http://localhost:5000/api/pools/BLUE_CHIP | jq '.data | sort_by(.tvlUsd) | reverse | .[0:5]'
+curl -X GET http://localhost:3000/api/pools/BLUE_CHIP | jq '.data | sort_by(.tvlUsd) | reverse | .[0:5]'
 ```
 
 ### Python
@@ -223,7 +223,7 @@ curl -X GET http://localhost:5000/api/pools/BLUE_CHIP | jq '.data | sort_by(.tvl
 ```python
 import requests
 
-response = requests.get('http://localhost:5000/api/pools/HIGH_YIELD')
+response = requests.get('http://localhost:3000/api/pools/HIGH_YIELD')
 pools = response.json()['data']
 
 for pool in pools:

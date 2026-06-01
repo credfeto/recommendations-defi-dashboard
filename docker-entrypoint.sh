@@ -1,39 +1,18 @@
 #!/bin/sh
 set -e
 
-terminate() {
-    echo "Shutting down..."
-    kill "$NGINX_PID" "$NODE_PID" 2>/dev/null || true
-    wait "$NGINX_PID" "$NODE_PID" 2>/dev/null || true
-}
+TLS_KEY="${TLS_KEY_PATH:-/etc/ssl/defi/server.key}"
+TLS_CERT="${TLS_CERT_PATH:-/etc/ssl/defi/server.crt}"
 
-trap terminate INT TERM
+if [ ! -f "$TLS_KEY" ] || [ ! -f "$TLS_CERT" ]; then
+    mkdir -p "$(dirname "$TLS_KEY")"
+    openssl req -x509 -nodes -days 3650 \
+        -newkey rsa:2048 \
+        -keyout "$TLS_KEY" \
+        -out    "$TLS_CERT" \
+        -subj   "/CN=defi.local" \
+        -addext "subjectAltName=DNS:defi.local,DNS:localhost,IP:127.0.0.1" \
+        2>/dev/null
+fi
 
-# Validate nginx config before starting anything
-nginx -t
-
-# Start nginx in the background
-nginx -g 'daemon off;' &
-NGINX_PID=$!
-
-# Start Fastify server in the background
-cd /app/packages/server
-node dist/server/server-fastify.js &
-NODE_PID=$!
-
-# Exit the container if either process exits
-while true; do
-    if ! kill -0 "$NGINX_PID" 2>/dev/null; then
-        echo "nginx exited; stopping container"
-        terminate
-        exit 1
-    fi
-
-    if ! kill -0 "$NODE_PID" 2>/dev/null; then
-        echo "Node server exited; stopping container"
-        terminate
-        exit 1
-    fi
-
-    sleep 1
-done
+exec node dist/server/server-fastify.js

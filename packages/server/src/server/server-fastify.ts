@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
 import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import compress from '@fastify/compress';
@@ -23,12 +26,32 @@ import { getAvailablePoolTypesMetadata } from '../types/getAvailablePoolTypesMet
 import { getPoolTypesSchema, getPoolsByNameSchema } from './schemas';
 import { cacheWarmerService } from '../services/cache-warmer.service';
 
-const PORT = parseInt(process.env['PORT'] ?? '5000', 10);
+const PORT = parseInt(process.env['PORT'] ?? '3000', 10);
 
 const CACHE_CONTROL = 'public, max-age=15, s-maxage=15, stale-while-revalidate=5';
 
+const buildTlsOptions = (): https.ServerOptions | undefined => {
+  const keyPath = process.env['TLS_KEY_PATH'];
+  const certPath = process.env['TLS_CERT_PATH'];
+  if (keyPath === undefined || certPath === undefined) return undefined;
+  try {
+    return { key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) };
+  } catch (err) {
+    throw new Error(
+      `Failed to load TLS certificates (TLS_KEY_PATH=${keyPath}, TLS_CERT_PATH=${certPath}): ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+};
+
 export const start = async (): Promise<void> => {
-  const fastify = Fastify({ logger: true });
+  const tls = buildTlsOptions();
+  const fastify = Fastify({
+    logger: true,
+    serverFactory: (handler) =>
+      tls !== undefined
+        ? https.createServer(tls, handler as http.RequestListener)
+        : http.createServer(handler as http.RequestListener),
+  });
 
   await fastify.register(compress, { global: true });
   await fastify.register(cors, { origin: true });
