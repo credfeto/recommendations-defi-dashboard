@@ -21,11 +21,11 @@ public static class PoolsEndpoints
     /// </summary>
     public static void MapPoolsEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet(pattern: "/api/pools", handler: GetPoolTypes)
+        _ = app.MapGet(pattern: "/api/pools", handler: GetPoolTypes)
             .WithName("GetPoolTypes")
             .Produces<PoolTypeMetadata[]>();
 
-        app.MapGet(pattern: "/api/pools/{poolName}", handler: GetPoolsByNameAsync)
+        _ = app.MapGet(pattern: "/api/pools/{poolName}", handler: GetPoolsByNameAsync)
             .WithName("GetPoolsByName")
             .Produces<Pool[]>()
             .ProducesProblem(400);

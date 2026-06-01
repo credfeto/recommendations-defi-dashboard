@@ -46,17 +46,14 @@ public sealed class DefiLlamaPoolsClient
                 cancellationToken: cancellationToken
             );
 
-            if (response?.Data is null)
-            {
-                return [];
-            }
-
-            return
-            [
-                .. response.Data.Where(pool =>
-                    !string.Equals(a: pool.Project, b: "pendle", comparisonType: StringComparison.OrdinalIgnoreCase)
-                ),
-            ];
+            return response?.Data is null
+                ? []
+                :
+                [
+                    .. response.Data.Where(pool =>
+                        !string.Equals(a: pool.Project, b: "pendle", comparisonType: StringComparison.OrdinalIgnoreCase)
+                    ),
+                ];
         }
         catch (Exception ex)
         {
