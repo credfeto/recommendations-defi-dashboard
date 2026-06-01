@@ -1,11 +1,11 @@
 # REST API — HTTP Examples
 #
-# The REST API is served by the Fastify server on port 5000.
+# The REST API is served by the Fastify server on port 3000 in development.
 #
 # Compatible with the VS Code REST Client extension.
-# Start the server first: npm run dev (port 5000)
+# Start the server first: npm run dev
 
-@baseUrl = http://localhost:5000
+@baseUrl = http://localhost:3000
 
 # ── 1. Get available pool types ──────────────────────────────────────────────
 # Returns the list of all supported pool type identifiers and their metadata.

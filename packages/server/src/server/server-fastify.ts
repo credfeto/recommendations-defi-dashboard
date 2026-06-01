@@ -34,7 +34,13 @@ const buildTlsOptions = (): https.ServerOptions | undefined => {
   const keyPath = process.env['TLS_KEY_PATH'];
   const certPath = process.env['TLS_CERT_PATH'];
   if (keyPath === undefined || certPath === undefined) return undefined;
-  return { key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) };
+  try {
+    return { key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) };
+  } catch (err) {
+    throw new Error(
+      `Failed to load TLS certificates (TLS_KEY_PATH=${keyPath}, TLS_CERT_PATH=${certPath}): ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 };
 
 export const start = async (): Promise<void> => {

@@ -1,33 +1,29 @@
 # Documentation
 
-This folder contains all architecture, development, and usage documentation for the DeFi Pools Dashboard.
+This folder contains all architecture, development, and usage documentation for the DeFi Dashboard.
 
-## 📖 Quick Navigation
+## Quick Navigation
 
 ### Getting Started
 
 - **[Pool Types Guide](./POOL_TYPES_GUIDE.md)** - How to add and work with pool types
-- **[Pool Types Examples](./POOL_TYPES_EXAMPLES.ts)** - 8 ready-to-use pool type examples
+- **[Pool Types Examples](./POOL_TYPES_EXAMPLES.ts)** - Ready-to-use pool type examples
 
 ### Architecture
 
 - **[System Architecture](./ARCHITECTURE.md)** - High-level system design and data flow
-- **[API Reference](./API.md)** - Backend API endpoints and responses
+- **[API Reference](./API.md)** - API endpoints and responses
 
 ### Development
 
 - **[Development Guide](./DEVELOPMENT.md)** - Setup, running, and testing locally
 - **[Testing Guide](./TESTING.md)** - How to write and run tests
 
-### Project Structure
-
-- **[Project Layout](./PROJECT_STRUCTURE.md)** - Directory structure and file organization
-
-## 🎯 Common Tasks
+## Common Tasks
 
 ### Add a New Pool Type
 
-See [Pool Types Guide](./POOL_TYPES_GUIDE.md) - takes ~5 minutes
+See [Pool Types Guide](./POOL_TYPES_GUIDE.md)
 
 ### Understand the System
 
@@ -41,21 +37,9 @@ See [Testing Guide](./TESTING.md)
 
 See [Development Guide](./DEVELOPMENT.md#deployment)
 
-## 📊 Quick Stats
+## Quick Stats
 
-- **Tests**: 26 passing, 100% coverage
-- **TypeScript**: 14/14 files (100%)
-- **Pool Types**: 6 built-in types
 - **Backend**: Fastify + TypeScript
-- **Frontend**: React 19 + TypeScript
-
-## 🚀 Key Features
-
-✓ Configuration-driven pool types  
-✓ Add new pool types in ~5 minutes  
-✓ Dynamic sidebar navigation  
-✓ Summary statistics  
-✓ Responsive design  
-✓ 100% test coverage  
-✓ 100% TypeScript  
-✓ Production-ready
+- **Pool Types**: 5 built-in types
+- **Tests**: 223 passing
+- **Cache**: SQLite, 1-hour TTL

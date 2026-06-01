@@ -13,12 +13,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Added
 - **Pool access information** — each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool address field); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API, MCP `get_pools` tool, and five new UI columns (KYC Entry, KYC Exit, Swap Exit, Liquid, Contracts)
 - **`PoolAccessInfo` shared type** — new interface with `kycEntryRequired`, `kycExitRequired`, `canUseSwapToExit`, `isLiquid` (`boolean | null`), and `lockupDescription` (`string | null`); `null` means unknown rather than false
-- **Package-level `.gitignore` files** — `packages/client/.gitignore` ignores `build/` and `packages/server/.gitignore` ignores `dist/`; both ignore `*.tsbuildinfo` incremental build cache files
 
 - **`docs/api.http`** — VS Code REST Client examples for all REST API endpoints (`GET /api/pools` and `GET /api/pools/:poolName` for all five pool types: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP)
 
 - **`docker-compose.yml`** — local deployment config bringing up the `defi` service (image `credfeto/defi:latest`, port `443:443`, `./data:/app/data` volume for SQLite persistence) alongside `watchtower` (image `nickfedor/watchtower:latest`, 15-minute poll interval, monitors only the `defi` container via `WATCHTOWER_CONTAINER_LIST`)
-- **Dockerfile** — multi-stage Docker build: Stage 1 builds the React client with Vite; Stage 2 produces a runtime image combining nginx (reverse proxy with self-signed TLS for `defi.local`/`localhost`) and Node/ts-node for the Fastify server; nginx serves static assets on port 443, proxies `/api/*` to port 5000, and applies appropriate `Cache-Control` headers (1h for regular assets, immutable for hashed bundles)
 - **GitHub Actions docker.yml workflow** — builds the Docker image and pushes `credfeto/defi:latest` to the configured registry on every push to `main`; registry credentials are read from `DOCKER_REGISTRY_URL`, `DOCKER_REGISTRY_USERNAME`, and `DOCKER_REGISTRY_PASSWORD` secrets
 - **`DB_DIR` environment variable** — the SQLite cache database path is now configurable via `DB_DIR` (defaults to the existing relative path); set `DB_DIR=/app/data` in production to isolate the DB in a dedicated directory that can be bind-mounted
 
@@ -47,7 +45,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Reduced Docker image size by using multi-stage build to compile TypeScript and installing only production dependencies in the final image
 - Docker build: removed copy of non-existent workspace-level node_modules directory (npm workspaces hoists all dependencies to root node_modules)
 - Docker Dockerfile: consolidated consecutive RUN instructions to satisfy hadolint DL3059 rule
-- MCP endpoint now accessible at public URL by proxying /mcp through nginx
 - Docker builder stage now installs python3, make, and g++ so better-sqlite3 native module compiles correctly on Alpine
 
 ### Changed

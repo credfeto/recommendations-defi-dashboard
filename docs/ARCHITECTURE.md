@@ -2,272 +2,108 @@
 
 ## Overview
 
-The DeFi Pools Dashboard is a full-stack TypeScript application that displays liquidity pools from the Llama Yields API, filtered by various criteria and organized by pool type.
+The DeFi Dashboard is a server-only TypeScript application. It aggregates liquidity pool data from external APIs, enriches it with hack/audit/depeg/contract-security information, and exposes the results via a REST API and an MCP server. A SQLite cache reduces external API calls. The container handles TLS termination directly — no reverse proxy required.
 
 ## Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     FRONTEND (React)                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  FetchPools.tsx              FetchPools.css                     │
-│  ────────────                ──────────────                      │
-│  • Sidebar nav              • Grid layout                        │
-│  • Pool selector            • Responsive                        │
-│  • Data fetching            • Animations                        │
-│  • Stats display                                                 │
-│           │                                                      │
-│           ├─► poolTypes.ts                                      │
-│           │   (Pool type config)                                │
-│           │                                                      │
-│           └─► axios.get('/api/pools/:type')                    │
-│                                                                  │
-└────────────────────────┬─────────────────────────────────────────┘
-                         │ HTTP
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    BACKEND (Fastify)                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  server-fastify.ts           server.ts                          │
-│  ──────────────               ────────                           │
-│  GET /api/pools/:poolName     • applyBaseFilters()            │
-│  ├─ Route handler             • filterPoolsByType()           │
-│  ├─ Cache management          • getAvailableTypes()           │
-│  └─ Error handling            • getFilteredPools()            │
-│           │                                                      │
-│           ├─► poolTypes.ts                                      │
-│           │   (Pool config + predicates)                        │
-│           │                                                      │
-│           └─► axios.get('https://yields.llama.fi/pools')      │
-│                                                                  │
-│  CACHE: 1-hour TTL in-memory cache                             │
-│                                                                  │
-└────────────────────────┬─────────────────────────────────────────┘
-                         │
-                         ▼
-         External API: yields.llama.fi/pools
-```
-
-## Data Flow
-
-### Pool Type Selection Flow
-
-```
-1. User clicks pool type button
+```text
+Client / MCP Host
+      │
+      │ HTTPS :443 (self-signed cert generated at startup)
       ▼
-2. Component calls: GET /api/pools/{TYPE}
+┌─────────────────────────────────────────────────────────┐
+│                  Fastify Server                          │
+│                                                         │
+│  GET  /api/pools            — list pool types           │
+│  GET  /api/pools/:name      — enriched pool data        │
+│  POST|GET|DELETE /mcp       — MCP Streamable HTTP       │
+│                                                         │
+│  services/                                              │
+│    pools.service          filter by type                │
+│    hacks.service          exploit risk                  │
+│    protocols.service      audit info                    │
+│    depeg.service          stablecoin price deviation    │
+│    pool-access.service    KYC / liquidity metadata      │
+│    contract-security.service  GoPlus API                │
+│    cache-warmer.service   background prefetch           │
+│                                                         │
+│  db/cache.db (SQLite, 1-hour TTL)                       │
+└────────────────────────────┬────────────────────────────┘
+                             │
+             ┌───────────────┼──────────────────┐
+             ▼               ▼                  ▼
+      DefiLlama API     Pendle API       CoinGecko API
+      (pools, hacks,   (markets)        (stablecoins,
+       protocols)                        coin list)
+```
+
+## Module Organisation
+
+```text
+packages/server/src/
+  api/        HTTP clients for DefiLlama, Pendle, CoinGecko, GoPlus
+  db/         SQLite cache (better-sqlite3)
+  mcp/        MCP server — tool definitions and handlers
+  server/     Fastify setup, route handlers, JSON schemas
+  services/   Business logic (pools, hacks, depeg, access, security)
+  types/      Pool type configuration and derived metadata
+  utils/      Contract address helpers, slug utilities
+
+packages/shared/src/
+  types/      Shared TypeScript type declarations (no runtime code)
+              Imported via @shared path alias
+```
+
+## Data Flow — Pool Request
+
+```text
+1. GET /api/pools/:poolName
       ▼
-3. Server receives request
+2. Validate pool name
       ▼
-4. Server calls filterPoolsByType(allPools, TYPE)
-      ├─► Gets PoolTypeConfig from poolTypes.ts
-      ├─► Applies type predicate
-      ├─► Applies base filters (IL risk, TVL, APY)
+3. Fetch in parallel:
+     getAllPools()          — DefiLlama (SQLite-cached 1 h)
+     getHackMap()           — DefiLlama hacks (SQLite-cached)
+     getStablecoinPriceMap() — CoinGecko (SQLite-cached)
+     getStablecoinAddressMap()
+     getProtocolAuditMap()
       ▼
-5. Server returns filtered pools
+4. Enrich each pool:
+     url, hacks, depegAlerts, auditInfo, accessInfo,
+     contractAddresses, contractSecurity (GoPlus, SQLite-cached)
       ▼
-6. Component receives data
+5. Filter out pools with depeg alerts
       ▼
-7. Component renders table + statistics
-      ▼
-8. User sees results
+6. Return JSON
 ```
 
-## Module Organization
+## Cache
 
-### Frontend Modules
+SQLite at `$DB_DIR/cache.db`.
 
-**src/FetchPools.tsx**
+| Entry | TTL |
+| --- | --- |
+| DefiLlama pools | 1 h (stale-while-revalidate up to 2 h) |
+| DefiLlama hacks | 1 h |
+| Protocol audit map | 1 h |
+| CoinGecko stablecoins | 1 h |
+| CoinGecko coin list | 1 h |
+| GoPlus contract security | 24 h |
 
-- Main React component
-- Manages pool type selection state
-- Fetches data from backend
-- Renders sidebar and table
+The cache warmer pre-fetches all entries in the background at startup.
 
-**src/types/poolTypes.ts**
+## TLS
 
-- Pool type configuration
-- 6 built-in pool types
-- Helper functions for type discovery
-
-**src/FetchPools.css**
-
-- Component styling
-- CSS Grid layout
-- Responsive design
-
-### Backend Modules
-
-**src/server-fastify.ts**
-
-- Fastify server setup
-- Route handlers
-- CORS middleware
-- Request logging
-
-**src/server.ts**
-
-- Pool filtering logic
-- Cache management
-- Filter functions:
-  - `applyBaseFilters()` - Apply minimum criteria
-  - `filterPoolsByType()` - Filter by pool type
-  - `getAvailableTypes()` - List all types
-  - `getFilteredPools()` - Wrapper function
-
-**src/types/poolTypes.ts**
-
-- Shared type definitions
-- Pool type configuration
-- Type predicates
-
-### Testing
-
-**src/**tests**/server.test.ts**
-
-- 26 comprehensive unit tests
-- 100% code coverage
-- Tests for all pool types
-- Edge case testing
-
-## Base Filters
-
-All pool types automatically apply these criteria:
-
-- **IL Risk**: Must be "no" (no impermanent loss)
-- **TVL**: Must be ≥ $1,000,000 (minimum liquidity)
-- **APY**: Must be > 0 (positive yield)
-
-## Built-in Pool Types
-
-| Type       | Filter                   | Use Case                  |
-| ---------- | ------------------------ | ------------------------- |
-| ETH        | Symbol contains "ETH"    | Ethereum-based yields     |
-| STABLES    | stablecoin = true        | Stablecoin pools          |
-| LST        | stETH, rETH, cbETH, etc. | Liquid staking yields     |
-| HIGH_YIELD | APY > 5%                 | Aggressive yield seeking  |
-| LOW_TVL    | TVL < $10M               | Early stage opportunities |
-| BLUE_CHIP  | TVL > $100M              | Conservative, safe pools  |
-
-## API Endpoints
-
-### Get Pools by Type
-
-```
-GET /api/pools/:poolName
-```
-
-**Parameters:**
-
-- `poolName` (string): Pool type ID (ETH, STABLES, LST, HIGH_YIELD, LOW_TVL, BLUE_CHIP)
-
-**Response:**
-
-```json
-{
-  "status": "ok",
-  "data": [
-    {
-      "symbol": "STETH",
-      "chain": "Ethereum",
-      "project": "lido",
-      "tvlUsd": 19891310603,
-      "apy": 2.425,
-      "ilRisk": "no",
-      "stablecoin": false,
-      "pool": "747c1d2a-c668-4682-b9f9-296708a3dd90"
-    }
-  ]
-}
-```
-
-**Error Response:**
-
-```json
-{ "error": "Invalid pool name. Use ETH or STABLES" }
-```
-
-## Cache Management
-
-The backend implements a 1-hour TTL in-memory cache:
-
-- First request: Fetches from Llama API, stores in cache
-- Subsequent requests (within 1 hour): Returned from cache
-- After 1 hour: Cache expires, refetches from API
-
-```typescript
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-```
-
-## Deployment Architecture
-
-### Development
-
-```
-npm run dev
-├─ npm run server    (Fastify on port 5000)
-└─ npm start         (React on port 3000)
-```
-
-### Production
-
-```
-Build frontend:  npm run build     → ./build/
-Run backend:     npm run server    (Production mode)
-Serve frontend:  Static hosting (Vercel, Netlify, etc.)
-```
+The entrypoint script generates a self-signed cert at `$TLS_KEY_PATH`/`$TLS_CERT_PATH` on first start (skipped if files already exist). Fastify uses `serverFactory` to create an `https.Server` when the paths are set, or a plain `http.Server` otherwise (development).
 
 ## Technology Stack
 
-### Frontend
-
-- React 19.2.4
-- TypeScript 4.9.5
-- Axios 1.13.6
-- CSS Grid
-
-### Backend
-
-- Fastify 5.8.4
-- @fastify/cors 11.2.0
-- TypeScript 4.9.5
-- Node.js runtime
-
-### Testing
-
-- Jest 30.3.0
-- ts-jest 29.4.6
-- 26 tests, 100% coverage
-
-## Performance Considerations
-
-1. **Caching**: 1-hour TTL reduces API calls
-2. **Parallel fetching**: Frontend fetches all pool types simultaneously
-3. **Filtering on server**: Reduces payload size
-4. **CSS Grid**: Efficient responsive layouts
-5. **Type predicates**: O(n) filtering per pool type
-
-## Security
-
-- CORS enabled for development (`{ origin: true }`)
-- No sensitive data in frontend code
-- Environment variables for secrets (PORT)
-- Input validation on pool type parameter
-
-## Error Handling
-
-- Invalid pool type → 400 Bad Request
-- API fetch failure → 500 Internal Server Error
-- Frontend catches errors → Shows error message to user
-
-## Future Enhancements
-
-- Redis caching for multi-instance deployments
-- Database persistence of cache
-- Real-time updates via WebSocket
-- More advanced filtering options
-- Pool-specific detail views
-- Historical data tracking
-- User preferences/bookmarks
+| Layer | Technology |
+| --- | --- |
+| HTTP server | Fastify 5 |
+| TLS | Node.js `https.Server` (self-signed cert via openssl) |
+| Language | TypeScript 6, Node.js 26 |
+| Database | SQLite via better-sqlite3 |
+| MCP | @modelcontextprotocol/sdk (Streamable HTTP, stateless) |
+| Testing | Jest 30 + ts-jest |
+| Container | node:26-alpine |
