@@ -24,7 +24,7 @@ public static class ServiceRegistration
     /// </summary>
     public static WebApplicationBuilder AddDefiServices(this WebApplicationBuilder builder)
     {
-        builder
+        _ = builder
             .Services.Configure<CacheConfig>(builder.Configuration.GetSection("Cache"))
             .Configure<RpcConfig>(builder.Configuration.GetSection("Rpc"))
             .AddSingleton<TimeProvider>(TimeProvider.System)

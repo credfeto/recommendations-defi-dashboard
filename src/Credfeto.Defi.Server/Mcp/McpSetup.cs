@@ -13,7 +13,7 @@ public static class McpSetup
     /// </summary>
     public static IServiceCollection AddMcpTools(this IServiceCollection services)
     {
-        services.AddMcpServer().WithHttpTransport().WithTools<DefiMcpTools>();
+        _ = services.AddMcpServer().WithHttpTransport().WithTools<DefiMcpTools>();
 
         return services;
     }
@@ -23,6 +23,6 @@ public static class McpSetup
     /// </summary>
     public static void MapMcpEndpoint(this WebApplication app)
     {
-        app.MapMcp("/mcp");
+        _ = app.MapMcp("/mcp");
     }
 }

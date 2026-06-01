@@ -66,10 +66,10 @@ public sealed class GoPlusClient
             {
                 if (i > 0)
                 {
-                    joined.Append(',');
+                    _ = joined.Append(',');
                 }
 
-                joined.Append(addresses[i].ToLowerInvariant());
+                _ = joined.Append(addresses[i].ToLowerInvariant());
             }
 
             string url = string.Format(

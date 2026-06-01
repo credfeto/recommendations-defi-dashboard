@@ -24,7 +24,7 @@ public static class Program
         {
             WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
-            builder
+            _ = builder
                 .Configuration.SetBasePath(builder.Environment.ContentRootPath)
                 .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
                 .AddEnvironmentVariables();
@@ -62,6 +62,6 @@ public static class Program
             .WriteTo.Console()
             .CreateLogger();
 
-        builder.Logging.ClearProviders().AddSerilog(logger: logger, dispose: true);
+        _ = builder.Logging.ClearProviders().AddSerilog(logger: logger, dispose: true);
     }
 }

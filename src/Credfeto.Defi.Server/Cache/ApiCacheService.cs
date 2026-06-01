@@ -126,7 +126,7 @@ public sealed class ApiCacheService : IDisposable
         }
         finally
         {
-            this._lock.Release();
+            _ = this._lock.Release();
         }
     }
 
@@ -145,16 +145,11 @@ public sealed class ApiCacheService : IDisposable
             long nowMs = this._timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
             (string? cachedJson, long fetchedAt) = ReadCacheRow(connection: this._connection, key: key);
 
-            if (cachedJson is null)
-            {
-                return false;
-            }
-
-            return nowMs - fetchedAt < (long)FreshTtl.TotalMilliseconds;
+            return cachedJson is not null && nowMs - fetchedAt < (long)FreshTtl.TotalMilliseconds;
         }
         finally
         {
-            this._lock.Release();
+            _ = this._lock.Release();
         }
     }
 
@@ -162,7 +157,7 @@ public sealed class ApiCacheService : IDisposable
     {
         using SqliteCommand cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT data, fetched_at FROM api_cache WHERE key = @key";
-        cmd.Parameters.AddWithValue(parameterName: "@key", value: key);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@key", value: key);
 
         using SqliteDataReader reader = cmd.ExecuteReader();
 
@@ -181,9 +176,9 @@ public sealed class ApiCacheService : IDisposable
     {
         using SqliteCommand cmd = connection.CreateCommand();
         cmd.CommandText = "INSERT OR REPLACE INTO api_cache (key, data, fetched_at) VALUES (@key, @data, @fetchedAt)";
-        cmd.Parameters.AddWithValue(parameterName: "@key", value: key);
-        cmd.Parameters.AddWithValue(parameterName: "@data", value: json);
-        cmd.Parameters.AddWithValue(parameterName: "@fetchedAt", value: fetchedAtMs);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@key", value: key);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@data", value: json);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@fetchedAt", value: fetchedAtMs);
         cmd.ExecuteNonQuery();
     }
 }

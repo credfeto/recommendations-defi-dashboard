@@ -101,7 +101,7 @@ public sealed class ContractSecurityCacheService : IDisposable
         }
         finally
         {
-            this._lock.Release();
+            _ = this._lock.Release();
         }
     }
 
@@ -126,7 +126,7 @@ public sealed class ContractSecurityCacheService : IDisposable
         }
         finally
         {
-            this._lock.Release();
+            _ = this._lock.Release();
         }
     }
 
@@ -144,7 +144,7 @@ public sealed class ContractSecurityCacheService : IDisposable
         }
         finally
         {
-            this._lock.Release();
+            _ = this._lock.Release();
         }
     }
 
@@ -158,8 +158,8 @@ public sealed class ContractSecurityCacheService : IDisposable
     {
         using SqliteCommand cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT * FROM contract_security WHERE chain = @chain AND address = @address";
-        cmd.Parameters.AddWithValue(parameterName: "@chain", value: chain);
-        cmd.Parameters.AddWithValue(parameterName: "@address", value: address);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@chain", value: chain);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@address", value: address);
 
         using SqliteDataReader reader = cmd.ExecuteReader();
 
@@ -170,12 +170,7 @@ public sealed class ContractSecurityCacheService : IDisposable
 
         long checkedAt = reader.GetInt64(reader.GetOrdinal("checked_at"));
 
-        if (nowMs - checkedAt >= ttlMs)
-        {
-            return null;
-        }
-
-        return MapRow(reader);
+        return nowMs - checkedAt >= ttlMs ? null : MapRow(reader);
     }
 
     private static IReadOnlyList<ContractSecurityInfo> ReadChildren(
@@ -186,8 +181,8 @@ public sealed class ContractSecurityCacheService : IDisposable
     {
         using SqliteCommand cmd = connection.CreateCommand();
         cmd.CommandText = "SELECT * FROM contract_security WHERE chain = @chain AND parent_address = @parentAddress";
-        cmd.Parameters.AddWithValue(parameterName: "@chain", value: chain);
-        cmd.Parameters.AddWithValue(parameterName: "@parentAddress", value: parentAddress);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@chain", value: chain);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@parentAddress", value: parentAddress);
 
         using SqliteDataReader reader = cmd.ExecuteReader();
         List<ContractSecurityInfo> results = [];
@@ -256,47 +251,50 @@ public sealed class ContractSecurityCacheService : IDisposable
                  @buyTax, @sellTax, @transferTax, @cannotBuy, @honeypotWithSameCreator,
                  @tokenName, @tokenSymbol, @checkedAt)";
 
-        cmd.Parameters.AddWithValue(parameterName: "@chain", value: info.Chain);
-        cmd.Parameters.AddWithValue(parameterName: "@address", value: info.Address.ToLowerInvariant());
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(parameterName: "@chain", value: info.Chain);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@address", value: info.Address.ToLowerInvariant());
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@parentAddress",
             value: (object?)info.ParentAddress ?? DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@isOpenSource",
             value: info.IsOpenSource.HasValue ? info.IsOpenSource.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@isHoneypot",
             value: info.IsHoneypot.HasValue ? info.IsHoneypot.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@isProxy",
             value: info.IsProxy.HasValue ? info.IsProxy.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@buyTax",
             value: info.BuyTax.HasValue ? info.BuyTax.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@sellTax",
             value: info.SellTax.HasValue ? info.SellTax.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@transferTax",
             value: info.TransferTax.HasValue ? info.TransferTax.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@cannotBuy",
             value: info.CannotBuy.HasValue ? info.CannotBuy.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(
+        _ = cmd.Parameters.AddWithValue(
             parameterName: "@honeypotWithSameCreator",
             value: info.HoneypotWithSameCreator.HasValue ? info.HoneypotWithSameCreator.Value : DBNull.Value
         );
-        cmd.Parameters.AddWithValue(parameterName: "@tokenName", value: (object?)info.TokenName ?? DBNull.Value);
-        cmd.Parameters.AddWithValue(parameterName: "@tokenSymbol", value: (object?)info.TokenSymbol ?? DBNull.Value);
-        cmd.Parameters.AddWithValue(parameterName: "@checkedAt", value: checkedAtMs);
+        _ = cmd.Parameters.AddWithValue(parameterName: "@tokenName", value: (object?)info.TokenName ?? DBNull.Value);
+        _ = cmd.Parameters.AddWithValue(
+            parameterName: "@tokenSymbol",
+            value: (object?)info.TokenSymbol ?? DBNull.Value
+        );
+        _ = cmd.Parameters.AddWithValue(parameterName: "@checkedAt", value: checkedAtMs);
         cmd.ExecuteNonQuery();
     }
 }
