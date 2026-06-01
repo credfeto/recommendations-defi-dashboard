@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
@@ -32,7 +30,7 @@ internal static class KestrelConfig
         if (File.Exists(certPath))
         {
             options.Listen(
-                address: IPAddress.Any,
+                address: IPAddress.IPv6Any,
                 port: HTTPS_PORT,
                 configure: o => ConfigureHttpsEndpoint(listenOptions: o, certFile: certPath)
             );
@@ -47,24 +45,9 @@ internal static class KestrelConfig
         listenOptions.Protocols = HttpProtocols.Http1;
     }
 
-    [SuppressMessage(
-        category: "Microsoft.Reliability",
-        checkId: "CA2000:DisposeObjectsBeforeLosingScope",
-        Justification = "Lives for program lifetime"
-    )]
-    [SuppressMessage(
-        category: "SmartAnalyzers.CSharpExtensions.Annotations",
-        checkId: "CSE007:DisposeObjectsBeforeLosingScope",
-        Justification = "Lives for program lifetime"
-    )]
     private static void ConfigureHttpsEndpoint(ListenOptions listenOptions, string certFile)
     {
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-        X509Certificate2 cert = X509CertificateLoader.LoadPkcs12FromFile(
-            path: certFile,
-            password: null,
-            keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet
-        );
-        listenOptions.UseHttps(serverCertificate: cert);
+        _ = listenOptions.UseHttps(fileName: certFile, password: null);
     }
 }
