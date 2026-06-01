@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Credfeto.Defi.Server/Credfeto.Defi.Server.csproj" />
+  <Project Path="Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj" />
+</Solution>

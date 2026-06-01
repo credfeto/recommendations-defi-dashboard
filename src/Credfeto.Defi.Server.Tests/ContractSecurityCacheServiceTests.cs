@@ -1,0 +1,203 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Credfeto.Defi.Server.Cache;
+using Credfeto.Defi.Server.Config;
+using Credfeto.Defi.Server.Models;
+using FunFair.Test.Common;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
+using Xunit;
+
+namespace Credfeto.Defi.Server.Tests;
+
+public sealed class ContractSecurityCacheServiceTests : TestBase, IDisposable
+{
+    private readonly string _tempDir;
+    private readonly FakeTimeProvider _timeProvider;
+    private readonly ContractSecurityCacheService _cache;
+
+    private static readonly ContractSecurityInfo SampleInfo = new()
+    {
+        Chain = "Ethereum",
+        Address = "0xabc123def456abc123def456abc123def456abc1",
+        IsOpenSource = 1.0,
+        IsHoneypot = 0.0,
+        IsProxy = 0.0,
+        BuyTax = 0.0,
+        SellTax = 0.0,
+        TransferTax = 0.0,
+        CannotBuy = 0.0,
+        HoneypotWithSameCreator = 0.0,
+        TokenName = "TestToken",
+        TokenSymbol = "TEST",
+    };
+
+    public ContractSecurityCacheServiceTests()
+    {
+        this._tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        this._timeProvider = new FakeTimeProvider();
+
+        IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = this._tempDir });
+        this._cache = new ContractSecurityCacheService(config: options, timeProvider: this._timeProvider);
+    }
+
+    public void Dispose()
+    {
+        this._cache.Dispose();
+
+        if (Directory.Exists(this._tempDir))
+        {
+            Directory.Delete(path: this._tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task GetAsync_CacheMiss_ReturnsNullAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        ContractSecurityInfo? result = await this._cache.GetAsync(
+            chain: "Ethereum",
+            address: "0xdeadbeef0000000000000000000000000000dead",
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SetAsync_ThenGetAsync_ReturnsCachedInfoAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        await this._cache.SetAsync(info: SampleInfo, cancellationToken: cancellationToken);
+
+        ContractSecurityInfo? result = await this._cache.GetAsync(
+            chain: SampleInfo.Chain,
+            address: SampleInfo.Address,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.NotNull(result);
+        Assert.Equal(expected: SampleInfo.Chain, actual: result.Chain);
+        Assert.Equal(expected: SampleInfo.Address, actual: result.Address);
+        Assert.Equal(expected: SampleInfo.TokenName, actual: result.TokenName);
+    }
+
+    [Fact]
+    public async Task GetAsync_ExpiredEntry_ReturnsNullAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        await this._cache.SetAsync(info: SampleInfo, cancellationToken: cancellationToken);
+
+        // Advance past 24-hour TTL
+        this._timeProvider.Advance(TimeSpan.FromHours(25));
+
+        ContractSecurityInfo? result = await this._cache.GetAsync(
+            chain: SampleInfo.Chain,
+            address: SampleInfo.Address,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetChildrenAsync_NoChildren_ReturnsEmptyListAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
+            chain: "Ethereum",
+            parentAddress: "0xdeadbeef0000000000000000000000000000dead",
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Empty(children);
+    }
+
+    [Fact]
+    public async Task GetChildrenAsync_WithChildren_ReturnsChildrenAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        const string PARENT_ADDRESS = "0xparent00000000000000000000000000000000ab";
+
+        ContractSecurityInfo childInfo = new()
+        {
+            Chain = "Ethereum",
+            Address = "0xchild000000000000000000000000000000000ab",
+            ParentAddress = PARENT_ADDRESS,
+            IsProxy = 0.0,
+        };
+
+        await this._cache.SetAsync(info: childInfo, cancellationToken: cancellationToken);
+
+        IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
+            chain: "Ethereum",
+            parentAddress: PARENT_ADDRESS,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Single(children);
+    }
+
+    [Fact]
+    public async Task SetAsync_WithNullableFields_StoresAndRetrievesNullsAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        ContractSecurityInfo infoWithNulls = new()
+        {
+            Chain = "Arbitrum",
+            Address = "0xnullable0000000000000000000000000000001a",
+            IsOpenSource = null,
+            IsHoneypot = null,
+            IsProxy = null,
+            BuyTax = null,
+            SellTax = null,
+            TransferTax = null,
+            CannotBuy = null,
+            HoneypotWithSameCreator = null,
+            TokenName = null,
+            TokenSymbol = null,
+        };
+
+        await this._cache.SetAsync(info: infoWithNulls, cancellationToken: cancellationToken);
+
+        ContractSecurityInfo? result = await this._cache.GetAsync(
+            chain: "Arbitrum",
+            address: "0xnullable0000000000000000000000000000001a",
+            cancellationToken: cancellationToken
+        );
+
+        Assert.NotNull(result);
+        Assert.Null(result.IsOpenSource);
+        Assert.Null(result.TokenName);
+    }
+
+    [Fact]
+    public void Constructor_CreatesDbDirectoryIfMissing()
+    {
+        string tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "subdir2");
+
+        try
+        {
+            IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = tempDir });
+            using ContractSecurityCacheService cache = new(config: options, timeProvider: this._timeProvider);
+
+            Assert.True(Directory.Exists(tempDir), userMessage: "Constructor should create the DB directory");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(path: tempDir, recursive: true);
+            }
+        }
+    }
+}
