@@ -8,7 +8,7 @@
 #
 # Claude Code connects automatically via .mcp.json in the repo root.
 
-@baseUrl = http://localhost:5000
+@baseUrl = http://localhost:8080
 
 # ── 1. Initialise (required first request per client session) ────────────────
 POST {{baseUrl}}/mcp

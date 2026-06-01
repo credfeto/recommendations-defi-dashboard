@@ -22,16 +22,20 @@ cd src
 dotnet run --project Credfeto.Defi.Server
 ```
 
-The server listens on `http://localhost:5000` (plain HTTP) when no cert is present.
+The server listens on:
 
-To test HTTPS locally, generate a self-signed PFX first:
+- `http://localhost:8080` (plain HTTP, loopback only — used by the health check)
+- `https://localhost:8081` (HTTPS/HTTP/2/HTTP/3) when `server.pfx` is present
+
+Ports are hardcoded: HTTP on **8080**, HTTPS on **8081**. The certificate path is hardcoded to `<AppContext.BaseDirectory>/server.pfx` (not configurable via environment variable).
+
+A dev self-signed cert (`server.pfx`) is already committed in `src/Credfeto.Defi.Server/` and is copied to the build output automatically, so `dotnet run` will start HTTPS straight away. To regenerate it:
 
 ```sh
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
   -keyout /tmp/server.key -out /tmp/server.crt -subj "/CN=localhost"
 openssl pkcs12 -export -in /tmp/server.crt -inkey /tmp/server.key \
-  -out /tmp/server.pfx -passout pass:
-CERT_PATH=/tmp/server.pfx dotnet run --project Credfeto.Defi.Server
+  -out src/Credfeto.Defi.Server/server.pfx -passout pass:
 ```
 
 ## Commands
@@ -48,30 +52,32 @@ dotnet buildcheck -Solution Credfeto.Defi.slnx
 
 ```text
 src/
-  Credfeto.Defi.Server/
-    ApiClients/     HTTP clients (DefiLlama, Pendle, CoinGecko, GoPlus)
-    Cache/          SQLite cache service
-    Config/         Configuration records
-    Endpoints/      REST + health-check route handlers
-    Helpers/        Kestrel TLS / HTTP/3 setup
-    Json/           Source-generated JSON context
-    Mcp/            MCP server tools
-    Models/         Domain models
-    Services/       Business logic
-    Utils/          Utilities
-  Credfeto.Defi.Server.Tests/
-    268 xunit v3 unit tests
+  Credfeto.Defi.Server/              Minimal executable (Program, KestrelConfig, Endpoints, ServiceRegistration)
+  Credfeto.Defi.Data.Models/         Domain models, AppJsonContext, CacheConfig, RpcConfig
+  Credfeto.Defi.ApiClients.CoinGecko.Interfaces/   ICoinGeckoStablecoinsClient
+  Credfeto.Defi.ApiClients.CoinGecko/              CoinGeckoStablecoinsClient
+  Credfeto.Defi.ApiClients.DefiLlama.Interfaces/   IDefiLlama*Client
+  Credfeto.Defi.ApiClients.DefiLlama/              DefiLlama*Client
+  Credfeto.Defi.ApiClients.GoPlus.Interfaces/      IGoPlusClient
+  Credfeto.Defi.ApiClients.GoPlus/                 GoPlusClient
+  Credfeto.Defi.ApiClients.Pendle.Interfaces/      IPendleMarketsClient
+  Credfeto.Defi.ApiClients.Pendle/                 PendleMarketsClient
+  Credfeto.Defi.Database/            SQLite cache services (ApiCacheService, ContractSecurityCacheService)
+  Credfeto.Defi.Services/            Business logic (pool enrichment, filtering, hacks, depeg, etc.)
+  Credfeto.Defi.Mcp/                 MCP tools (DefiMcpTools) and setup
+  Credfeto.Defi.Server.Tests/        268 xunit v3 unit tests
 ```
 
 ## Environment Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `CERT_PATH` | `/app/data/server.pfx` | PFX cert path; HTTPS disabled if absent |
 | `Cache__DbDirectory` | `/app/data` | SQLite cache directory |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | ASP.NET Core environment |
 | `Rpc__Ethereum` | _(empty)_ | Ethereum RPC endpoint |
 | `Rpc__Arbitrum` | _(empty)_ | Arbitrum RPC endpoint |
+
+Note: HTTP/HTTPS ports (8080/8081) and the cert path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded and not configurable via environment variables.
 
 ## Adding a New Pool Type
 
@@ -100,9 +106,9 @@ docker compose up -d
 
 The container:
 
-1. Generates `server.pfx` at `$CERT_PATH` on first start
-2. Listens on 8081 (HTTPS, HTTP/1.1 + HTTP/2 + HTTP/3)
-3. Exposes as 443/tcp and 443/udp via docker-compose
+1. Generates `server.pfx` at `<AppContext.BaseDirectory>/server.pfx` on first start (if not already present)
+2. Listens on 8080 (HTTP, health check) and 8081 (HTTPS, HTTP/1.1 + HTTP/2 + HTTP/3)
+3. Exposes as 8080/tcp, 8081/tcp and 8081/udp (QUIC) via docker-compose
 
 ## Troubleshooting
 
@@ -122,5 +128,6 @@ dotnet test Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj --verbo
 ### Port in use
 
 ```sh
-lsof -ti:5000 | xargs kill -9
+lsof -ti:8080 | xargs kill -9
+lsof -ti:8081 | xargs kill -9
 ```
