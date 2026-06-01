@@ -1,8 +1,10 @@
-﻿using System;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.Server.Endpoints;
 using Credfeto.Defi.Server.Helpers;
 using Credfeto.Defi.Server.Mcp;
+using Credfeto.Docker.HealthCheck.Http.Client;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -21,6 +23,13 @@ internal static class Program
     /// </summary>
     public static async Task<int> Main(string[] args)
     {
+        return HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl)
+            ? await HealthCheckClient.ExecuteAsync(targetUrl: checkUrl, cancellationToken: CancellationToken.None)
+            : await RunServerAsync(args);
+    }
+
+    private static async Task<int> RunServerAsync(string[] args)
+    {
         try
         {
             WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
@@ -32,8 +41,7 @@ internal static class Program
 
             ConfigureLogging(builder);
 
-            string certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "/app/data/server.pfx";
-            _ = builder.WebHost.ConfigureKestrel(certPath);
+            _ = builder.WebHost.ConfigureKestrel();
 
             _ = builder.AddDefiServices();
 

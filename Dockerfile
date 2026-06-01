@@ -15,8 +15,7 @@ RUN dotnet publish Credfeto.Defi.Server/Credfeto.Defi.Server.csproj \
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble AS runtime
-# Add Microsoft package repository; install libmsquic (HTTP/3 QUIC), openssl (cert generation),
-# and curl (health check). ca-certificates is needed to verify the MS package repo download.
+# Add Microsoft package repository; install libmsquic (HTTP/3 QUIC) and openssl (cert generation).
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb \
@@ -25,16 +24,17 @@ RUN apt-get update \
     && rm /tmp/mspkg.deb \
     && apt-get update \
     && apt-get install -y --no-install-recommends libmsquic openssl \
+    && apt-get purge -y --auto-remove ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
     && mkdir -p /app/data
+EXPOSE 8080
 EXPOSE 8081
 EXPOSE 8081/udp
-ENV CERT_PATH=/app/data/server.pfx \
-    Cache__DbDirectory=/app/data
+ENV Cache__DbDirectory=/app/data
 ENTRYPOINT ["docker-entrypoint.sh"]
 HEALTHCHECK --interval=5s --timeout=2s --retries=3 --start-period=15s \
-  CMD curl -kfs https://127.0.0.1:8081/ping || exit 1
+  CMD ["/app/Credfeto.Defi.Server", "--health-check", "http://127.0.0.1:8080/ping"]

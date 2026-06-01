@@ -68,7 +68,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Replace react-scripts (CRA) and craco with Vite, eliminating webpack-dev-server deprecation warnings
 - MCP server mounted on existing Fastify server at POST /mcp (Streamable HTTP, stateless)
 - docker: build runs on all branches; push to registry only on main
-- Rewrite server in .NET 10 (Kestrel, AOT, no nginx) — remove Node.js/TypeScript server and React client; replace with .NET 10 ASP.NET Core server using Kestrel with SQLite caching, DefiLlama/CoinGecko/Pendle/GoPlus API clients, and MCP endpoint via ModelContextProtocol.AspNetCore
+- Server rewritten in .NET 10 (native AOT) — ASP.NET Core with Kestrel serving HTTP/1.1, HTTP/2, and HTTP/3 (QUIC) on port 8081; TLS via self-signed `server.pfx` generated at container startup; replaces Node.js/Fastify, nginx, and the React client
 
 ### Removed
 - Removed husky pre-commit hooks

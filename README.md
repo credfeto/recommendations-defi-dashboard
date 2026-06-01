@@ -1,6 +1,6 @@
 # DeFi Dashboard
 
-A server-only application that aggregates and filters DeFi liquidity pools from the Llama Yields API, exposes them via a REST API and an MCP server, and ships as a single Docker container with built-in TLS.
+A server-only application that aggregates and filters DeFi liquidity pools from the Llama Yields API, exposes them via a REST API and an MCP server, and ships as a single native-AOT Docker container with built-in TLS and HTTP/3.
 
 ## Features
 
@@ -11,22 +11,28 @@ A server-only application that aggregates and filters DeFi liquidity pools from 
 - Hack/exploit risk flagging from the DefiLlama hacks dataset
 - Server-side SQLite cache (1-hour TTL) to reduce external API calls
 - MCP server exposing `get_pool_types`, `get_pools`, and `check_contract_security` tools
-- Self-signed TLS generated at container startup — no nginx required
+- Self-signed `server.pfx` generated at container startup — HTTPS and HTTP/3 with no nginx
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 26.x or higher
-- npm 11.x or higher
+- .NET 10 SDK
+- Docker (for container deployment)
 
 ### Development
 
-```bash
-npm install
-npm run dev        # server on http://localhost:3000
-npm test           # run all tests
-npm run test:coverage
+```sh
+cd src
+dotnet run --project Credfeto.Defi.Server
+```
+
+The server listens on `http://localhost:5000` by default (plain HTTP, no cert needed for dev).
+
+To enable HTTPS locally, generate a cert and set `CERT_PATH`:
+
+```sh
+CERT_PATH=/tmp/server.pfx dotnet run --project Credfeto.Defi.Server
 ```
 
 ### Docker
@@ -35,14 +41,11 @@ npm run test:coverage
 docker compose up -d
 ```
 
-The container generates a self-signed cert at startup and listens on port 443 over HTTPS.
-
-Supply your own certificate by mounting key/cert files and overriding the env vars:
+The container generates a self-signed `server.pfx` at `$CERT_PATH` on first start and listens on port 443 over HTTPS + HTTP/3. Mount a real cert to override:
 
 ```sh
-docker run -p 443:443 \
-  -e TLS_KEY_PATH=/certs/server.key \
-  -e TLS_CERT_PATH=/certs/server.crt \
+docker run -p 443:8081 -p 443:8081/udp \
+  -e CERT_PATH=/certs/server.pfx \
   -v /path/to/certs:/certs \
   credfeto/defi:latest
 ```
@@ -53,30 +56,38 @@ docker run -p 443:443 \
 GET /api/pools              — list available pool types
 GET /api/pools/:poolName    — pools for a given type
 POST|GET|DELETE /mcp        — MCP Streamable HTTP endpoint
+GET /ping                   — health check -> 200 "pong"
 ```
 
 Supported pool types: `ETH`, `STABLES`, `HIGH_YIELD`, `LOW_TVL`, `BLUE_CHIP`
 
-See [docs/API.md](./docs/API.md) for full request/response documentation and examples.
+See [docs/API.md](./docs/API.md) for full request/response documentation.
 
 ## Project Structure
 
 ```text
-packages/
-  server/          Fastify server, services, MCP, SQLite cache
-  shared/          Shared TypeScript types
-docs/              Architecture, API reference, development guide
+src/
+  Credfeto.Defi.Server/          ASP.NET Core server (native AOT)
+    ApiClients/                  DefiLlama, CoinGecko, Pendle, GoPlus HTTP clients
+    Cache/                       SQLite-backed API cache service
+    Config/                      Strongly-typed configuration records
+    Endpoints/                   Minimal-API route handlers
+    Helpers/                     Kestrel TLS + HTTP/3 configuration
+    Mcp/                         MCP server tools and setup
+    Models/                      Response and domain models
+    Services/                    Pool filtering, depeg, hacks, enrichment
+    Utils/                       Contract address and slug utilities
+  Credfeto.Defi.Server.Tests/    xunit v3 unit tests (268 tests)
+docs/                            Architecture, API reference, development guide
 ```
 
 ## Environment Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `PORT` | `3000` | HTTP/HTTPS listen port |
-| `TLS_KEY_PATH` | _(unset)_ | Path to TLS private key; plain HTTP if unset |
-| `TLS_CERT_PATH` | _(unset)_ | Path to TLS certificate; plain HTTP if unset |
-| `DB_DIR` | _(cwd)_ | Directory for the SQLite cache database |
-| `NODE_ENV` | `development` | Set to `production` in Docker |
+| `CERT_PATH` | `/app/data/server.pfx` | Path to TLS PFX certificate; HTTPS disabled if file absent |
+| `Cache__DbDirectory` | `/app/data` | Directory for the SQLite cache database |
+| `ASPNETCORE_ENVIRONMENT` | `Production` | ASP.NET Core environment name |
 
 ## Documentation
 

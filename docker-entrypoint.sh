@@ -1,11 +1,9 @@
 #!/bin/sh
 set -e
 
-CERT_PATH="${CERT_PATH:-/app/data/server.pfx}"
-CERT_DIR="$(dirname "$CERT_PATH")"
+CERT_PATH="/app/server.pfx"
 
 if [ ! -f "$CERT_PATH" ]; then
-    mkdir -p "$CERT_DIR"
     openssl req -x509 -nodes -days 3650 \
         -newkey rsa:2048 \
         -keyout /tmp/server.key \
