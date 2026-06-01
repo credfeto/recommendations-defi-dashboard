@@ -1,76 +1,21 @@
-# ─── Stage 1: Build everything ─────────────────────────────────────────────────
-FROM node:26-alpine AS builder
+# ─── Stage 1: Build ───────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /source
+COPY src/ ./
+RUN dotnet publish Credfeto.Defi.Server/Credfeto.Defi.Server.csproj \
+    -c Release \
+    -r linux-x64 \
+    --self-contained \
+    -o /app/publish
 
-WORKDIR /build
-
-# Install native build tools required by better-sqlite3 (node-gyp)
-RUN apk add --no-cache python3 make g++
-
-# Copy workspace manifests first for better layer caching
-COPY package.json package-lock.json tsconfig.base.json ./
-COPY packages/client/package.json ./packages/client/
-COPY packages/server/package.json ./packages/server/
-
-# Install all dependencies including devDeps.
-# HUSKY=0 prevents the prepare script trying to set up git hooks (no .git in Docker).
-RUN HUSKY=0 npm ci
-
-# Copy all source
-COPY packages/ ./packages/
-
-# Build React client → packages/client/build/
-# Build server — shared types are compiled directly into packages/server/dist/
-# Prune to production deps only — no lifecycle scripts are triggered by prune
-RUN npm --workspace=@defi-dashboard/client run build && \
-    npm --workspace=@defi-dashboard/server run build && \
-    npm prune --omit=dev
-
-# ─── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM node:26-alpine AS runtime
-
-# Install nginx and openssl (for self-signed cert generation)
-RUN apk add --no-cache nginx openssl
-
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled
 WORKDIR /app
-
-# ── TLS certificate ────────────────────────────────────────────────────────────
-RUN mkdir -p /etc/nginx/certs && \
-    openssl req -x509 -nodes -days 3650 \
-        -newkey rsa:2048 \
-        -keyout /etc/nginx/certs/defi.key \
-        -out    /etc/nginx/certs/defi.crt \
-        -subj   "/CN=defi.local" \
-        -addext "subjectAltName=DNS:defi.local,DNS:localhost,IP:127.0.0.1"
-
-# ── nginx configuration ────────────────────────────────────────────────────────
-COPY nginx.conf /etc/nginx/http.d/defi.conf
-RUN rm -f /etc/nginx/http.d/default.conf
-
-# ── Client static files ────────────────────────────────────────────────────────
-COPY --from=builder /build/packages/client/build /app/client
-
-# ── Server compiled output (shared types compiled in under dist/shared/) ───────
-COPY --from=builder /build/packages/server/dist /app/packages/server/dist
-
-# ── Production node_modules (already pruned in builder stage) ─────────────────
-# package.json is needed for npm workspace module resolution at runtime.
-COPY --from=builder /build/package.json /app/package.json
-COPY --from=builder /build/packages/server/package.json /app/packages/server/package.json
-COPY --from=builder /build/node_modules /app/node_modules
-
-# ── Data directory for SQLite DB (volume-mount point) ─────────────────────────
+COPY --from=build /app/publish .
 RUN mkdir -p /app/data
-
-# ── Startup script ─────────────────────────────────────────────────────────────
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-EXPOSE 443
-
-ENV DB_DIR=/app/data \
-    PORT=5000 \
-    NODE_ENV=production
-
-WORKDIR /app/packages/server
-
-ENTRYPOINT ["docker-entrypoint.sh"]
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENV Cache__DbDirectory=/app/data
+ENTRYPOINT ["/app/Credfeto.Defi.Server"]
+HEALTHCHECK --interval=5s --timeout=2s --retries=3 --start-period=5s \
+  CMD ["/app/Credfeto.Defi.Server", "--health-check", "http://127.0.0.1:8080/ping"]
