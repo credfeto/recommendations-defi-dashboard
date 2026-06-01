@@ -17,7 +17,6 @@ RUN dotnet publish Credfeto.Defi.Server/Credfeto.Defi.Server.csproj \
 FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled
 WORKDIR /app
 COPY --from=build /app/publish .
-RUN mkdir -p /app/data
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENV Cache__DbDirectory=/app/data
