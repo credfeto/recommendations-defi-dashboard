@@ -14,17 +14,17 @@ namespace Credfeto.Defi.Server.ApiClients.DefiLlama;
 /// <summary>
 ///     Fetches protocol metadata (including audit information) from the DefiLlama protocols API.
 /// </summary>
-public sealed class DefiLlamaProtocolsClient
+internal sealed class DefiLlamaProtocolsClient
 {
     private const string PROTOCOLS_URL = "https://api.llama.fi/protocols";
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<DefiLlamaProtocolsClient> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="DefiLlamaProtocolsClient" />.
     /// </summary>
-    public DefiLlamaProtocolsClient(IHttpClientFactory httpClientFactory, ILogger<DefiLlamaProtocolsClient> logger)
+    public DefiLlamaProtocolsClient(IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;

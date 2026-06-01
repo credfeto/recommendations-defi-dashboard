@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Raw hack entry from the DefiLlama hacks API.
 /// </summary>
 [DebuggerDisplay("{Name} ${Amount}")]
-public sealed record RawHack
+internal sealed record RawHack
 {
     [JsonPropertyName("date")]
     public long Date { get; init; }

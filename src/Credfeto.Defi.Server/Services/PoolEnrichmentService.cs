@@ -15,7 +15,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Orchestrates fetching, caching, and enriching pool data from all sources.
 /// </summary>
-public sealed class PoolEnrichmentService
+internal sealed class PoolEnrichmentService
 {
     private const string CACHE_KEY_LLAMA_POOLS = "defillama_pools";
     private const string CACHE_KEY_PENDLE_POOLS = "pendle_pools";

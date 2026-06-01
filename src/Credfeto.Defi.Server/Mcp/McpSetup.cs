@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Mcp;
 /// <summary>
 ///     Registers and configures the MCP endpoint using ModelContextProtocol.AspNetCore.
 /// </summary>
-public static class McpSetup
+internal static class McpSetup
 {
     /// <summary>
     ///     Adds MCP services and tool handlers to the service collection.

@@ -16,7 +16,7 @@ namespace Credfeto.Defi.Server.ApiClients.Pendle;
 /// <summary>
 ///     Fetches Pendle market data and normalises it into the common pool format.
 /// </summary>
-public sealed class PendleMarketsClient
+internal sealed class PendleMarketsClient
 {
     private const string PENDLE_API_BASE = "https://api-v2.pendle.finance/core/v1";
     private const int PAGE_LIMIT = 100;
@@ -32,12 +32,12 @@ public sealed class PendleMarketsClient
     };
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<PendleMarketsClient> _logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="PendleMarketsClient" />.
     /// </summary>
-    public PendleMarketsClient(IHttpClientFactory httpClientFactory, ILogger<PendleMarketsClient> logger)
+    public PendleMarketsClient(IHttpClientFactory httpClientFactory, ILogger logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;

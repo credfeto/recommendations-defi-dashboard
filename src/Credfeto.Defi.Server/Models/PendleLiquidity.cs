@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Liquidity information within a Pendle market.
 /// </summary>
 [DebuggerDisplay("Usd={Usd}")]
-public sealed record PendleLiquidity
+internal sealed record PendleLiquidity
 {
     [JsonPropertyName("usd")]
     public double Usd { get; init; }

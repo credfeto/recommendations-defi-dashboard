@@ -172,14 +172,14 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     }
 
     [Fact]
-    public void IsFresh_CacheMiss_ReturnsFalse()
+    public async Task IsFreshAsync_CacheMiss_ReturnsFalseAsync()
     {
-        bool result = this._cache.IsFresh("nonexistent-key");
+        bool result = await this._cache.IsFreshAsync("nonexistent-key");
         Assert.False(result, userMessage: "A missing cache entry should not be considered fresh");
     }
 
     [Fact]
-    public async Task IsFresh_RecentEntry_ReturnsTrueAsync()
+    public async Task IsFreshAsync_RecentEntry_ReturnsTrueAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
@@ -190,12 +190,12 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
             cancellationToken: cancellationToken
         );
 
-        bool result = this._cache.IsFresh("fresh-check-key");
+        bool result = await this._cache.IsFreshAsync("fresh-check-key");
         Assert.True(result, userMessage: "A recently cached entry should be considered fresh");
     }
 
     [Fact]
-    public async Task IsFresh_OldEntry_ReturnsFalseAsync()
+    public async Task IsFreshAsync_OldEntry_ReturnsFalseAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
@@ -208,7 +208,7 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
 
         this._timeProvider.Advance(TimeSpan.FromHours(2));
 
-        bool result = this._cache.IsFresh("stale-check-key");
+        bool result = await this._cache.IsFreshAsync("stale-check-key");
         Assert.False(result, userMessage: "An old cache entry should not be considered fresh");
     }
 

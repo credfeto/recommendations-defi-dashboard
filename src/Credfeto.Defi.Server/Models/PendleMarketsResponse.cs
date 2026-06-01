@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Paginated response from the Pendle markets API.
 /// </summary>
 [DebuggerDisplay("Total={Total} Results={Results?.Length}")]
-public sealed record PendleMarketsResponse
+internal sealed record PendleMarketsResponse
 {
     [JsonPropertyName("total")]
     public int Total { get; init; }

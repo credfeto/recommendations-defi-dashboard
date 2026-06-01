@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Stablecoin market entry from the CoinGecko markets API.
 /// </summary>
 [DebuggerDisplay("{Symbol} price={CurrentPrice}")]
-public sealed record CoinGeckoStablecoin
+internal sealed record CoinGeckoStablecoin
 {
     [JsonPropertyName("id")]
     public string Id { get; init; } = string.Empty;

@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Protocol audit information sourced from DefiLlama.
 /// </summary>
 [DebuggerDisplay("Audits={Audits}")]
-public sealed record AuditInfo
+internal sealed record AuditInfo
 {
     /// <summary>
     ///     Number of audits recorded (0 = none, 1 = single, 2+ = multiple).

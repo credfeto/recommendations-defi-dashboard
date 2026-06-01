@@ -14,7 +14,7 @@ namespace Credfeto.Defi.Server.Cache;
 ///     SQLite-backed cache for external API responses.
 ///     Fresh TTL: &lt;1 hour; usable (stale) TTL: &lt;2 hours.
 /// </summary>
-public sealed class ApiCacheService : IDisposable
+internal sealed class ApiCacheService : IDisposable
 {
     private static readonly TimeSpan FreshTtl = TimeSpan.FromHours(1);
     private static readonly TimeSpan StaleTtl = TimeSpan.FromHours(2);
@@ -34,7 +34,7 @@ public sealed class ApiCacheService : IDisposable
 
         if (!Directory.Exists(dbDirectory))
         {
-            Directory.CreateDirectory(dbDirectory);
+            _ = Directory.CreateDirectory(dbDirectory);
         }
 
         string dbPath = Path.Combine(path1: dbDirectory, path2: "cache.db");
@@ -61,7 +61,7 @@ public sealed class ApiCacheService : IDisposable
                 data       TEXT    NOT NULL,
                 fetched_at INTEGER NOT NULL
             )";
-        cmd.ExecuteNonQuery();
+        _ = cmd.ExecuteNonQuery();
     }
 
     /// <summary>
@@ -132,13 +132,10 @@ public sealed class ApiCacheService : IDisposable
 
     /// <summary>
     ///     Returns whether the entry for <paramref name="key" /> is fresh (less than 1 hour old).
-    ///     This method is synchronous and called from non-async contexts (e.g. LINQ predicates in the
-    ///     cache warmer). <see cref="CancellationToken.None" /> is intentional: the check is
-    ///     best-effort and never needs to be cancelled independently.
     /// </summary>
-    public bool IsFresh(string key)
+    public async ValueTask<bool> IsFreshAsync(string key)
     {
-        this._lock.Wait(CancellationToken.None);
+        await this._lock.WaitAsync(CancellationToken.None);
 
         try
         {
@@ -179,6 +176,6 @@ public sealed class ApiCacheService : IDisposable
         _ = cmd.Parameters.AddWithValue(parameterName: "@key", value: key);
         _ = cmd.Parameters.AddWithValue(parameterName: "@data", value: json);
         _ = cmd.Parameters.AddWithValue(parameterName: "@fetchedAt", value: fetchedAtMs);
-        cmd.ExecuteNonQuery();
+        _ = cmd.ExecuteNonQuery();
     }
 }

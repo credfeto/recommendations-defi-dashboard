@@ -8,7 +8,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Generates direct pool URLs for DefiLlama and Pendle pools.
 /// </summary>
-public static class PoolUrlService
+internal static class PoolUrlService
 {
     private static readonly IReadOnlyDictionary<string, int> PendleChainIds = new Dictionary<string, int>(
         StringComparer.OrdinalIgnoreCase

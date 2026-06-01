@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     GoPlus contract security information for an on-chain token contract.
 /// </summary>
 [DebuggerDisplay("{Chain}/{Address} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
-public sealed record ContractSecurityInfo
+internal sealed record ContractSecurityInfo
 {
     /// <summary>
     ///     Chain name (e.g. "Ethereum").

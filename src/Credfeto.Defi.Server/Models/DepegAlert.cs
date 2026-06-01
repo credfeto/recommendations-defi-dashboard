@@ -6,7 +6,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Alert raised when a stablecoin deviates materially from its peg.
 /// </summary>
 [DebuggerDisplay("{Symbol} deviation={Deviation} ({Severity})")]
-public sealed record DepegAlert
+internal sealed record DepegAlert
 {
     /// <summary>
     ///     Stablecoin symbol (e.g. "USDC").

@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Returns the available pool type metadata records.
 /// </summary>
-public static class PoolTypeService
+internal static class PoolTypeService
 {
     private static readonly PoolTypeMetadata[] PoolTypes =
     [

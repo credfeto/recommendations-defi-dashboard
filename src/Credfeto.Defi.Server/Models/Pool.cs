@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Fully enriched pool record returned by the API.
 /// </summary>
 [DebuggerDisplay("{Project}/{Symbol} ({Chain}) APY={Apy}% TVL=${TvlUsd}")]
-public sealed record Pool
+internal sealed record Pool
 {
     /// <summary>
     ///     Blockchain network name (e.g. "Ethereum").

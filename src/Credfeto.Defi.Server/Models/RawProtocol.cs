@@ -7,7 +7,7 @@ namespace Credfeto.Defi.Server.Models;
 ///     Raw protocol entry from the DefiLlama protocols API.
 /// </summary>
 [DebuggerDisplay("{Slug}")]
-public sealed record RawProtocol
+internal sealed record RawProtocol
 {
     [JsonPropertyName("slug")]
     public string Slug { get; init; } = string.Empty;

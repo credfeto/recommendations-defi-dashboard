@@ -8,91 +8,91 @@ namespace Credfeto.Defi.Server.Services;
 /// <summary>
 ///     Derives pool access and liquidity restriction information from pool metadata.
 /// </summary>
-public static partial class PoolAccessService
+internal static partial class PoolAccessService
 {
     [GeneratedRegex(
         pattern: @"\binstitutional\b",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex InstitutionalPattern();
+    private static partial Regex InstitutionalPattern { get; }
 
     [GeneratedRegex(
         pattern: @"\baccredited\b",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex AccreditedPattern();
+    private static partial Regex AccreditedPattern { get; }
 
     [GeneratedRegex(
         pattern: @"\bkyc\b",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex KycPattern();
+    private static partial Regex KycPattern { get; }
 
     [GeneratedRegex(
         pattern: @"\bwhitelist",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex WhitelistPattern();
+    private static partial Regex WhitelistPattern { get; }
 
     [GeneratedRegex(
         pattern: @"\bqualified\b",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex QualifiedPattern();
+    private static partial Regex QualifiedPattern { get; }
 
     [GeneratedRegex(
         pattern: @"\bpermissioned\b",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex PermissionedPattern();
+    private static partial Regex PermissionedPattern { get; }
 
     [GeneratedRegex(
         pattern: @"(?<days>\d+)\s*days?\s+unstaking",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex LockupDaysUnstakingPattern();
+    private static partial Regex LockupDaysUnstakingPattern { get; }
 
     [GeneratedRegex(
         pattern: @"unstaking\s+cooldown[:\s]+(?<days>\d+(?:\.\d+)?)\s*days?",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex LockupUnstakingCooldownPattern();
+    private static partial Regex LockupUnstakingCooldownPattern { get; }
 
     [GeneratedRegex(
         pattern: @"(?<days>\d+)\s*d\s+(?:unlock|withdrawal\s+cycle)",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex LockupWithdrawalCyclePattern();
+    private static partial Regex LockupWithdrawalCyclePattern { get; }
 
     [GeneratedRegex(
         pattern: @"(?<days>\d+)\s*days?\s+(?:lock|lockup|locked)",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex LockupDaysLockedPattern();
+    private static partial Regex LockupDaysLockedPattern { get; }
 
     [GeneratedRegex(
         pattern: @"(?<days>\d+)\s*(?:day|d)\s+cooldown",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex LockupCooldownPattern();
+    private static partial Regex LockupCooldownPattern { get; }
 
     [GeneratedRegex(
         pattern: @"maturity\s+\d",
         options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
         matchTimeoutMilliseconds: 500
     )]
-    private static partial Regex MaturityPattern();
+    private static partial Regex MaturityPattern { get; }
 
     private static readonly HashSet<string> SwapExitProjects = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -153,17 +153,15 @@ public static partial class PoolAccessService
 
     private static bool HasKycMeta(string? poolMeta)
     {
-        if (string.IsNullOrEmpty(poolMeta))
-        {
-            return false;
-        }
-
-        return InstitutionalPattern().IsMatch(poolMeta)
-            || AccreditedPattern().IsMatch(poolMeta)
-            || KycPattern().IsMatch(poolMeta)
-            || WhitelistPattern().IsMatch(poolMeta)
-            || QualifiedPattern().IsMatch(poolMeta)
-            || PermissionedPattern().IsMatch(poolMeta);
+        return !string.IsNullOrEmpty(poolMeta)
+            && (
+                InstitutionalPattern.IsMatch(poolMeta)
+                || AccreditedPattern.IsMatch(poolMeta)
+                || KycPattern.IsMatch(poolMeta)
+                || WhitelistPattern.IsMatch(poolMeta)
+                || QualifiedPattern.IsMatch(poolMeta)
+                || PermissionedPattern.IsMatch(poolMeta)
+            );
     }
 
     private static string? DetectLockup(string? poolMeta)
@@ -173,46 +171,41 @@ public static partial class PoolAccessService
             return null;
         }
 
-        Match m = LockupDaysUnstakingPattern().Match(poolMeta);
+        Match m = LockupDaysUnstakingPattern.Match(poolMeta);
 
         if (m.Success)
         {
             return $"{m.Groups["days"].Value}-day unstaking period";
         }
 
-        m = LockupUnstakingCooldownPattern().Match(poolMeta);
+        m = LockupUnstakingCooldownPattern.Match(poolMeta);
 
         if (m.Success)
         {
             return $"{m.Groups["days"].Value}-day unstaking cooldown";
         }
 
-        m = LockupWithdrawalCyclePattern().Match(poolMeta);
+        m = LockupWithdrawalCyclePattern.Match(poolMeta);
 
         if (m.Success)
         {
             return $"{m.Groups["days"].Value}-day withdrawal cycle";
         }
 
-        m = LockupDaysLockedPattern().Match(poolMeta);
+        m = LockupDaysLockedPattern.Match(poolMeta);
 
         if (m.Success)
         {
             return $"{m.Groups["days"].Value}-day lockup";
         }
 
-        m = LockupCooldownPattern().Match(poolMeta);
+        m = LockupCooldownPattern.Match(poolMeta);
 
         if (m.Success)
         {
             return $"{m.Groups["days"].Value}-day cooldown";
         }
 
-        if (MaturityPattern().IsMatch(poolMeta))
-        {
-            return "Fixed-term (held to maturity)";
-        }
-
-        return null;
+        return MaturityPattern.IsMatch(poolMeta) ? "Fixed-term (held to maturity)" : null;
     }
 }
