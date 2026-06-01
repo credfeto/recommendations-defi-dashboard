@@ -11,7 +11,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 
 ### Added
-
 - **Pool access information** — each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool address field); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API, MCP `get_pools` tool, and five new UI columns (KYC Entry, KYC Exit, Swap Exit, Liquid, Contracts)
 - **`PoolAccessInfo` shared type** — new interface with `kycEntryRequired`, `kycExitRequired`, `canUseSwapToExit`, `isLiquid` (`boolean | null`), and `lockupDescription` (`string | null`); `null` means unknown rather than false
 - **Package-level `.gitignore` files** — `packages/client/.gitignore` ignores `build/` and `packages/server/.gitignore` ignores `dist/`; both ignore `*.tsbuildinfo` incremental build cache files
@@ -41,7 +40,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Add unit tests, e2e tests, and JSON-RPC examples for the MCP server
 
 ### Fixed
-
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
 - Docker runtime stage no longer errors with `sh: husky: not found` when installing production-only dependencies; the root `prepare` script now guards the `husky` call with `[ -d .git ]` so it is a no-op in Docker (no `.git` directory) while continuing to set up git hooks normally in development
 - TypeScript strict mode errors in `packages/server`: index-access safety for `RPC_ENV` in `rpc.config.ts`, optional-chaining for `process.env['PORT']` in `server-fastify.ts`, and explicit `underlyingTokens` type casts in `server-fastify.ts` and `poolTypesConfig.ts`
@@ -53,7 +51,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Docker builder stage now installs python3, make, and g++ so better-sqlite3 native module compiles correctly on Alpine
 
 ### Changed
-
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
 - Bump node-releases from 2.0.36 to 2.0.37
 - Bump @sinonjs/fake-timers from 15.2.1 to 15.3.0
@@ -74,12 +71,12 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Replace react-scripts (CRA) and craco with Vite, eliminating webpack-dev-server deprecation warnings
 - MCP server mounted on existing Fastify server at POST /mcp (Streamable HTTP, stateless)
 - docker: build runs on all branches; push to registry only on main
+- Rewrite server in .NET 10 (Kestrel, AOT, no nginx) — remove Node.js/TypeScript server and React client; replace with .NET 10 ASP.NET Core server using Kestrel with SQLite caching, DefiLlama/CoinGecko/Pendle/GoPlus API clients, and MCP endpoint via ModelContextProtocol.AspNetCore
 
 ### Removed
 - Removed husky pre-commit hooks
 
 ### Deployment Changes
-
 - `better-sqlite3` added as a server dependency (requires native build tools)
 
 <!--
