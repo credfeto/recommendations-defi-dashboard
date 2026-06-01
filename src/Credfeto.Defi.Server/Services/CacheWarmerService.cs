@@ -78,14 +78,13 @@ internal sealed class CacheWarmerService : IHostedService
 
             if (!isFresh)
             {
-                tasks.Add(
-                    WarmEntryAsync(
-                        key: key,
-                        fetcher: fetcher,
-                        logger: this._logger,
-                        cancellationToken: cancellationToken
-                    )
+                Task warmingTask = WarmEntryAsync(
+                    key: key,
+                    fetcher: fetcher,
+                    logger: this._logger,
+                    cancellationToken: cancellationToken
                 );
+                tasks.Add(warmingTask);
             }
         }
 

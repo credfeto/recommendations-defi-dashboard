@@ -111,29 +111,22 @@ internal static class PoolFilterService
             return pool.Apy > 5;
         }
 
-        if (string.Equals(a: poolType, b: "LOW_TVL", comparisonType: StringComparison.OrdinalIgnoreCase))
-        {
-            return pool.TvlUsd < 10_000_000;
-        }
-
-        return string.Equals(a: poolType, b: "BLUE_CHIP", comparisonType: StringComparison.OrdinalIgnoreCase)
-            && pool.TvlUsd > 100_000_000;
+        return string.Equals(a: poolType, b: "LOW_TVL", comparisonType: StringComparison.OrdinalIgnoreCase)
+            ? pool.TvlUsd < 10_000_000
+            : string.Equals(a: poolType, b: "BLUE_CHIP", comparisonType: StringComparison.OrdinalIgnoreCase)
+                && pool.TvlUsd > 100_000_000;
     }
 
     private static bool MatchesEthCategory(RawPool pool)
     {
         string symbolUpper = pool.Symbol.ToUpperInvariant();
 
-        if (LstSymbols.Any(s => symbolUpper.Contains(value: s, comparisonType: StringComparison.Ordinal)))
-        {
-            return true;
-        }
-
-        return pool.UnderlyingTokens is not null
-            && pool.UnderlyingTokens.Any(token =>
-                LstSymbols.Any(s =>
-                    token.ToUpperInvariant().Contains(value: s, comparisonType: StringComparison.Ordinal)
-                )
-            );
+        return LstSymbols.Any(s => symbolUpper.Contains(value: s, comparisonType: StringComparison.Ordinal))
+            || pool.UnderlyingTokens is not null
+                && pool.UnderlyingTokens.Any(token =>
+                    LstSymbols.Any(s =>
+                        token.ToUpperInvariant().Contains(value: s, comparisonType: StringComparison.Ordinal)
+                    )
+                );
     }
 }
