@@ -4,7 +4,8 @@ services:
     image: docker-registry.markridgwell.com/credfeto/defi:latest
     container_name: defi
     ports:
-      - '443:443'
+      - '443:8081'
+      - '443:8081/udp'
     volumes:
       - defi-data:/app/data
     restart: unless-stopped

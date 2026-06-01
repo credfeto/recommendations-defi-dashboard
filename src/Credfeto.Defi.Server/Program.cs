@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Credfeto.Defi.Server.Endpoints;
+using Credfeto.Defi.Server.Helpers;
 using Credfeto.Defi.Server.Mcp;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -31,10 +32,14 @@ internal static class Program
 
             ConfigureLogging(builder);
 
+            string certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "/app/data/server.pfx";
+            _ = builder.WebHost.ConfigureKestrel(certPath);
+
             _ = builder.AddDefiServices();
 
             await using WebApplication app = builder.Build();
 
+            app.MapHealthCheck();
             app.MapPoolsEndpoints();
             app.MapMcpEndpoint();
 
