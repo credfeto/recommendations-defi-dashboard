@@ -1,4 +1,4 @@
-# ─── Stage 1: Build everything ─────────────────────────────────────────────────
+# ─── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:26-alpine AS builder
 
 WORKDIR /build
@@ -8,7 +8,6 @@ RUN apk add --no-cache python3 make g++
 
 # Copy workspace manifests first for better layer caching
 COPY package.json package-lock.json tsconfig.base.json ./
-COPY packages/client/package.json ./packages/client/
 COPY packages/server/package.json ./packages/server/
 
 # Install all dependencies including devDeps.
@@ -18,38 +17,17 @@ RUN HUSKY=0 npm ci
 # Copy all source
 COPY packages/ ./packages/
 
-# Build React client → packages/client/build/
 # Build server — shared types are compiled directly into packages/server/dist/
 # Prune to production deps only — no lifecycle scripts are triggered by prune
-RUN npm --workspace=@defi-dashboard/client run build && \
-    npm --workspace=@defi-dashboard/server run build && \
+RUN npm --workspace=@defi-dashboard/server run build && \
     npm prune --omit=dev
 
-# ─── Stage 2: Runtime ──────────────────────────────────────────────────────────
+# ─── Stage 2: Runtime ────────────────────────────────────────────────────────
 FROM node:26-alpine AS runtime
-
-# Install nginx and openssl (for self-signed cert generation)
-RUN apk add --no-cache nginx openssl
 
 WORKDIR /app
 
-# ── TLS certificate ────────────────────────────────────────────────────────────
-RUN mkdir -p /etc/nginx/certs && \
-    openssl req -x509 -nodes -days 3650 \
-        -newkey rsa:2048 \
-        -keyout /etc/nginx/certs/defi.key \
-        -out    /etc/nginx/certs/defi.crt \
-        -subj   "/CN=defi.local" \
-        -addext "subjectAltName=DNS:defi.local,DNS:localhost,IP:127.0.0.1"
-
-# ── nginx configuration ────────────────────────────────────────────────────────
-COPY nginx.conf /etc/nginx/http.d/defi.conf
-RUN rm -f /etc/nginx/http.d/default.conf
-
-# ── Client static files ────────────────────────────────────────────────────────
-COPY --from=builder /build/packages/client/build /app/client
-
-# ── Server compiled output (shared types compiled in under dist/shared/) ───────
+# ── Server compiled output (shared types compiled in under dist/shared/) ─────
 COPY --from=builder /build/packages/server/dist /app/packages/server/dist
 
 # ── Production node_modules (already pruned in builder stage) ─────────────────
@@ -61,16 +39,12 @@ COPY --from=builder /build/node_modules /app/node_modules
 # ── Data directory for SQLite DB (volume-mount point) ─────────────────────────
 RUN mkdir -p /app/data
 
-# ── Startup script ─────────────────────────────────────────────────────────────
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-EXPOSE 443
+EXPOSE 3000
 
 ENV DB_DIR=/app/data \
-    PORT=5000 \
+    PORT=3000 \
     NODE_ENV=production
 
 WORKDIR /app/packages/server
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "dist/server/server-fastify.js"]
