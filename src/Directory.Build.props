@@ -5,7 +5,7 @@
     <PropertyGroup Condition="$(EnableSarif)=='True' And !$(MSBuildProjectName.EndsWith('.Tests'))">
         <ErrorLog>$(SolutionDir)\..\results\$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
     </PropertyGroup>
-
+    
     <!-- Code analysis analyzer - report timings -->
     <PropertyGroup Condition="$(EnableSarif)=='True' And !$(MSBuildProjectName.EndsWith('.Tests'))">
         <ReportAnalyzer>true</ReportAnalyzer>
@@ -25,7 +25,7 @@
         <None Include="$(SolutionDir)packageicon.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
-    <!-- Licence -->
+    <!-- License -->
     <PropertyGroup Condition="$(IsPacking) == 'True' AND Exists('$(SolutionDir)..\LICENSE')">
         <PackageLicense>LICENSE</PackageLicense>
         <PackageLicenseUrl>$(RepositoryUrl)/blob/master/LICENSE.md</PackageLicenseUrl>
