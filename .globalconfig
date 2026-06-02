@@ -182,7 +182,7 @@ dotnet_diagnostic.CSE002.severity = error # SmartAnalyzers.CSharpExtensions.Anno
 dotnet_diagnostic.CSE003.severity = error # SmartAnalyzers.CSharpExtensions.Annotations - CSE003 - Type should have the same fields as twin type
 dotnet_diagnostic.CSE004.severity = error # SmartAnalyzers.CSharpExtensions.Annotations - CSE004 - Member with InitOnlyOptional requires default value
 dotnet_diagnostic.CSE005.severity = suggestion # SmartAnalyzers.CSharpExtensions.Annotations - CSE005 - Use the return value or discard it explicitly
-dotnet_diagnostic.CSE006.severity = none # SmartAnalyzers.CSharpExtensions.Annotations - CSE006 - Expression too complex
+dotnet_diagnostic.CSE006.severity = suggestion # SmartAnalyzers.CSharpExtensions.Annotations - CSE006 - Expression too complex
 dotnet_diagnostic.CSE007.severity = error # SmartAnalyzers.CSharpExtensions.Annotations - CSE007 - Return disposable value unused
 dotnet_diagnostic.CSE008.severity = error # SmartAnalyzers.CSharpExtensions.Annotations - CSE008 - Return async result unused
 dotnet_diagnostic.CSE009.severity = error # SmartAnalyzers.CSharpExtensions.Annotations - CSE009 - Task variable not awaited
@@ -258,7 +258,7 @@ dotnet_diagnostic.IDE0039.severity = error # Microsoft.IDE - IDE0039 - Use local
 dotnet_diagnostic.IDE0041.severity = suggestion # Microsoft.IDE - IDE0041 - Use 'is null' check
 dotnet_diagnostic.IDE0042.severity = error # Microsoft.IDE - IDE0042 - Deconstruct variable declaration
 dotnet_diagnostic.IDE0045.severity = suggestion # Microsoft.IDE - IDE0045 - Use conditional expression for assignment
-dotnet_diagnostic.IDE0046.severity = none # Microsoft.IDE - IDE0046 - Use conditional expression for return
+dotnet_diagnostic.IDE0046.severity = suggestion # Microsoft.IDE - IDE0046 - Use conditional expression for return
 dotnet_diagnostic.IDE0050.severity = suggestion # Microsoft.IDE - IDE0050 - Convert anonymous type to tuple
 dotnet_diagnostic.IDE0051.severity = suggestion # Microsoft.IDE - IDE0051 - Remove unused private member
 dotnet_diagnostic.IDE0052.severity = suggestion # Microsoft.IDE - IDE0052 - Remove unread private member
@@ -305,8 +305,6 @@ dotnet_diagnostic.IDE0305.severity = error # Microsoft.IDE - IDE0305 - Use colle
 dotnet_diagnostic.IDE0306.severity = error # Microsoft.IDE - IDE0306 - Use collection expression for new
 dotnet_diagnostic.IDE0340.severity = error # Microsoft.IDE - IDE0340 - Use unbound generic type
 dotnet_diagnostic.IDE0350.severity = error # Microsoft.IDE - IDE0350 - Use implicitly typed lambda
-dotnet_diagnostic.IL2026.severity = none # ILLink - IL2026 - Members annotated with RequiresUnreferencedCodeAttribute - suppressed because SuppressTrimAnalysisWarnings=true; source generators handle AOT compat
-dotnet_diagnostic.IL3050.severity = none # ILLink - IL3050 - Members annotated with RequiresDynamicCodeAttribute - suppressed because SuppressTrimAnalysisWarnings=true; source generators handle AOT compat
 dotnet_diagnostic.MA0001.severity = error # Meziantou.Analyzer - MA0001 - StringComparison is missing information_source
 dotnet_diagnostic.MA0002.severity = error # Meziantou.Analyzer - MA0002 - IEqualityComparer<string> or IComparer<string> is missing warning
 dotnet_diagnostic.MA0003.severity = none # Meziantou.Analyzer - MA0003 -Add parameter name to improve readability
