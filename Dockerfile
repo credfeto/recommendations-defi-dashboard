@@ -1,58 +1,40 @@
-# ─── Stage 1: Build ──────────────────────────────────────────────────────────
-FROM node:26-alpine AS builder
+# ─── Stage 1: Build ───────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Install native AOT prerequisites: clang (linker) and zlib1g-dev (compression)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends clang zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /source
+COPY .globalconfig ./
+COPY src/ ./
+RUN dotnet publish Credfeto.Defi.Server/Credfeto.Defi.Server.csproj \
+    -c Release \
+    -r linux-x64 \
+    --self-contained \
+    -o /app/publish
 
-WORKDIR /build
-
-# Install native build tools required by better-sqlite3 (node-gyp)
-RUN apk add --no-cache python3 make g++
-
-# Copy workspace manifests first for better layer caching
-COPY package.json package-lock.json tsconfig.base.json ./
-COPY packages/server/package.json ./packages/server/
-
-# Install all dependencies including devDeps.
-# HUSKY=0 prevents the prepare script trying to set up git hooks (no .git in Docker).
-RUN HUSKY=0 npm ci
-
-# Copy all source
-COPY packages/ ./packages/
-
-# Build server — shared types are compiled directly into packages/server/dist/
-# Prune to production deps only — no lifecycle scripts are triggered by prune
-RUN npm --workspace=@defi-dashboard/server run build && \
-    npm prune --omit=dev
-
-# ─── Stage 2: Runtime ────────────────────────────────────────────────────────
-FROM node:26-alpine AS runtime
-
-RUN apk add --no-cache openssl
-
+# ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble AS runtime
+# Add Microsoft package repository; install libmsquic (HTTP/3 QUIC) and openssl (cert generation).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
+    && curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb \
+       -o /tmp/mspkg.deb \
+    && dpkg -i /tmp/mspkg.deb \
+    && rm /tmp/mspkg.deb \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libmsquic openssl \
+    && apt-get purge -y --auto-remove ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-
-# ── Server compiled output (shared types compiled in under dist/shared/) ─────
-COPY --from=builder /build/packages/server/dist /app/packages/server/dist
-
-# ── Production node_modules (already pruned in builder stage) ─────────────────
-# package.json is needed for npm workspace module resolution at runtime.
-COPY --from=builder /build/package.json /app/package.json
-COPY --from=builder /build/packages/server/package.json /app/packages/server/package.json
-COPY --from=builder /build/node_modules /app/node_modules
-
-# ── Data directory for SQLite DB (volume-mount point) ─────────────────────────
-RUN mkdir -p /app/data
-
-# ── Startup script ────────────────────────────────────────────────────────────
+COPY --from=build /app/publish .
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-EXPOSE 443
-
-ENV DB_DIR=/app/data \
-    PORT=443 \
-    TLS_KEY_PATH=/etc/ssl/defi/server.key \
-    TLS_CERT_PATH=/etc/ssl/defi/server.crt \
-    NODE_ENV=production
-
-WORKDIR /app/packages/server
-
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && mkdir -p /app/data
+EXPOSE 8080
+EXPOSE 8081
+EXPOSE 8081/udp
+ENV Cache__DbDirectory=/app/data
 ENTRYPOINT ["docker-entrypoint.sh"]
+HEALTHCHECK --interval=5s --timeout=2s --retries=3 --start-period=15s \
+  CMD ["/app/Credfeto.Defi.Server", "--health-check", "http://127.0.0.1:8080/ping"]

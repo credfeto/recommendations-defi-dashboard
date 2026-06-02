@@ -1,122 +1,52 @@
-# Pool Types Configuration Guide
+# Pool Types Guide
 
 ## Overview
 
-The pool system has been refactored to be easily extensible. Pool types are now defined in a configuration system that makes it easy to add new categories without modifying core filtering logic.
-
-## Adding a New Pool Type
-
-To add a new pool type, simply add it to the `POOL_TYPES` object in `src/types/poolTypes.ts`:
-
-```typescript
-export const POOL_TYPES: Record<string, PoolTypeConfig> = {
-  YOUR_TYPE: {
-    id: 'YOUR_TYPE',
-    name: 'Display Name',
-    description: 'Description of this pool type',
-    predicate: (pool) => {
-      // Return true if pool matches this type
-      return pool.someProperty === 'value';
-    },
-  },
-  // ... other types
-};
-```
-
-### Example: Adding a "Bitcoin" Pool Type
-
-```typescript
-BITCOIN: {
-  id: 'BITCOIN',
-  name: 'Bitcoin-Based Pools',
-  description: 'Pools featuring BTC or wrapped Bitcoin tokens',
-  predicate: (pool) => {
-    const symbols = ['WBTC', 'BTC', 'BTCB', 'RENBTC', 'SBTC'];
-    return symbols.some(s => pool.symbol.toUpperCase().includes(s));
-  },
-},
-```
-
-### Example: Adding a "Custom APY Range" Pool Type
-
-```typescript
-MEDIUM_YIELD: {
-  id: 'MEDIUM_YIELD',
-  name: 'Medium Yield (3-5% APY)',
-  description: 'Pools with moderate yields between 3% and 5%',
-  predicate: (pool) => pool.apy >= 3 && pool.apy <= 5,
-},
-```
-
-## Backend Integration
-
-The backend (`src/server.ts`) automatically supports new pool types through the existing `filterPoolsByType` function. No changes are needed to the API layer.
-
-To use the new pool type, call the API endpoint:
-
-```bash
-GET /api/pools/YOUR_TYPE
-```
-
-## Core Concepts
-
-### PoolTypeConfig Interface
-
-```typescript
-interface PoolTypeConfig {
-  id: string; // Unique identifier (used in API)
-  name: string; // Display name for UI
-  description: string; // Tooltip text
-  predicate: (pool: any) => boolean; // Function to identify matching pools
-}
-```
-
-### Base Filters
-
-All pool types automatically apply these base filters:
-
-- IL Risk = "no" (no impermanent loss)
-- TVL ≥ $1,000,000 (minimum liquidity)
-- APY > 0 (positive yields)
-
-### Combining Filters
-
-Pool types can have overlapping categories. For example, a pool can match both "ETH-Based" and "Liquid Staking Tokens" if it's stETH.
+Pool types are defined in `PoolTypeService` inside `src/Credfeto.Defi.Server/Services/PoolTypeService.cs`. Each type has an ID, a display name, and a predicate function that decides whether a given pool belongs to that type.
 
 ## Built-in Pool Types
 
-1. **ETH** - ETH and ETH derivative tokens
-2. **STABLES** - Stablecoin pools
-3. **LST** - Liquid staking tokens (stETH, rETH, cbETH)
-4. **HIGH_YIELD** - Pools with APY > 5%
-5. **LOW_TVL** - Emerging pools with TVL < $10M
-6. **BLUE_CHIP** - Established pools with TVL > $100M
+| ID | Display Name | Criteria |
+| --- | --- | --- |
+| `ETH` | Ethereum | Pool symbol contains ETH or a liquid-staking derivative |
+| `STABLES` | Stablecoins | Pool is marked as stablecoin |
+| `HIGH_YIELD` | High Yield | APY above threshold |
+| `LOW_TVL` | Emerging | TVL below threshold |
+| `BLUE_CHIP` | Blue Chip | TVL above threshold |
 
-## Usage in Code
+## Adding a New Pool Type
 
-```typescript
-import { getAvailablePoolTypes, getPoolTypeById } from './types/poolTypes';
+1. Open `src/Credfeto.Defi.Server/Services/PoolTypeService.cs`.
+2. Add a new entry to the pool type map with the desired ID, name, and predicate:
 
-// Get all pool types
-const allTypes = getAvailablePoolTypes();
-
-// Get a specific pool type
-const ethType = getPoolTypeById('ETH');
-
-// Use the predicate to filter pools
-const ethPools = allPools.filter(ethType.predicate);
+```csharp
+new PoolTypeDefinition(
+    Id: "BITCOIN",
+    DisplayName: "Bitcoin",
+    Matches: static pool =>
+        pool.Symbol.Contains("WBTC", StringComparison.OrdinalIgnoreCase) ||
+        pool.Symbol.Contains("BTC", StringComparison.OrdinalIgnoreCase)
+)
 ```
 
-## Testing
+1. The `GET /api/pools/BITCOIN` endpoint is created automatically — no changes to routing needed.
 
-When adding a new pool type, add test cases in `src/__tests__/server.test.ts`:
+## Core Concepts
 
-```typescript
-test('identifies your custom pool type correctly', () => {
-  const customPools = filterPoolsByType(mockPoolData, 'YOUR_TYPE');
-  expect(customPools.length).toBeGreaterThan(0);
-  expect(customPools.every(p => /* your condition */)).toBe(true);
-});
-```
+### Base Filters
 
-Ensure test coverage remains at 100%.
+All pool types automatically exclude:
+
+- Pools with any depeg alert (stablecoin price deviation)
+- Pools returned by the enrichment pipeline with missing data
+
+### Pool Enrichment
+
+Every pool is enriched with:
+
+- `Hacks` — matched against the DefiLlama hacks dataset
+- `DepegAlerts` — checked against CoinGecko stablecoin prices
+- `AuditInfo` — matched from DefiLlama protocol audit data
+- `AccessInfo` — derived from `poolMeta` text (KYC, liquidity flags)
+- `ContractAddresses` — aggregated from underlying/reward tokens
+- `ContractSecurity` — GoPlus security scores (24-hour SQLite cache)

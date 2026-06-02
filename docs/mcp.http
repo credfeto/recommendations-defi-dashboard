@@ -1,14 +1,14 @@
 # MCP Server — HTTP Examples
 #
-# The MCP server is mounted on the existing Fastify server at POST /mcp.
+# The MCP server is mounted on the ASP.NET Core server at POST /mcp.
 # It uses the MCP Streamable HTTP transport (stateless mode).
 #
 # Compatible with the VS Code REST Client extension.
-# Start the server first: npm run dev
+# Start the server first: cd src && dotnet run --project Credfeto.Defi.Server
 #
 # Claude Code connects automatically via .mcp.json in the repo root.
 
-@baseUrl = http://localhost:3000
+@baseUrl = http://localhost:8080
 
 # ── 1. Initialise (required first request per client session) ────────────────
 POST {{baseUrl}}/mcp

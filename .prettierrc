@@ -1,9 +1,0 @@
-{
-  "trailingComma": "all",
-  "singleQuote": true,
-  "jsxSingleQuote": true,
-  "bracketSpacing": true,
-  "printWidth": 120,
-  "tabWidth": 2,
-  "objectWrap": "collapse"
-}

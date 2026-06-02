@@ -2,153 +2,132 @@
 
 ## Prerequisites
 
-- Node.js 26.x or higher
-- npm 11.x or higher
-- Git
+- .NET 10 SDK (`dotnet --version` should show `10.x`)
+- Docker (for container builds and deployment)
 
 ## Getting Started
 
-### 1. Clone and Install Dependencies
-
-```bash
-git clone https://github.com/credfeto/recommendations-defi-dashboard.git
-cd recommendations-defi-dashboard
-npm install
-```
-
-### 2. Development Mode
-
-Start the server:
-
-```bash
-npm run dev
-```
-
-Server listens on port 3000 (HTTP) by default.
-
-### 3. Individual Commands
+### 1. Clone and restore
 
 ```sh
-npm run dev             # Start server (port 3000)
-npm test                # Run all tests
-npm run test:coverage   # Run tests with coverage report
-npm run test:watch      # Watch mode
+git clone https://github.com/credfeto/recommendations-defi-dashboard.git
+cd recommendations-defi-dashboard/src
+dotnet restore Credfeto.Defi.slnx
+```
+
+### 2. Run in development
+
+```sh
+cd src
+dotnet run --project Credfeto.Defi.Server
+```
+
+The server listens on:
+
+- `http://localhost:8080` (plain HTTP, loopback only — used by the health check)
+- `https://localhost:8081` (HTTPS/HTTP/2/HTTP/3) when `server.pfx` is present
+
+Ports are hardcoded: HTTP on **8080**, HTTPS on **8081**. The certificate path is hardcoded to `<AppContext.BaseDirectory>/server.pfx` (not configurable via environment variable).
+
+A dev self-signed cert (`server.pfx`) is already committed in `src/Credfeto.Defi.Server/` and is copied to the build output automatically, so `dotnet run` will start HTTPS straight away. To regenerate it:
+
+```sh
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+  -keyout /tmp/server.key -out /tmp/server.crt -subj "/CN=localhost"
+openssl pkcs12 -export -in /tmp/server.crt -inkey /tmp/server.key \
+  -out src/Credfeto.Defi.Server/server.pfx -passout pass:
+```
+
+## Commands
+
+```sh
+cd src
+dotnet build Credfeto.Defi.slnx -c Release
+dotnet test Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj \
+  -c Release -p:SolutionDir=$(pwd)/
+dotnet buildcheck -Solution Credfeto.Defi.slnx
 ```
 
 ## Project Structure
 
 ```text
-packages/
-  server/
-    src/
-      api/        Third-party API clients (DefiLlama, Pendle, CoinGecko)
-      db/         SQLite persistent cache
-      mcp/        MCP server tools
-      server/     Fastify HTTP routing (server-fastify.ts)
-      services/   Business logic (pools, hacks, depeg, etc.)
-      types/      Derived types and metadata
-      utils/      Shared utilities
-  shared/
-    src/          Shared TypeScript type declarations (@shared alias)
+src/
+  Credfeto.Defi.Server/              Minimal executable (Program, KestrelConfig, Endpoints, ServiceRegistration)
+  Credfeto.Defi.Data.Models/         Domain models, AppJsonContext, CacheConfig, RpcConfig
+  Credfeto.Defi.ApiClients.CoinGecko.Interfaces/   ICoinGeckoStablecoinsClient
+  Credfeto.Defi.ApiClients.CoinGecko/              CoinGeckoStablecoinsClient
+  Credfeto.Defi.ApiClients.DefiLlama.Interfaces/   IDefiLlama*Client
+  Credfeto.Defi.ApiClients.DefiLlama/              DefiLlama*Client
+  Credfeto.Defi.ApiClients.GoPlus.Interfaces/      IGoPlusClient
+  Credfeto.Defi.ApiClients.GoPlus/                 GoPlusClient
+  Credfeto.Defi.ApiClients.Pendle.Interfaces/      IPendleMarketsClient
+  Credfeto.Defi.ApiClients.Pendle/                 PendleMarketsClient
+  Credfeto.Defi.Database/            SQLite cache services (ApiCacheService, ContractSecurityCacheService)
+  Credfeto.Defi.Services/            Business logic (pool enrichment, filtering, hacks, depeg, etc.)
+  Credfeto.Defi.Mcp/                 MCP tools (DefiMcpTools) and setup
+  Credfeto.Defi.Server.Tests/        268 xunit v3 unit tests
 ```
 
 ## Environment Variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `PORT` | `3000` | Listen port |
-| `TLS_KEY_PATH` | _(unset)_ | Path to TLS private key; plain HTTP if unset |
-| `TLS_CERT_PATH` | _(unset)_ | Path to TLS certificate; plain HTTP if unset |
-| `DB_DIR` | _(cwd)_ | Directory for the SQLite cache database |
-| `NODE_ENV` | `development` | Set to `production` in Docker |
+| `Cache__DbDirectory` | `/app/data` | SQLite cache directory |
+| `ASPNETCORE_ENVIRONMENT` | `Production` | ASP.NET Core environment |
+| `Rpc__Ethereum` | _(empty)_ | Ethereum RPC endpoint |
+| `Rpc__Arbitrum` | _(empty)_ | Arbitrum RPC endpoint |
+
+Note: HTTP/HTTPS ports (8080/8081) and the cert path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded and not configurable via environment variables.
 
 ## Adding a New Pool Type
 
-See [Pool Types Guide](./POOL_TYPES_GUIDE.md) for detailed instructions.
+See [Pool Types Guide](./POOL_TYPES_GUIDE.md).
 
-Quick summary: edit `packages/server/src/types/poolTypesConfig.ts` and add an entry to `POOL_TYPES_CONFIG`. The API endpoint is generated automatically.
+Quick summary: add a new entry to `PoolTypeService`'s type map.
+The API endpoint is generated automatically from the pool type ID.
 
 ## Running Tests
 
-```bash
-npm test                          # all tests
-npm run test:coverage             # with coverage
-npm run test:watch                # watch mode
+```sh
+cd src
+dotnet test Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj \
+  -c Release \
+  -p:SolutionDir=$(pwd)/
 ```
 
-## Code Style
+See [Testing Guide](./TESTING.md) for coverage and patterns.
 
-- **TypeScript** strict mode throughout
-- **Prettier** for formatting
-- **ESLint** for linting
-
-Run formatters via pre-commit hooks automatically, or:
-
-```bash
-npx prettier --write .
-```
-
-## Debugging
-
-The Fastify server logs to stdout in JSON format. Set `NODE_ENV=development` for pretty logs.
-
-```bash
-npm run dev
-```
-
-## Building for Production
-
-```bash
-npm --workspace=@defi-dashboard/server run build
-# Output: packages/server/dist/
-```
-
-## Deployment
-
-### Docker (Recommended)
+## Docker
 
 ```sh
+docker build -t defi:local .
 docker compose up -d
 ```
 
 The container:
 
-1. Generates a self-signed TLS cert at `/etc/ssl/defi/` on first start
-2. Starts the server on port 443
-
-Supply your own cert by mounting files and overriding `TLS_KEY_PATH`/`TLS_CERT_PATH`.
-
-### Manual
-
-```sh
-npm --workspace=@defi-dashboard/server run build
-PORT=3000 node packages/server/dist/server/server-fastify.js
-```
+1. Generates `server.pfx` at `<AppContext.BaseDirectory>/server.pfx` on first start (if not already present)
+2. Listens on 8080 (HTTP, health check) and 8081 (HTTPS, HTTP/1.1 + HTTP/2 + HTTP/3)
+3. Exposes as 8080/tcp, 8081/tcp and 8081/udp (QUIC) via docker-compose
 
 ## Troubleshooting
 
-### Port Already in Use
+### Build errors
 
-```bash
-lsof -ti:3000 | xargs kill -9
+```sh
+dotnet buildcheck -Solution src/Credfeto.Defi.slnx
 ```
 
-### Dependencies Issues
+### Tests failing
 
-```bash
-rm -rf node_modules package-lock.json
-npm install
+```sh
+cd src
+dotnet test Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj --verbosity detailed
 ```
 
-### TypeScript Errors
+### Port in use
 
-```bash
-npx tsc --noEmit
-```
-
-### Tests Failing
-
-```bash
-npm test -- --clearCache
-npm test -- --verbose
+```sh
+lsof -ti:8080 | xargs kill -9
+lsof -ti:8081 | xargs kill -9
 ```

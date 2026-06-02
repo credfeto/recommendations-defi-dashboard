@@ -7,7 +7,6 @@ This folder contains all architecture, development, and usage documentation for 
 ### Getting Started
 
 - **[Pool Types Guide](./POOL_TYPES_GUIDE.md)** - How to add and work with pool types
-- **[Pool Types Examples](./POOL_TYPES_EXAMPLES.ts)** - Ready-to-use pool type examples
 
 ### Architecture
 
@@ -35,11 +34,12 @@ See [Testing Guide](./TESTING.md)
 
 ### Deploy to Production
 
-See [Development Guide](./DEVELOPMENT.md#deployment)
+See [Development Guide](./DEVELOPMENT.md#docker)
 
 ## Quick Stats
 
-- **Backend**: Fastify + TypeScript
+- **Backend**: .NET 10, ASP.NET Core, native AOT
 - **Pool Types**: 5 built-in types
-- **Tests**: 223 passing
+- **Tests**: 268 passing (xunit v3)
 - **Cache**: SQLite, 1-hour TTL
+- **TLS**: Kestrel with self-signed PFX; HTTP/3 (QUIC) via libmsquic

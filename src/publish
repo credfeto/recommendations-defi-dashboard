@@ -1,0 +1,50 @@
+#! /bin/sh
+
+die() {
+    echo "$@"
+    exit 1
+}
+
+BASEDIR=$(dirname "$(readlink -f "$0")")
+
+PLATFORM=linux-x64
+OUTFOLDER="$BASEDIR/server-dist/$PLATFORM"
+
+echo "Clear $OUTFOLDER" \
+  && rm -fr "$BASEDIR/server-dist" \
+  && cd "$BASEDIR" \
+  && dotnet restore \
+  && echo "Build Credfeto.Defi.Server" \
+  && cd "$BASEDIR/Credfeto.Defi.Server" \
+  && dotnet publish \
+          --no-restore \
+          -warnaserror \
+          --configuration:Release \
+          "-r:$PLATFORM" \
+          --self-contained \
+          -nodeReuse:False \
+          "-p:Deterministic=True" \
+          "-p:FFPublishing=True" \
+          "-p:IncludeNativeLibrariesForSelfExtract=True" \
+          "-p:IsProduction=True" \
+          "-p:NoWarn=NETSDK1179" \
+          "-p:Optimize=true" \
+          "-p:PublishReadyToRun=False" \
+          "-p:PublishReadyToRunShowWarnings=True" \
+          "-p:PublishSingleFile=true" \
+          "-p:SolutionDir=../" \
+          "-p:SuppressNETCoreSdkPreviewMessage=true" \
+          "-p:TreatWarningsAsErrors=True" \
+          "-p:Version=1.0.0.0-main" \
+          --output "$OUTFOLDER" \
+  && cd "$OUTFOLDER" \
+  && cp "$BASEDIR/../Dockerfile" . \
+  && ls -lar \
+  && docker build . -t "credfeto/defi:latest" \
+  && docker run \
+      --name defi \
+      -it \
+      --rm \
+      -p 443:8081 \
+      -p 443:8081/udp \
+      "credfeto/defi:latest"
