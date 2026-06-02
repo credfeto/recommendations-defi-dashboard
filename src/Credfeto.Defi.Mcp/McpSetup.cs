@@ -1,3 +1,5 @@
+using System.Text.Json;
+using Credfeto.Defi.Data.Models.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,7 +15,9 @@ public static class McpSetup
     /// </summary>
     public static IServiceCollection AddMcpTools(this IServiceCollection services)
     {
-        _ = services.AddMcpServer().WithHttpTransport().WithTools<DefiMcpTools>();
+        JsonSerializerOptions serializerOptions = new(options: AppJsonContext.Default.Options);
+
+        _ = services.AddMcpServer().WithHttpTransport().WithTools<DefiMcpTools>(serializerOptions: serializerOptions);
 
         return services;
     }

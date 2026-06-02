@@ -29,12 +29,7 @@ public sealed class ContractSecurityCacheService : IDisposable
     {
         this._timeProvider = timeProvider;
 
-        string dbDirectory = config.Value.DbDirectory;
-
-        if (!Directory.Exists(dbDirectory))
-        {
-            _ = Directory.CreateDirectory(dbDirectory);
-        }
+        string dbDirectory = CacheDirectoryResolver.EnsureWritableDirectory(config.Value.DbDirectory);
 
         string dbPath = Path.Combine(path1: dbDirectory, path2: "cache.db");
         this._connection = new SqliteConnection($"Data Source={dbPath}");

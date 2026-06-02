@@ -9,6 +9,7 @@ using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Json;
+using Microsoft.Extensions.Configuration;
 using Credfeto.Defi.Database;
 using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Services;

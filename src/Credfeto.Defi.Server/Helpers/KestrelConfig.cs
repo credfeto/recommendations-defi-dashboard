@@ -29,11 +29,7 @@ internal static class KestrelConfig
 
         if (File.Exists(certPath))
         {
-            options.Listen(
-                address: IPAddress.IPv6Any,
-                port: HTTPS_PORT,
-                configure: o => ConfigureHttpsEndpoint(listenOptions: o, certFile: certPath)
-            );
+            options.ListenAnyIP(port: HTTPS_PORT, configure: o => ConfigureHttpsEndpoint(listenOptions: o, certFile: certPath));
         }
 
         // Plain HTTP on loopback only — used by the health check
