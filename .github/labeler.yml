@@ -10,6 +10,34 @@
  - any: [ 'CHANGELOG.md' ]
 "Config Change":
  - any: [ 'src/**/*.json', '!src/global.json' ]
+"credfeto-defi-apiclients-coingecko":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.CoinGecko/**/*' ]
+"credfeto-defi-apiclients-coingecko-interfaces":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.CoinGecko.Interfaces/**/*' ]
+"credfeto-defi-apiclients-defillama":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.DefiLlama/**/*' ]
+"credfeto-defi-apiclients-defillama-interfaces":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.DefiLlama.Interfaces/**/*' ]
+"credfeto-defi-apiclients-goplus":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.GoPlus/**/*' ]
+"credfeto-defi-apiclients-goplus-interfaces":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.GoPlus.Interfaces/**/*' ]
+"credfeto-defi-apiclients-pendle":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.Pendle/**/*' ]
+"credfeto-defi-apiclients-pendle-interfaces":
+ - any: [ 'src/$Credfeto.Defi.ApiClients.Pendle.Interfaces/**/*' ]
+"credfeto-defi-data-models":
+ - any: [ 'src/$Credfeto.Defi.Data.Models/**/*' ]
+"credfeto-defi-database":
+ - any: [ 'src/$Credfeto.Defi.Database/**/*' ]
+"credfeto-defi-mcp":
+ - any: [ 'src/$Credfeto.Defi.Mcp/**/*' ]
+"credfeto-defi-server":
+ - any: [ 'src/$Credfeto.Defi.Server/**/*' ]
+"credfeto-defi-server-tests":
+ - any: [ 'src/$Credfeto.Defi.Server.Tests/**/*' ]
+"credfeto-defi-services":
+ - any: [ 'src/$Credfeto.Defi.Services/**/*' ]
 "dotnet":
  - any: [ 'src/**/*.csproj' ]
 "Editorconfig":

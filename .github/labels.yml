@@ -38,6 +38,62 @@
    color: "d8bb50"
    description: "Configuration files changes"
 
+ - name: "credfeto-defi-apiclients-coingecko"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.CoinGecko project"
+
+ - name: "credfeto-defi-apiclients-coingecko-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.CoinGecko.Interfaces project"
+
+ - name: "credfeto-defi-apiclients-defillama"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.DefiLlama project"
+
+ - name: "credfeto-defi-apiclients-defillama-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.DefiLlama.Interfaces project"
+
+ - name: "credfeto-defi-apiclients-goplus"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.GoPlus project"
+
+ - name: "credfeto-defi-apiclients-goplus-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.GoPlus.Interfaces project"
+
+ - name: "credfeto-defi-apiclients-pendle"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.Pendle project"
+
+ - name: "credfeto-defi-apiclients-pendle-interfaces"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.ApiClients.Pendle.Interfaces project"
+
+ - name: "credfeto-defi-data-models"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Data.Models project"
+
+ - name: "credfeto-defi-database"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Database project"
+
+ - name: "credfeto-defi-mcp"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Mcp project"
+
+ - name: "credfeto-defi-server"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Server project"
+
+ - name: "credfeto-defi-server-tests"
+   color: "0e8a16"
+   description: "Changes in Credfeto.Defi.Server.Tests project"
+
+ - name: "credfeto-defi-services"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Services project"
+
  - name: "dependencies"
    color: "0366d6"
    description: "Updates to dependencies"
