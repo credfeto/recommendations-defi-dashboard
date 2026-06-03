@@ -1,40 +1,28 @@
-﻿using System;
-using System.IO;
-using System.Text.Json.Serialization.Metadata;
+using System;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.Database;
-using Credfeto.Defi.Data.Models.Config;
+using Credfeto.Defi.Storage;
+using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
 
-public sealed class ApiCacheServiceTests : TestBase, IDisposable
+public sealed class ApiCacheServiceTests : TestBase
 {
-    private readonly string _tempDir;
+    private static readonly DateTimeOffset FixedNow = new(year: 2024, month: 6, day: 1, hour: 12, minute: 0, second: 0, offset: TimeSpan.Zero);
+
+    private readonly FakeDatabase _database;
     private readonly FakeTimeProvider _timeProvider;
     private readonly ApiCacheService _cache;
 
     public ApiCacheServiceTests()
     {
-        this._tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        this._timeProvider = new FakeTimeProvider();
-
-        IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = this._tempDir });
-        this._cache = new ApiCacheService(config: options, timeProvider: this._timeProvider);
-    }
-
-    public void Dispose()
-    {
-        this._cache.Dispose();
-
-        if (Directory.Exists(this._tempDir))
-        {
-            Directory.Delete(path: this._tempDir, recursive: true);
-        }
+        this._timeProvider = new FakeTimeProvider(startDateTime: FixedNow);
+        this._database = new FakeDatabase();
+        this._cache = new ApiCacheService(database: this._database, timeProvider: this._timeProvider);
     }
 
     [Fact]
@@ -64,17 +52,12 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
-        // Prime the cache
-        await this._cache.GetOrFetchAsync(
-            key: "test-key",
-            fetcher: _ => ValueTask.FromResult("cached-value"),
-            typeInfo: TestJsonContext.Default.String,
-            cancellationToken: cancellationToken
-        );
+        string cachedJson = JsonSerializer.Serialize("cached-value", TestJsonContext.Default.String);
+        ApiCacheRow freshRow = new("test-key", cachedJson, FixedNow - TimeSpan.FromMinutes(30));
+        this._database.WithReturn<ApiCacheRow?>(freshRow);
 
         int fetchCount = 0;
 
-        // Fetch again immediately - should be fresh
         string result = await this._cache.GetOrFetchAsync(
             key: "test-key",
             fetcher: _ =>
@@ -96,16 +79,9 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
-        // Prime the cache
-        await this._cache.GetOrFetchAsync(
-            key: "stale-key",
-            fetcher: _ => ValueTask.FromResult("stale-value"),
-            typeInfo: TestJsonContext.Default.String,
-            cancellationToken: cancellationToken
-        );
-
-        // Advance time by 1.5 hours (past fresh TTL of 1h, but within stale TTL of 2h)
-        this._timeProvider.Advance(TimeSpan.FromHours(1.5));
+        string cachedJson = JsonSerializer.Serialize("stale-value", TestJsonContext.Default.String);
+        ApiCacheRow staleRow = new("stale-key", cachedJson, FixedNow - TimeSpan.FromHours(1.5));
+        this._database.WithReturn<ApiCacheRow?>(staleRow);
 
         string result = await this._cache.GetOrFetchAsync(
             key: "stale-key",
@@ -118,28 +94,19 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     }
 
     [Fact]
-    public async Task GetOrFetchAsync_ExpiredCache_FetcherThrows_ExceptionPropagatesAsync()
+    public Task GetOrFetchAsync_ExpiredCache_FetcherThrows_ExceptionPropagatesAsync()
     {
-        CancellationToken cancellationToken = this.CancellationToken();
+        string cachedJson = JsonSerializer.Serialize("old-value", TestJsonContext.Default.String);
+        ApiCacheRow expiredRow = new("expired-key", cachedJson, FixedNow - TimeSpan.FromHours(3));
+        this._database.WithReturn<ApiCacheRow?>(expiredRow);
 
-        // Prime the cache
-        await this._cache.GetOrFetchAsync(
-            key: "expired-key",
-            fetcher: _ => ValueTask.FromResult("old-value"),
-            typeInfo: TestJsonContext.Default.String,
-            cancellationToken: cancellationToken
-        );
-
-        // Advance time by 3 hours (past stale TTL of 2h)
-        this._timeProvider.Advance(TimeSpan.FromHours(3));
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        return Assert.ThrowsAsync<InvalidOperationException>(() =>
             this
                 ._cache.GetOrFetchAsync(
                     key: "expired-key",
                     fetcher: _ => throw new InvalidOperationException("Simulated fetch failure"),
                     typeInfo: TestJsonContext.Default.String,
-                    cancellationToken: cancellationToken
+                    cancellationToken: this.CancellationToken()
                 )
                 .AsTask()
         );
@@ -150,16 +117,9 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
-        // Prime the cache
-        await this._cache.GetOrFetchAsync(
-            key: "refresh-key",
-            fetcher: _ => ValueTask.FromResult("old-value"),
-            typeInfo: TestJsonContext.Default.String,
-            cancellationToken: cancellationToken
-        );
-
-        // Advance time by 2 hours (stale)
-        this._timeProvider.Advance(TimeSpan.FromHours(2));
+        string cachedJson = JsonSerializer.Serialize("old-value", TestJsonContext.Default.String);
+        ApiCacheRow expiredRow = new("refresh-key", cachedJson, FixedNow - TimeSpan.FromHours(2));
+        this._database.WithReturn<ApiCacheRow?>(expiredRow);
 
         string result = await this._cache.GetOrFetchAsync(
             key: "refresh-key",
@@ -181,14 +141,9 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     [Fact]
     public async Task IsFreshAsync_RecentEntry_ReturnsTrueAsync()
     {
-        CancellationToken cancellationToken = this.CancellationToken();
-
-        await this._cache.GetOrFetchAsync(
-            key: "fresh-check-key",
-            fetcher: _ => ValueTask.FromResult("value"),
-            typeInfo: TestJsonContext.Default.String,
-            cancellationToken: cancellationToken
-        );
+        string cachedJson = JsonSerializer.Serialize("value", TestJsonContext.Default.String);
+        ApiCacheRow recentRow = new("fresh-check-key", cachedJson, FixedNow - TimeSpan.FromMinutes(10));
+        this._database.WithReturn<ApiCacheRow?>(recentRow);
 
         bool result = await this._cache.IsFreshAsync("fresh-check-key");
         Assert.True(result, userMessage: "A recently cached entry should be considered fresh");
@@ -197,39 +152,11 @@ public sealed class ApiCacheServiceTests : TestBase, IDisposable
     [Fact]
     public async Task IsFreshAsync_OldEntry_ReturnsFalseAsync()
     {
-        CancellationToken cancellationToken = this.CancellationToken();
-
-        await this._cache.GetOrFetchAsync(
-            key: "stale-check-key",
-            fetcher: _ => ValueTask.FromResult("value"),
-            typeInfo: TestJsonContext.Default.String,
-            cancellationToken: cancellationToken
-        );
-
-        this._timeProvider.Advance(TimeSpan.FromHours(2));
+        string cachedJson = JsonSerializer.Serialize("value", TestJsonContext.Default.String);
+        ApiCacheRow oldRow = new("stale-check-key", cachedJson, FixedNow - TimeSpan.FromHours(2));
+        this._database.WithReturn<ApiCacheRow?>(oldRow);
 
         bool result = await this._cache.IsFreshAsync("stale-check-key");
         Assert.False(result, userMessage: "An old cache entry should not be considered fresh");
-    }
-
-    [Fact]
-    public void Constructor_CreatesDbDirectoryIfMissing()
-    {
-        string tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "subdir");
-
-        try
-        {
-            IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = tempDir });
-            using ApiCacheService cache = new(config: options, timeProvider: this._timeProvider);
-
-            Assert.True(Directory.Exists(tempDir), userMessage: "Constructor should create the DB directory");
-        }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-            {
-                Directory.Delete(path: tempDir, recursive: true);
-            }
-        }
     }
 }

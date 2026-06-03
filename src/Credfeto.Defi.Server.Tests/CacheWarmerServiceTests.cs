@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -8,41 +7,25 @@ using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.Pendle;
-using Credfeto.Defi.Database;
-using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Services;
+using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
 
-public sealed class CacheWarmerServiceTests : TestBase, IDisposable
+public sealed class CacheWarmerServiceTests : TestBase
 {
-    private readonly string _tempDir;
     private readonly ApiCacheService _apiCache;
     private readonly FakeTimeProvider _timeProvider;
 
     public CacheWarmerServiceTests()
     {
-        this._tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         this._timeProvider = new FakeTimeProvider();
-
-        IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = this._tempDir });
-        this._apiCache = new ApiCacheService(config: options, timeProvider: this._timeProvider);
-    }
-
-    public void Dispose()
-    {
-        this._apiCache.Dispose();
-
-        if (Directory.Exists(this._tempDir))
-        {
-            Directory.Delete(path: this._tempDir, recursive: true);
-        }
+        this._apiCache = new ApiCacheService(database: new FakeDatabase(), timeProvider: this._timeProvider);
     }
 
     private static T CreateApiClient<T>(HttpMessageHandler handler)
