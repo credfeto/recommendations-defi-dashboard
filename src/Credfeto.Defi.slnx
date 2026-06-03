@@ -1,5 +1,9 @@
 <Solution>
   <Project Path="Credfeto.Defi.ApiClients.CoinGecko/Credfeto.Defi.ApiClients.CoinGecko.csproj" />
+  <Folder Name="/Config/">
+    <File Path="..\Dockerfile" />
+    <File Path="publish" />
+  </Folder>
   <Project Path="Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
   <Project Path="Credfeto.Defi.ApiClients.DefiLlama/Credfeto.Defi.ApiClients.DefiLlama.csproj" />
   <Project Path="Credfeto.Defi.ApiClients.DefiLlama.Interfaces/Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />

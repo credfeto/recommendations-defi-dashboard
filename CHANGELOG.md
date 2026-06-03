@@ -69,6 +69,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - MCP server mounted on existing Fastify server at POST /mcp (Streamable HTTP, stateless)
 - docker: build runs on all branches; push to registry only on main
 - Server rewritten in .NET 10 (native AOT) — ASP.NET Core with Kestrel serving HTTP/1.1, HTTP/2, and HTTP/3 (QUIC) on port 8081; TLS via self-signed `server.pfx` generated at container startup; replaces Node.js/Fastify, nginx, and the React client
+- Simplified Dockerfile to single-stage runtime image; removed docker-entrypoint.sh
 
 ### Removed
 - Removed husky pre-commit hooks
