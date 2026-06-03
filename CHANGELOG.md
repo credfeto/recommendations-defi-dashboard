@@ -73,6 +73,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Simplified Dockerfile to single-stage runtime image; removed docker-entrypoint.sh
 - Reorganised solution file into logical folders (Apis, MCP, Models, Server, Services, Storage)
 - ContractSecurityInfo boolean fields (IsOpenSource, IsHoneypot, IsProxy, CannotBuy, HoneypotWithSameCreator) changed from double? to bool?
+- appsettings.json: set example SQL Server connection string for local development
 
 ### Removed
 - Removed husky pre-commit hooks
