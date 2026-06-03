@@ -47,6 +47,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Docker build: removed copy of non-existent workspace-level node_modules directory (npm workspaces hoists all dependencies to root node_modules)
 - Docker Dockerfile: consolidated consecutive RUN instructions to satisfy hadolint DL3059 rule
 - Docker builder stage now installs python3, make, and g++ so better-sqlite3 native module compiles correctly on Alpine
+- SQL: FLOAT columns now use FLOAT(53) explicit precision to satisfy TSQLLint data-type-length rule
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
