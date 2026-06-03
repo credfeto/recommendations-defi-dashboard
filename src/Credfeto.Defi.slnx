@@ -1,20 +1,32 @@
 <Solution>
-  <Project Path="Credfeto.Defi.ApiClients.CoinGecko/Credfeto.Defi.ApiClients.CoinGecko.csproj" />
+  <Folder Name="/Apis/">
+    <Project Path="Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.CoinGecko/Credfeto.Defi.ApiClients.CoinGecko.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.DefiLlama.Interfaces/Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.DefiLlama/Credfeto.Defi.ApiClients.DefiLlama.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.GoPlus.Interfaces/Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.GoPlus/Credfeto.Defi.ApiClients.GoPlus.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
+  </Folder>
   <Folder Name="/Config/">
     <File Path="..\Dockerfile" />
     <File Path="publish" />
   </Folder>
-  <Project Path="Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
-  <Project Path="Credfeto.Defi.ApiClients.DefiLlama/Credfeto.Defi.ApiClients.DefiLlama.csproj" />
-  <Project Path="Credfeto.Defi.ApiClients.DefiLlama.Interfaces/Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
-  <Project Path="Credfeto.Defi.ApiClients.GoPlus/Credfeto.Defi.ApiClients.GoPlus.csproj" />
-  <Project Path="Credfeto.Defi.ApiClients.GoPlus.Interfaces/Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
-  <Project Path="Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
-  <Project Path="Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
-  <Project Path="Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
-  <Project Path="Credfeto.Defi.Database/Credfeto.Defi.Database.csproj" />
-  <Project Path="Credfeto.Defi.Mcp/Credfeto.Defi.Mcp.csproj" />
-  <Project Path="Credfeto.Defi.Server/Credfeto.Defi.Server.csproj" />
-  <Project Path="Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj" />
-  <Project Path="Credfeto.Defi.Services/Credfeto.Defi.Services.csproj" />
+  <Folder Name="/MCP/">
+    <Project Path="Credfeto.Defi.Mcp/Credfeto.Defi.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Models/">
+    <Project Path="Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
+  </Folder>
+  <Folder Name="/Server/">
+    <Project Path="Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj" />
+    <Project Path="Credfeto.Defi.Server/Credfeto.Defi.Server.csproj" />
+  </Folder>
+  <Folder Name="/Services/">
+    <Project Path="Credfeto.Defi.Services/Credfeto.Defi.Services.csproj" />
+  </Folder>
+  <Folder Name="/Storage/">
+    <Project Path="Credfeto.Defi.Database/Credfeto.Defi.Database.csproj" />
+  </Folder>
 </Solution>
