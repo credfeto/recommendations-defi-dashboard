@@ -36,6 +36,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Warm API cache on startup — missing or stale cache entries are fetched in the background when the server starts; errors are logged per entry and do not block other fetches or server startup
 - Add MCP server exposing get_pool_types, get_pools, and check_contract_security tools
 - Add unit tests, e2e tests, and JSON-RPC examples for the MCP server
+- Credfeto.Defi.Storage: SQL Server storage layer with DACPAC schema and DBUp migrations
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
@@ -71,10 +72,12 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Server rewritten in .NET 10 (native AOT) — ASP.NET Core with Kestrel serving HTTP/1.1, HTTP/2, and HTTP/3 (QUIC) on port 8081; TLS via self-signed `server.pfx` generated at container startup; replaces Node.js/Fastify, nginx, and the React client
 - Simplified Dockerfile to single-stage runtime image; removed docker-entrypoint.sh
 - Reorganised solution file into logical folders (Apis, MCP, Models, Server, Services, Storage)
+- ContractSecurityInfo boolean fields (IsOpenSource, IsHoneypot, IsProxy, CannotBuy, HoneypotWithSameCreator) changed from double? to bool?
 
 ### Removed
 - Removed husky pre-commit hooks
 - Client package and nginx — server handles TLS directly via self-signed cert on port 443
+- Credfeto.Defi.Database: SQLite cache replaced by SQL Server storage
 
 ### Deployment Changes
 - `better-sqlite3` added as a server dependency (requires native build tools)

@@ -3,7 +3,7 @@
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
-    <Description>DeFi Dashboard Database Cache</Description>
+    <Description>DeFi Dashboard SQL Server Storage</Description>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -24,30 +24,35 @@
     <IlcOptimizationPreference>Size</IlcOptimizationPreference>
     <IsPublishable>false</IsPublishable>
     <OutputType>Library</OutputType>
+    <RepositoryUrl>https://github.com/credfeto/recommendations-defi-dashboard</RepositoryUrl>
     <RunAOTCompilation>false</RunAOTCompilation>
+    <TargetFramework>net10.0</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
     <TieredPGO>true</TieredPGO>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <ValidateExecutableReferencesMatchSelfContained>true</ValidateExecutableReferencesMatchSelfContained>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
-    <RepositoryUrl>https://github.com/credfeto/recommendations-defi-dashboard</RepositoryUrl>
-    <TargetFramework>net10.0</TargetFramework>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Credfeto.Defi.Server.Tests" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.0" />
+    <PackageReference Include="Credfeto.Database.Interfaces" Version="1.2.204.1980" />
+    <PackageReference Include="Credfeto.Database.SqlServer" Version="1.2.204.1980" />
+    <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.145.1592" />
+    <PackageReference Include="DbUp-SqlServer" Version="7.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Credfeto.Database.Source.Generation" Version="1.2.209.2134" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.2.0.1978" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="3.0.98" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />
@@ -59,5 +64,8 @@
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="migrations\**\*.sql" />
   </ItemGroup>
 </Project>

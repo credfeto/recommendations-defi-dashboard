@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.65.765" />
+    <PackageReference Include="Credfeto.Services.Startup" Version="1.1.145.1592" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.8" />
     <PackageReference Include="Serilog" Version="4.3.1" />
@@ -76,7 +77,8 @@
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle\Credfeto.Defi.ApiClients.Pendle.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Database\Credfeto.Defi.Database.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
+    <TrimmerRootAssembly Include="Credfeto.Defi.Storage" />
     <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
   </ItemGroup>

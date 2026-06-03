@@ -1,4 +1,3 @@
-using System;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama;
@@ -9,11 +8,14 @@ using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Json;
-using Microsoft.Extensions.Configuration;
-using Credfeto.Defi.Database;
 using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Services;
+using System;
+using Credfeto.Defi.Storage;
+using Credfeto.Defi.Storage.Configuration;
+using Credfeto.Services.Startup;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Credfeto.Defi.Server;
@@ -28,14 +30,16 @@ internal static class ServiceRegistration
     /// </summary>
     public static WebApplicationBuilder AddDefiServices(this WebApplicationBuilder builder)
     {
-        _ = builder.Services.AddOptions<CacheConfig>().BindConfiguration("Cache");
+        _ = builder.Services.Configure<DatabaseConfiguration>(
+            builder.Configuration.GetSection("Database")
+        );
 
         _ = builder.Services.AddOptions<RpcConfig>().BindConfiguration("Rpc");
 
         _ = builder
-            .Services.AddSingleton<TimeProvider>(TimeProvider.System)
-            .AddSingleton<ApiCacheService>()
-            .AddSingleton<ContractSecurityCacheService>()
+            .Services.AddStorage()
+            .AddRunOnStartupServices()
+            .AddSingleton<TimeProvider>(TimeProvider.System)
             .AddHttpClient()
             .AddSingleton<IDefiLlamaPoolsClient, DefiLlamaPoolsClient>()
             .AddSingleton<IDefiLlamaHacksClient, DefiLlamaHacksClient>()

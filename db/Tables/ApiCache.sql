@@ -1,0 +1,7 @@
+CREATE TABLE [dbo].[ApiCache]
+(
+    [Key]       NVARCHAR(450)  NOT NULL,
+    [Data]      NVARCHAR(MAX)  NOT NULL,
+    [FetchedAt] DATETIMEOFFSET NOT NULL,
+    CONSTRAINT [PK_ApiCache] PRIMARY KEY ([Key])
+);
