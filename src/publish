@@ -40,8 +40,8 @@ echo "Clear $OUTFOLDER" \
   && cd "$OUTFOLDER" \
   && cp "$BASEDIR/../Dockerfile" . \
   && ls -lar \
-  && docker build . -t "credfeto/defi:latest" \
-  && docker run \
+  && sudo docker build . -t "credfeto/defi:latest" \
+  && sudo docker run \
       --name defi \
       -it \
       --rm \
