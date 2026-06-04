@@ -28,8 +28,6 @@
  - any: [ 'src/$Credfeto.Defi.ApiClients.Pendle.Interfaces/**/*' ]
 "credfeto-defi-data-models":
  - any: [ 'src/$Credfeto.Defi.Data.Models/**/*' ]
-"credfeto-defi-database":
- - any: [ 'src/$Credfeto.Defi.Database/**/*' ]
 "credfeto-defi-mcp":
  - any: [ 'src/$Credfeto.Defi.Mcp/**/*' ]
 "credfeto-defi-server":
@@ -38,6 +36,10 @@
  - any: [ 'src/$Credfeto.Defi.Server.Tests/**/*' ]
 "credfeto-defi-services":
  - any: [ 'src/$Credfeto.Defi.Services/**/*' ]
+"credfeto-defi-storage":
+ - any: [ 'src/$Credfeto.Defi.Storage/**/*' ]
+"credfeto-defi-storage-database":
+ - any: [ 'src/$Credfeto.Defi.Storage.Database/**/*' ]
 "dotnet":
  - any: [ 'src/**/*.csproj' ]
 "Editorconfig":

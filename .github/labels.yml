@@ -74,10 +74,6 @@
    color: "96f7d2"
    description: "Changes in Credfeto.Defi.Data.Models project"
 
- - name: "credfeto-defi-database"
-   color: "96f7d2"
-   description: "Changes in Credfeto.Defi.Database project"
-
  - name: "credfeto-defi-mcp"
    color: "96f7d2"
    description: "Changes in Credfeto.Defi.Mcp project"
@@ -93,6 +89,14 @@
  - name: "credfeto-defi-services"
    color: "96f7d2"
    description: "Changes in Credfeto.Defi.Services project"
+
+ - name: "credfeto-defi-storage"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Storage project"
+
+ - name: "credfeto-defi-storage-database"
+   color: "96f7d2"
+   description: "Changes in Credfeto.Defi.Storage.Database project"
 
  - name: "dependencies"
    color: "0366d6"
