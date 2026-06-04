@@ -40,6 +40,8 @@
  - any: [ 'src/Credfeto.Defi.Storage/**/*' ]
 "credfeto-defi-storage-database":
  - any: [ 'src/Credfeto.Defi.Storage.Database/**/*' ]
+"credfeto-defi-storage-tests":
+ - any: [ 'src/Credfeto.Defi.Storage.Tests/**/*' ]
 "dotnet":
  - any: [ 'src/**/*.csproj' ]
 "Editorconfig":
