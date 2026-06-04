@@ -1,16 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <DebuggerSupport>true</DebuggerSupport>
     <Description>DeFi Dashboard SQL Server Storage</Description>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Features>strict;flow-analysis</Features>
     <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
+    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
+    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
     <IsTrimmable>true</IsTrimmable>
     <LangVersion>latest</LangVersion>
     <NeutralLanguage>en</NeutralLanguage>
@@ -18,11 +23,6 @@
     <NuGetAuditLevel>low</NuGetAuditLevel>
     <NuGetAuditMode>direct</NuGetAuditMode>
     <Nullable>enable</Nullable>
-    <DebuggerSupport>true</DebuggerSupport>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
-    <IlcOptimizationPreference>Size</IlcOptimizationPreference>
-    <IsPublishable>false</IsPublishable>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/credfeto/recommendations-defi-dashboard</RepositoryUrl>
     <RunAOTCompilation>false</RunAOTCompilation>
@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Credfeto.Defi.Server.Tests" />
+    <InternalsVisibleTo Include="Credfeto.Defi.Storage.Tests" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Credfeto.Database.Interfaces" Version="1.2.204.1980" />
