@@ -28,6 +28,7 @@
   </Folder>
   <Folder Name="/Storage/">
     <Project Path="Credfeto.Defi.Storage.Database/Credfeto.Defi.Storage.Database.csproj" />
+    <Project Path="Credfeto.Defi.Storage.Tests/Credfeto.Defi.Storage.Tests.csproj" />
     <Project Path="Credfeto.Defi.Storage/Credfeto.Defi.Storage.csproj" />
   </Folder>
 </Solution>
