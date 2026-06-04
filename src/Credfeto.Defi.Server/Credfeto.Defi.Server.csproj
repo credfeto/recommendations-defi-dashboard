@@ -47,6 +47,10 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
+    <!-- Microsoft.Data.SqlClient does not fully support Native AOT; suppress the aggregate IL3053 error it produces -->
+    <IlcArg Include="--nowarn:IL3053" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="appsettings.json">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
