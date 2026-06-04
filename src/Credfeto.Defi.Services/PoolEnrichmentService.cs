@@ -7,7 +7,7 @@ using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
-using Credfeto.Defi.Database;
+using Credfeto.Defi.Storage;
 using Credfeto.Defi.Services.Utils;
 
 namespace Credfeto.Defi.Services;

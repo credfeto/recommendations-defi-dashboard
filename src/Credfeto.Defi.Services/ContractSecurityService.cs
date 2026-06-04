@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
 using Credfeto.Defi.Data.Models.Models;
-using Credfeto.Defi.Database;
+using Credfeto.Defi.Storage;
 
 namespace Credfeto.Defi.Services;
 
@@ -97,7 +97,7 @@ public sealed class ContractSecurityService
             {
                 results.Add(cached);
 
-                if (cached.IsProxy is >= 0.5)
+                if (cached.IsProxy is true)
                 {
                     IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
                         chain: chain,
@@ -140,7 +140,7 @@ public sealed class ContractSecurityService
             await this._cache.SetAsync(info: info, cancellationToken: cancellationToken);
             results.Add(info);
 
-            if (info.IsProxy is >= 0.5)
+            if (info.IsProxy is true)
             {
                 await this.ResolveAndCacheProxyImplAsync(
                     chain: chain,
@@ -189,6 +189,23 @@ public sealed class ContractSecurityService
         }
     }
 
+    private static bool? ParseBool(string? val)
+    {
+        if (string.IsNullOrEmpty(val))
+        {
+            return null;
+        }
+
+        return double.TryParse(
+            s: val,
+            style: NumberStyles.Any,
+            provider: CultureInfo.InvariantCulture,
+            result: out double n
+        )
+            ? n >= 0.5
+            : null;
+    }
+
     private static double? ParseNum(string? val)
     {
         if (string.IsNullOrEmpty(val))
@@ -218,14 +235,14 @@ public sealed class ContractSecurityService
             Chain = chain,
             Address = address.ToLowerInvariant(),
             ParentAddress = parentAddress,
-            IsOpenSource = ParseNum(raw.IsOpenSource),
-            IsHoneypot = ParseNum(raw.IsHoneypot),
-            IsProxy = ParseNum(raw.IsProxy),
+            IsOpenSource = ParseBool(raw.IsOpenSource),
+            IsHoneypot = ParseBool(raw.IsHoneypot),
+            IsProxy = ParseBool(raw.IsProxy),
             BuyTax = ParseNum(raw.BuyTax),
             SellTax = ParseNum(raw.SellTax),
             TransferTax = ParseNum(raw.TransferTax),
-            CannotBuy = ParseNum(raw.CannotBuy),
-            HoneypotWithSameCreator = ParseNum(raw.HoneypotWithSameCreator),
+            CannotBuy = ParseBool(raw.CannotBuy),
+            HoneypotWithSameCreator = ParseBool(raw.HoneypotWithSameCreator),
             TokenName = raw.TokenName,
             TokenSymbol = raw.TokenSymbol,
         };

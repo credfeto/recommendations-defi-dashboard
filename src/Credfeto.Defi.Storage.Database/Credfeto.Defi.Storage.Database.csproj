@@ -1,71 +1,98 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
+  <!-- SQLProj Github repo https://github.com/rr-wfm/MSBuild.Sdk.SqlProj -->
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
+    <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+    <CodeAnalysisRules>
+      -Microsoft.Rules.Data.SR0007;
+      -SqlServer.Rules.SRD0003;
+      -SqlServer.Rules.SRD0005;
+      -SqlServer.Rules.SRD0009;
+      -SqlServer.Rules.SRD0010;
+      -SqlServer.Rules.SRD0013;
+      -SqlServer.Rules.SRD0019;
+      -SqlServer.Rules.SRD0020;
+      -SqlServer.Rules.SRD0028;
+      -SqlServer.Rules.SRD0030;
+      -SqlServer.Rules.SRD0033;
+      -SqlServer.Rules.SRD0034;
+      -SqlServer.Rules.SRD0038;
+      -SqlServer.Rules.SRD0039;
+      -SqlServer.Rules.SRD0047;
+      -SqlServer.Rules.SRD0063;
+      -SqlServer.Rules.SRD0068;
+      -SqlServer.Rules.SRN0007;
+      -SqlServer.Rules.SRP0001;
+      -SqlServer.Rules.SRP0014;
+      -SqlServer.Rules.SRP0016;
+      -SqlServer.Rules.SRP0018;
+      -SqlServer.Rules.SRP0024;
+      -Smells.SML003;
+      -Smells.SML004;
+      -Smells.SML034;
+      -SqlServer.Rules.SRD0071;
+      -SqlServer.Rules.SRD0700;
+      -SqlServer.Rules.SRD0701;
+      -SqlServer.Rules.SRD0703;
+      -SqlServer.Rules.SRD0704;
+      -SqlServer.Rules.SRD0046;
+    </CodeAnalysisRules>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <Collation>SQL_Latin1_General_CP1_CI_AS</Collation>
     <DebuggerSupport>true</DebuggerSupport>
-    <Description>DeFi Dashboard Server Tests</Description>
+    <DeployOnPublish>False</DeployOnPublish>
+    <Description>DeFi Dashboard SQL Server Database Schema</Description>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Features>strict;flow-analysis</Features>
+    <GenerateCreateScript>True</GenerateCreateScript>
     <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
     <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
     <IlcOptimizationPreference>Size</IlcOptimizationPreference>
     <ImplicitUsings>disable</ImplicitUsings>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
     <LangVersion>latest</LangVersion>
-    <NeutralLanguage>en</NeutralLanguage>
+    <ModelCollation>1033, CI</ModelCollation>
     <NuGetAudit>true</NuGetAudit>
-    <NuGetAuditLevel>high</NuGetAuditLevel>
-    <NuGetAuditMode>direct</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <NuGetAuditMode>all</NuGetAuditMode>
     <Nullable>enable</Nullable>
-    <OptimizationPreference>speed</OptimizationPreference>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
+    <RecoveryMode>Full</RecoveryMode>
+    <RepositoryUrl>https://github.com/credfeto/recommendations-defi-dashboard</RepositoryUrl>
     <RunAOTCompilation>false</RunAOTCompilation>
+    <RunSqlCodeAnalysis>True</RunSqlCodeAnalysis>
+    <SqlServerVersion>Sql160</SqlServerVersion>
     <TargetFramework>net10.0</TargetFramework>
     <TieredPGO>true</TieredPGO>
+    <TreatTSqlWarningsAsErrors>True</TreatTSqlWarningsAsErrors>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     <WarningsAsErrors />
   </PropertyGroup>
-  <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko\Credfeto.Defi.ApiClients.CoinGecko.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko.Interfaces\Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama.Interfaces\Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus.Interfaces\Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle\Credfeto.Defi.ApiClients.Pendle.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle.Interfaces\Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Server\Credfeto.Defi.Server.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="ErikEJ.DacFX.SqlServer.Rules" Version="5.0.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="ErikEJ.DacFX.TSQLSmellSCA" Version="4.2.0" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.2.0.1978" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="FunFair.Test.Source.Generator" Version="6.2.25.2243" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="3.0.98" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Philips.CodeAnalysis.DuplicateCodeAnalyzer" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Philips.CodeAnalysis.MaintainabilityAnalyzers" Version="2.0.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Roslynator.Analyzers" Version="4.15.0" PrivateAssets="All" ExcludeAssets="runtime" Condition="Exists('$(SolutionDir)DoesNotExist.props')" />
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SmartAnalyzers.CSharpExtensions.Annotations" Version="4.2.11" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="ToStringWithoutOverrideAnalyzer" Version="0.6.0" PrivateAssets="All" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\db\**\*.sql" />
   </ItemGroup>
 </Project>

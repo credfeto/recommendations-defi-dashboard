@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,11 +10,11 @@ using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.Pendle;
-using Credfeto.Defi.Database;
 using Credfeto.Defi.Data.Models.Config;
-using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Services;
+using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,32 +24,18 @@ using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
 
-public sealed class DefiMcpToolsTests : TestBase, IDisposable
+public sealed class DefiMcpToolsTests : TestBase
 {
-    private readonly string _tempDir;
     private readonly ApiCacheService _apiCache;
     private readonly ContractSecurityCacheService _securityCache;
     private readonly FakeTimeProvider _timeProvider;
 
     public DefiMcpToolsTests()
     {
-        this._tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         this._timeProvider = new FakeTimeProvider();
-
-        IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = this._tempDir });
-        this._apiCache = new ApiCacheService(config: options, timeProvider: this._timeProvider);
-        this._securityCache = new ContractSecurityCacheService(config: options, timeProvider: this._timeProvider);
-    }
-
-    public void Dispose()
-    {
-        this._apiCache.Dispose();
-        this._securityCache.Dispose();
-
-        if (Directory.Exists(this._tempDir))
-        {
-            Directory.Delete(path: this._tempDir, recursive: true);
-        }
+        FakeDatabase database = new();
+        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
+        this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
     }
 
     private static IHttpClientFactory CreateMockedFactory(HttpClient httpClient)

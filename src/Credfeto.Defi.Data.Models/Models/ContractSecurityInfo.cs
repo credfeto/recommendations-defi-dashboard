@@ -24,19 +24,19 @@ public sealed record ContractSecurityInfo
     public string? ParentAddress { get; init; }
 
     /// <summary>
-    ///     1 = open source, 0 = not open source, null = unknown.
+    ///     True = open source, false = not open source, null = unknown.
     /// </summary>
-    public double? IsOpenSource { get; init; }
+    public bool? IsOpenSource { get; init; }
 
     /// <summary>
-    ///     1 = honeypot, 0 = not honeypot, null = unknown.
+    ///     True = honeypot, false = not honeypot, null = unknown.
     /// </summary>
-    public double? IsHoneypot { get; init; }
+    public bool? IsHoneypot { get; init; }
 
     /// <summary>
-    ///     1 = proxy contract, 0 = not proxy, null = unknown.
+    ///     True = proxy contract, false = not proxy, null = unknown.
     /// </summary>
-    public double? IsProxy { get; init; }
+    public bool? IsProxy { get; init; }
 
     /// <summary>
     ///     Buy tax as a decimal fraction (e.g. 0.05 = 5%).
@@ -54,14 +54,14 @@ public sealed record ContractSecurityInfo
     public double? TransferTax { get; init; }
 
     /// <summary>
-    ///     1 = cannot buy, 0 = can buy, null = unknown.
+    ///     True = cannot buy, false = can buy, null = unknown.
     /// </summary>
-    public double? CannotBuy { get; init; }
+    public bool? CannotBuy { get; init; }
 
     /// <summary>
-    ///     1 = honeypot with same creator exists, null = unknown.
+    ///     True = honeypot with same creator exists, null = unknown.
     /// </summary>
-    public double? HoneypotWithSameCreator { get; init; }
+    public bool? HoneypotWithSameCreator { get; init; }
 
     /// <summary>
     ///     Token name as reported by the contract.

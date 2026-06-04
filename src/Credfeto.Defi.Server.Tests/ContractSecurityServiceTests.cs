@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus;
-using Credfeto.Defi.Database;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services;
+using Credfeto.Defi.Storage;
+using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,46 +20,89 @@ using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
 
-public sealed class ContractSecurityServiceTests : TestBase, IDisposable
+public sealed class ContractSecurityServiceTests : TestBase
 {
-    private readonly string _tempDir;
+    private static readonly DateTimeOffset FixedNow = new(year: 2024, month: 6, day: 1, hour: 12, minute: 0, second: 0, offset: TimeSpan.Zero);
+
     private readonly FakeTimeProvider _timeProvider;
+    private readonly FakeDatabase _database;
     private readonly ContractSecurityCacheService _cacheService;
 
     public ContractSecurityServiceTests()
     {
-        this._tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        this._timeProvider = new FakeTimeProvider();
-        IOptions<CacheConfig> options = Options.Create(new CacheConfig { DbDirectory = this._tempDir });
-        this._cacheService = new ContractSecurityCacheService(config: options, timeProvider: this._timeProvider);
+        this._timeProvider = new FakeTimeProvider(startDateTime: FixedNow);
+        this._database = new FakeDatabase();
+        this._cacheService = new ContractSecurityCacheService(database: this._database, timeProvider: this._timeProvider);
     }
 
-    public void Dispose()
+    private static ContractSecurityRow BuildRow(string chain, string address, bool? isProxy, string? parentAddress = null)
     {
-        this._cacheService.Dispose();
-
-        if (Directory.Exists(this._tempDir))
-        {
-            Directory.Delete(path: this._tempDir, recursive: true);
-        }
+        return new ContractSecurityRow(
+            Chain: chain,
+            Address: address,
+            ParentAddress: parentAddress,
+            IsOpenSource: null,
+            IsHoneypot: null,
+            IsProxy: isProxy,
+            BuyTax: null,
+            SellTax: null,
+            TransferTax: null,
+            CannotBuy: null,
+            HoneypotWithSameCreator: null,
+            TokenName: null,
+            TokenSymbol: null,
+            CheckedAt: FixedNow - TimeSpan.FromHours(1)
+        );
     }
 
     private static GoPlusClient CreateGoPlusClient(HttpClient httpClient)
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
         factory.CreateClient(Arg.Any<string>()).Returns(httpClient);
-        ILogger<GoPlusClient> logger = GetSubstitute<ILogger<GoPlusClient>>();
 
-        return new GoPlusClient(httpClientFactory: factory, logger: logger);
+        return new GoPlusClient(httpClientFactory: factory, logger: GetSubstitute<ILogger<GoPlusClient>>());
+    }
+
+    private static GoPlusClient CreateMultiResponseGoPlusClient(string[] responses)
+    {
+        using MultiResponseHttpHandler handler = new(responses);
+        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(handler));
+
+        return new GoPlusClient(httpClientFactory: factory, logger: GetSubstitute<ILogger<GoPlusClient>>());
     }
 
     private static ProxyResolverService CreateNoOpProxyResolver()
     {
-        IOptions<RpcConfig> options = Options.Create(new RpcConfig());
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
-        ILogger<ProxyResolverService> logger = GetSubstitute<ILogger<ProxyResolverService>>();
 
-        return new ProxyResolverService(rpcConfig: options, httpClientFactory: factory, logger: logger);
+        return new ProxyResolverService(
+            rpcConfig: Options.Create(new RpcConfig()),
+            httpClientFactory: factory,
+            logger: GetSubstitute<ILogger<ProxyResolverService>>()
+        );
+    }
+
+    private static ProxyResolverService CreateProxyResolverWithRpc(string rpcUrl, string[] rpcResponses)
+    {
+        using MultiResponseHttpHandler rpcHandler = new(rpcResponses);
+        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(rpcHandler));
+
+        return new ProxyResolverService(
+            rpcConfig: Options.Create(new RpcConfig { Ethereum = rpcUrl }),
+            httpClientFactory: factory,
+            logger: GetSubstitute<ILogger<ProxyResolverService>>()
+        );
+    }
+
+    private ContractSecurityService CreateService(GoPlusClient goPlusClient, ProxyResolverService proxyResolver)
+    {
+        return new ContractSecurityService(
+            goPlusClient: goPlusClient,
+            cache: this._cacheService,
+            proxyResolver: proxyResolver
+        );
     }
 
     [Fact]
@@ -68,13 +111,9 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
         using HttpClient httpClient = new(handler);
 
-        GoPlusClient goPlusClient = CreateGoPlusClient(httpClient);
-        ProxyResolverService proxyResolver = CreateNoOpProxyResolver();
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
         );
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
@@ -91,27 +130,14 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
-        ContractSecurityInfo cachedInfo = new()
-        {
-            Chain = "Ethereum",
-            Address = ADDRESS,
-            IsOpenSource = 1.0,
-            IsHoneypot = 0.0,
-            IsProxy = 0.0,
-        };
-
-        await this._cacheService.SetAsync(info: cachedInfo, cancellationToken: this.CancellationToken());
+        this._database.WithReturn<ContractSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
 
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.InternalServerError));
         using HttpClient httpClient = new(handler);
 
-        GoPlusClient goPlusClient = CreateGoPlusClient(httpClient);
-        ProxyResolverService proxyResolver = CreateNoOpProxyResolver();
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
         );
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
@@ -139,13 +165,9 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
         );
         using HttpClient httpClient = new(handler);
 
-        GoPlusClient goPlusClient = CreateGoPlusClient(httpClient);
-        ProxyResolverService proxyResolver = CreateNoOpProxyResolver();
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
         );
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
@@ -156,7 +178,7 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
 
         Assert.Single(result);
         Assert.Equal(expected: ADDRESS, actual: result[0].Address);
-        Assert.Equal(expected: 1.0, actual: result[0].IsOpenSource);
+        Assert.True(result[0].IsOpenSource);
     }
 
     [Fact]
@@ -165,34 +187,17 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
         const string PROXY_ADDRESS = "0xproxy00000000000000000000000000000000aa";
         const string IMPL_ADDRESS = "0ximpl000000000000000000000000000000000bb";
 
-        ContractSecurityInfo proxyInfo = new()
-        {
-            Chain = "Ethereum",
-            Address = PROXY_ADDRESS,
-            IsProxy = 1.0, // Is a proxy
-        };
-
-        ContractSecurityInfo implInfo = new()
-        {
-            Chain = "Ethereum",
-            Address = IMPL_ADDRESS,
-            ParentAddress = PROXY_ADDRESS,
-            IsProxy = 0.0,
-        };
-
-        await this._cacheService.SetAsync(info: proxyInfo, cancellationToken: this.CancellationToken());
-        await this._cacheService.SetAsync(info: implInfo, cancellationToken: this.CancellationToken());
+        this._database.WithReturn<ContractSecurityRow?>(BuildRow("Ethereum", PROXY_ADDRESS, isProxy: true));
+        this._database.WithReturn<IReadOnlyList<ContractSecurityRow>>(
+            [BuildRow("Ethereum", IMPL_ADDRESS, isProxy: false, parentAddress: PROXY_ADDRESS)]
+        );
 
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
         using HttpClient httpClient = new(handler);
 
-        GoPlusClient goPlusClient = CreateGoPlusClient(httpClient);
-        ProxyResolverService proxyResolver = CreateNoOpProxyResolver();
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
         );
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
@@ -201,7 +206,6 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
             cancellationToken: this.CancellationToken()
         );
 
-        // Should include both proxy and implementation
         Assert.Equal(expected: 2, actual: result.Count);
     }
 
@@ -209,8 +213,6 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
     public async Task GetContractSecurityForAddressesAsync_GoPlusAddressNotFound_SkipsItAsync()
     {
         const string ADDRESS = "0xdeadbeef0000000000000000000000000000dead";
-
-        // GoPlus returns nothing for this address
         const string JSON = """{"code":1,"result":{}}""";
 
         using FakeHttpHandler handler = new(
@@ -221,13 +223,9 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
         );
         using HttpClient httpClient = new(handler);
 
-        GoPlusClient goPlusClient = CreateGoPlusClient(httpClient);
-        ProxyResolverService proxyResolver = CreateNoOpProxyResolver();
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
         );
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
@@ -243,8 +241,6 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
     public async Task GetContractSecurityForAddressesAsync_ProxyContract_NoRpcConfigured_ImplNotResolvedAsync()
     {
         const string PROXY_ADDRESS = "0xc0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-
-        // GoPlus returns is_proxy=1 for PROXY_ADDRESS
         string goPlusJson =
             "{\"code\":1,\"result\":{\""
             + PROXY_ADDRESS
@@ -258,15 +254,9 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
         );
         using HttpClient httpClient = new(handler);
 
-        GoPlusClient goPlusClient = CreateGoPlusClient(httpClient);
-
-        // No-op proxy resolver: RpcConfig has no URL so ResolveProxyImplementationAsync returns null
-        ProxyResolverService proxyResolver = CreateNoOpProxyResolver();
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
         );
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
@@ -275,55 +265,25 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
             cancellationToken: this.CancellationToken()
         );
 
-        // Should include the proxy itself, but no implementation (resolver returned null)
         Assert.Single(result);
         Assert.Equal(expected: PROXY_ADDRESS, actual: result[0].Address);
-        Assert.Equal(expected: 1.0, actual: result[0].IsProxy);
+        Assert.True(result[0].IsProxy);
     }
 
     [Fact]
     public async Task GetContractSecurityForAddressesAsync_ProxyContract_GoPlusReturnsNoDataForImplAddress_OnlyProxyReturnedAsync()
     {
         const string PROXY_ADDRESS = "0xb0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-
-        // GoPlus returns is_proxy=1 for PROXY_ADDRESS
-        string goPlusJson1 =
-            "{\"code\":1,\"result\":{\""
-            + PROXY_ADDRESS
-            + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"1\"}}}";
-        // RPC returns implementation slot for the proxy
+        string goPlusJson1 = BuildProxyGoPlusJson(PROXY_ADDRESS);
         const string IMPL_SLOT = "0x0000000000000000000000009999567890abcdef9999567890abcdef99995678";
-        const string RPC_JSON = "{\"jsonrpc\":\"2.0\",\"result\":\"" + IMPL_SLOT + "\",\"id\":1}";
-        // GoPlus returns an EMPTY result for the impl address (address not found)
-        const string EMPTY_GOPLUS_JSON = "{\"code\":1,\"result\":{}}";
 
-        using MultiResponseHttpHandler goPlusHandler = new([goPlusJson1, EMPTY_GOPLUS_JSON]);
-
-        IHttpClientFactory goPlusFactory = GetSubstitute<IHttpClientFactory>();
-        goPlusFactory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(goPlusHandler));
-        GoPlusClient goPlusClient = new(
-            httpClientFactory: goPlusFactory,
-            logger: GetSubstitute<ILogger<GoPlusClient>>()
+        GoPlusClient goPlusClient = CreateMultiResponseGoPlusClient([goPlusJson1, """{"code":1,"result":{}}"""]);
+        ProxyResolverService proxyResolver = CreateProxyResolverWithRpc(
+            rpcUrl: "https://rpc.example.com",
+            rpcResponses: [BuildRpcSlotJson(IMPL_SLOT), BuildRpcSlotJson(IMPL_SLOT), BuildRpcSlotJson(IMPL_SLOT)]
         );
 
-        RpcConfig rpcConfig = new() { Ethereum = "https://rpc.example.com" };
-        IOptions<RpcConfig> rpcOptions = Options.Create(rpcConfig);
-
-        using MultiResponseHttpHandler rpcHandler = new([RPC_JSON, RPC_JSON, RPC_JSON]);
-        IHttpClientFactory rpcFactory = GetSubstitute<IHttpClientFactory>();
-        rpcFactory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(rpcHandler));
-
-        ProxyResolverService proxyResolver = new(
-            rpcConfig: rpcOptions,
-            httpClientFactory: rpcFactory,
-            logger: GetSubstitute<ILogger<ProxyResolverService>>()
-        );
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
-        );
+        ContractSecurityService service = this.CreateService(goPlusClient: goPlusClient, proxyResolver: proxyResolver);
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
             chain: "Ethereum",
@@ -331,7 +291,6 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
             cancellationToken: this.CancellationToken()
         );
 
-        // Should include the proxy, but no implementation (GoPlus returned empty for impl)
         Assert.Single(result);
         Assert.Equal(expected: PROXY_ADDRESS, actual: result[0].Address);
     }
@@ -341,48 +300,20 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
     {
         const string PROXY_ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
         const string IMPL_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678";
-
-        // GoPlus returns is_proxy=1 for PROXY_ADDRESS
-        string goPlusJson1 =
-            "{\"code\":1,\"result\":{\""
-            + PROXY_ADDRESS
-            + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"1\"}}}";
-        // RPC returns implementation slot
         const string IMPL_SLOT = "0x0000000000000000000000001234567890abcdef1234567890abcdef12345678";
-        const string RPC_JSON = "{\"jsonrpc\":\"2.0\",\"result\":\"" + IMPL_SLOT + "\",\"id\":1}";
-        // GoPlus returns info for IMPL_ADDRESS (second GoPlus call, NOT interleaved with RPC calls)
+
         string goPlusJson2 =
             "{\"code\":1,\"result\":{\""
             + IMPL_ADDRESS
             + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"0\"}}}";
 
-        using MultiResponseHttpHandler goPlusHandler = new([goPlusJson1, goPlusJson2]);
-
-        IHttpClientFactory goPlusFactory = GetSubstitute<IHttpClientFactory>();
-        goPlusFactory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(goPlusHandler));
-        GoPlusClient goPlusClient = new(
-            httpClientFactory: goPlusFactory,
-            logger: GetSubstitute<ILogger<GoPlusClient>>()
+        GoPlusClient goPlusClient = CreateMultiResponseGoPlusClient([BuildProxyGoPlusJson(PROXY_ADDRESS), goPlusJson2]);
+        ProxyResolverService proxyResolver = CreateProxyResolverWithRpc(
+            rpcUrl: "https://rpc.example.com",
+            rpcResponses: [BuildRpcSlotJson(IMPL_SLOT), BuildRpcSlotJson(IMPL_SLOT), BuildRpcSlotJson(IMPL_SLOT)]
         );
 
-        RpcConfig rpcConfig = new() { Ethereum = "https://rpc.example.com" };
-        IOptions<RpcConfig> rpcOptions = Options.Create(rpcConfig);
-
-        using MultiResponseHttpHandler rpcHandler = new([RPC_JSON, RPC_JSON, RPC_JSON]);
-        IHttpClientFactory rpcFactory = GetSubstitute<IHttpClientFactory>();
-        rpcFactory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(rpcHandler));
-
-        ProxyResolverService proxyResolver = new(
-            rpcConfig: rpcOptions,
-            httpClientFactory: rpcFactory,
-            logger: GetSubstitute<ILogger<ProxyResolverService>>()
-        );
-
-        ContractSecurityService service = new(
-            goPlusClient: goPlusClient,
-            cache: this._cacheService,
-            proxyResolver: proxyResolver
-        );
+        ContractSecurityService service = this.CreateService(goPlusClient: goPlusClient, proxyResolver: proxyResolver);
 
         IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
             chain: "Ethereum",
@@ -390,8 +321,17 @@ public sealed class ContractSecurityServiceTests : TestBase, IDisposable
             cancellationToken: this.CancellationToken()
         );
 
-        // Should include at least the proxy itself
         Assert.NotEmpty(result);
+    }
+
+    private static string BuildProxyGoPlusJson(string address)
+    {
+        return "{\"code\":1,\"result\":{\"" + address + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"1\"}}}";
+    }
+
+    private static string BuildRpcSlotJson(string slot)
+    {
+        return "{\"jsonrpc\":\"2.0\",\"result\":\"" + slot + "\",\"id\":1}";
     }
 
     private sealed class MultiResponseHttpHandler : HttpMessageHandler
