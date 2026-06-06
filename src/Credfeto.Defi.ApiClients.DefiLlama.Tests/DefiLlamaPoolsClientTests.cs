@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.ApiClients.DefiLlama.Tests;
 
 public sealed class DefiLlamaPoolsClientTests : TestBase
 {
@@ -70,6 +70,25 @@ public sealed class DefiLlamaPoolsClientTests : TestBase
     public async Task FetchPoolsAsync_NullDataInResponse_ReturnsEmptyListAsync()
     {
         const string JSON = """{"data":null}""";
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        DefiLlamaPoolsClient client = CreateClient(httpClient);
+
+        IReadOnlyList<RawPool> pools = await client.FetchPoolsAsync(this.CancellationToken());
+
+        Assert.Empty(pools);
+    }
+
+    [Fact]
+    public async Task FetchPoolsAsync_NullResponse_ReturnsEmptyListAsync()
+    {
+        const string JSON = "null";
         using FakeHttpHandler handler = new(
             new HttpResponseMessage(HttpStatusCode.OK)
             {

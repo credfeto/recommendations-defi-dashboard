@@ -36,10 +36,6 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Credfeto.Defi.Server.Tests" />
-    <InternalsVisibleTo Include="Credfeto.Defi.Storage.Tests" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Credfeto.Database.Interfaces" Version="1.2.204.1980" />
     <PackageReference Include="Credfeto.Database.SqlServer" Version="1.2.204.1980" />
     <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.145.1592" />
