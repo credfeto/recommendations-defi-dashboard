@@ -83,10 +83,7 @@ jobs:
         run: echo "CHANGES=$(git diff --exit-code --no-patch --merge-base origin/main CHANGELOG.md 2> /dev/null && echo 0 || echo $?)" >> "$GITHUB_ENV"
 
       - name: "Report unchanged"
-        if: >-
-          (github.actor != 'dependabot[bot]' && !endsWith(github.repository , '-template')) &&
-          env.CHANGES == '0' &&
-          !contains(github.event.pull_request.labels.*.name, 'Changelog Not Required')
+        if: (github.actor != 'dependabot[bot]' && !endsWith(github.repository , '-template')) && env.CHANGES == '0'
         uses: actions/github-script@v9.0.0
         with:
           script: |
