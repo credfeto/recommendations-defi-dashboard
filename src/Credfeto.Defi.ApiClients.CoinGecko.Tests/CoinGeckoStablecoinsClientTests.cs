@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,10 +11,12 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.ApiClients.CoinGecko.Tests;
 
 public sealed class CoinGeckoStablecoinsClientTests : TestBase
 {
+    private const int FULL_PAGE_SIZE = 250;
+
     private static CoinGeckoStablecoinsClient CreateClient(HttpClient httpClient)
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
@@ -22,6 +24,42 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
         ILogger<CoinGeckoStablecoinsClient> logger = GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>();
 
         return new CoinGeckoStablecoinsClient(httpClientFactory: factory, logger: logger);
+    }
+
+    private static CoinGeckoStablecoinsClient CreateClientWithLoggingEnabled(HttpClient httpClient)
+    {
+        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(httpClient);
+        ILogger<CoinGeckoStablecoinsClient> logger = GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>();
+        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+
+        return new CoinGeckoStablecoinsClient(httpClientFactory: factory, logger: logger);
+    }
+
+    private static string BuildStablecoinJson(int count)
+    {
+        StringBuilder sb = new();
+        sb.Append('[');
+
+        for (int i = 0; i < count; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(',');
+            }
+
+            sb.Append("{\"id\":\"stablecoin-");
+            sb.Append(i);
+            sb.Append("\",\"symbol\":\"SC");
+            sb.Append(i);
+            sb.Append("\",\"name\":\"Stablecoin ");
+            sb.Append(i);
+            sb.Append("\",\"current_price\":1.0}");
+        }
+
+        sb.Append(']');
+
+        return sb.ToString();
     }
 
     [Fact]
@@ -64,6 +102,25 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
     }
 
     [Fact]
+    public async Task FetchStablecoinsAsync_NullResponse_ReturnsEmptyListAsync()
+    {
+        const string JSON = "null";
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        CoinGeckoStablecoinsClient client = CreateClient(httpClient);
+
+        IReadOnlyList<CoinGeckoStablecoin> stablecoins = await client.FetchStablecoinsAsync(this.CancellationToken());
+
+        Assert.Empty(stablecoins);
+    }
+
+    [Fact]
     public async Task FetchStablecoinsAsync_HttpError_ReturnsEmptyListAsync()
     {
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.TooManyRequests));
@@ -74,6 +131,32 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
         IReadOnlyList<CoinGeckoStablecoin> stablecoins = await client.FetchStablecoinsAsync(this.CancellationToken());
 
         Assert.Empty(stablecoins);
+    }
+
+    [Fact]
+    public async Task FetchStablecoinsAsync_MultiPage_ReturnsCombinedStablecoinsAsync()
+    {
+        string firstPageJson = BuildStablecoinJson(FULL_PAGE_SIZE);
+        const string secondPageJson =
+            """[{"id":"last-stablecoin","symbol":"LAST","name":"Last Stablecoin","current_price":1.0}]""";
+
+        using MultiResponseHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(firstPageJson, Encoding.UTF8, mediaType: "application/json"),
+            },
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(secondPageJson, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        CoinGeckoStablecoinsClient client = CreateClient(httpClient);
+
+        IReadOnlyList<CoinGeckoStablecoin> stablecoins = await client.FetchStablecoinsAsync(this.CancellationToken());
+
+        Assert.Equal(expected: FULL_PAGE_SIZE + 1, actual: stablecoins.Count);
     }
 
     [Fact]
@@ -129,6 +212,32 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
         Assert.Empty(coins);
     }
 
+    [Fact]
+    public async Task FetchStablecoinsAsync_HttpErrorWithLoggingEnabled_LogsAndReturnsEmptyListAsync()
+    {
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.TooManyRequests));
+        using HttpClient httpClient = new(handler);
+
+        CoinGeckoStablecoinsClient client = CreateClientWithLoggingEnabled(httpClient);
+
+        IReadOnlyList<CoinGeckoStablecoin> stablecoins = await client.FetchStablecoinsAsync(this.CancellationToken());
+
+        Assert.Empty(stablecoins);
+    }
+
+    [Fact]
+    public async Task FetchCoinListAsync_HttpErrorWithLoggingEnabled_LogsAndReturnsEmptyListAsync()
+    {
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        using HttpClient httpClient = new(handler);
+
+        CoinGeckoStablecoinsClient client = CreateClientWithLoggingEnabled(httpClient);
+
+        IReadOnlyList<CoinGeckoCoinPlatforms> coins = await client.FetchCoinListAsync(this.CancellationToken());
+
+        Assert.Empty(coins);
+    }
+
     private sealed class FakeHttpHandler : HttpMessageHandler
     {
         private readonly HttpResponseMessage _response;
@@ -148,6 +257,37 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
             if (disposing)
             {
                 this._response.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+    }
+
+    private sealed class MultiResponseHttpHandler : HttpMessageHandler
+    {
+        private readonly Queue<HttpResponseMessage> _responses;
+
+        public MultiResponseHttpHandler(params HttpResponseMessage[] responses)
+        {
+            this._responses = new Queue<HttpResponseMessage>(responses);
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            return Task.FromResult(this._responses.Dequeue());
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (HttpResponseMessage response in this._responses)
+                {
+                    response.Dispose();
+                }
             }
 
             base.Dispose(disposing);
