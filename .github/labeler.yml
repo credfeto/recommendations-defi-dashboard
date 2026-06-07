@@ -18,6 +18,8 @@
  - any: [ 'src/Credfeto.Defi.ApiClients.DefiLlama/**/*' ]
 "credfeto-defi-apiclients-defillama-interfaces":
  - any: [ 'src/Credfeto.Defi.ApiClients.DefiLlama.Interfaces/**/*' ]
+"credfeto-defi-apiclients-defillama-tests":
+ - any: [ 'src/Credfeto.Defi.ApiClients.DefiLlama.Tests/**/*' ]
 "credfeto-defi-apiclients-goplus":
  - any: [ 'src/Credfeto.Defi.ApiClients.GoPlus/**/*' ]
 "credfeto-defi-apiclients-goplus-interfaces":
