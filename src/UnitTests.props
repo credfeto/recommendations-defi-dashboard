@@ -48,11 +48,6 @@
             <_CoverageSettingsLines Include="        &lt;Attribute&gt;^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$&lt;/Attribute&gt;" />
             <_CoverageSettingsLines Include="      &lt;/Exclude&gt;" />
             <_CoverageSettingsLines Include="    &lt;/Attributes&gt;" />
-            <_CoverageSettingsLines Include="    &lt;Sources&gt;" />
-            <_CoverageSettingsLines Include="      &lt;Exclude&gt;" />
-            <_CoverageSettingsLines Include="        &lt;Source&gt;.%2A[/\\]obj[/\\].%2A&lt;/Source&gt;" />
-            <_CoverageSettingsLines Include="      &lt;/Exclude&gt;" />
-            <_CoverageSettingsLines Include="    &lt;/Sources&gt;" />
             <_CoverageSettingsLines Include="  &lt;/CodeCoverage&gt;" />
             <_CoverageSettingsLines Include="&lt;/Configuration&gt;" />
         </ItemGroup>
