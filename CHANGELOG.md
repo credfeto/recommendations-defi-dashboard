@@ -39,6 +39,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Credfeto.Defi.Storage: SQL Server storage layer with DACPAC schema and DBUp migrations
 - Unit tests for Credfeto.Defi.Storage (ApiCacheService, ContractSecurityCacheService, DatabaseConfigurationValidator, DatabaseMigrationService, StorageSetup DI)
 - Credfeto.Defi.ApiClients.DefiLlama.Tests with 100% code coverage
+- Unit tests for Credfeto.Defi.ApiClients.CoinGecko to get 100% code coverage
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
