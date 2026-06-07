@@ -14,6 +14,8 @@
  - any: [ 'src/Credfeto.Defi.ApiClients.CoinGecko/**/*' ]
 "credfeto-defi-apiclients-coingecko-interfaces":
  - any: [ 'src/Credfeto.Defi.ApiClients.CoinGecko.Interfaces/**/*' ]
+"credfeto-defi-apiclients-coingecko-tests":
+ - any: [ 'src/Credfeto.Defi.ApiClients.CoinGecko.Tests/**/*' ]
 "credfeto-defi-apiclients-defillama":
  - any: [ 'src/Credfeto.Defi.ApiClients.DefiLlama/**/*' ]
 "credfeto-defi-apiclients-defillama-interfaces":
