@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,23 +11,24 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.ApiClients.DefiLlama.Tests;
 
-public sealed class DefiLlamaProtocolsClientTests : TestBase
+public sealed class DefiLlamaHacksClientTests : TestBase
 {
-    private static DefiLlamaProtocolsClient CreateClient(HttpClient httpClient)
+    private static DefiLlamaHacksClient CreateClient(HttpClient httpClient)
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
         factory.CreateClient(Arg.Any<string>()).Returns(httpClient);
-        ILogger<DefiLlamaProtocolsClient> logger = GetSubstitute<ILogger<DefiLlamaProtocolsClient>>();
+        ILogger<DefiLlamaHacksClient> logger = GetSubstitute<ILogger<DefiLlamaHacksClient>>();
 
-        return new DefiLlamaProtocolsClient(httpClientFactory: factory, logger: logger);
+        return new DefiLlamaHacksClient(httpClientFactory: factory, logger: logger);
     }
 
     [Fact]
-    public async Task FetchProtocolsAsync_SuccessResponse_ReturnsParsedProtocolsAsync()
+    public async Task FetchHacksAsync_SuccessResponse_ReturnsParsedHacksAsync()
     {
-        const string JSON = """[{"slug":"aave-v3","audits":"3","audit_links":["https://audit.example.com"]}]""";
+        const string JSON =
+            """[{"name":"Protocol X","date":1700000000,"amount":1000000,"classification":"Exploit","technique":"Flash Loan","source":"https://example.com"}]""";
         using FakeHttpHandler handler = new(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -36,16 +37,16 @@ public sealed class DefiLlamaProtocolsClientTests : TestBase
         );
         using HttpClient httpClient = new(handler);
 
-        DefiLlamaProtocolsClient client = CreateClient(httpClient);
+        DefiLlamaHacksClient client = CreateClient(httpClient);
 
-        IReadOnlyList<RawProtocol> protocols = await client.FetchProtocolsAsync(this.CancellationToken());
+        IReadOnlyList<RawHack> hacks = await client.FetchHacksAsync(this.CancellationToken());
 
-        Assert.Single(protocols);
-        Assert.Equal(expected: "aave-v3", actual: protocols[0].Slug);
+        Assert.Single(hacks);
+        Assert.Equal(expected: "Protocol X", actual: hacks[0].Name);
     }
 
     [Fact]
-    public async Task FetchProtocolsAsync_NullResponse_ReturnsEmptyListAsync()
+    public async Task FetchHacksAsync_NullResponse_ReturnsEmptyListAsync()
     {
         const string JSON = "null";
         using FakeHttpHandler handler = new(
@@ -56,24 +57,24 @@ public sealed class DefiLlamaProtocolsClientTests : TestBase
         );
         using HttpClient httpClient = new(handler);
 
-        DefiLlamaProtocolsClient client = CreateClient(httpClient);
+        DefiLlamaHacksClient client = CreateClient(httpClient);
 
-        IReadOnlyList<RawProtocol> protocols = await client.FetchProtocolsAsync(this.CancellationToken());
+        IReadOnlyList<RawHack> hacks = await client.FetchHacksAsync(this.CancellationToken());
 
-        Assert.Empty(protocols);
+        Assert.Empty(hacks);
     }
 
     [Fact]
-    public async Task FetchProtocolsAsync_HttpError_ReturnsEmptyListAsync()
+    public async Task FetchHacksAsync_HttpError_ReturnsEmptyListAsync()
     {
-        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.BadGateway));
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
         using HttpClient httpClient = new(handler);
 
-        DefiLlamaProtocolsClient client = CreateClient(httpClient);
+        DefiLlamaHacksClient client = CreateClient(httpClient);
 
-        IReadOnlyList<RawProtocol> protocols = await client.FetchProtocolsAsync(this.CancellationToken());
+        IReadOnlyList<RawHack> hacks = await client.FetchHacksAsync(this.CancellationToken());
 
-        Assert.Empty(protocols);
+        Assert.Empty(hacks);
     }
 
     private sealed class FakeHttpHandler : HttpMessageHandler

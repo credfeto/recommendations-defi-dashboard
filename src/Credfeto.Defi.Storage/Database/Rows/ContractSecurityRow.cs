@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Credfeto.Defi.Storage.Database.Rows;
 
 [DebuggerDisplay("{Chain}/{Address} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
-internal sealed record ContractSecurityRow(
+public sealed record ContractSecurityRow(
     string Chain,
     string Address,
     string? ParentAddress,

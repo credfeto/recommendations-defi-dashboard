@@ -3,6 +3,7 @@
     <Project Path="Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.CoinGecko/Credfeto.Defi.ApiClients.CoinGecko.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.DefiLlama.Interfaces/Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.DefiLlama.Tests/Credfeto.Defi.ApiClients.DefiLlama.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.DefiLlama/Credfeto.Defi.ApiClients.DefiLlama.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.GoPlus.Interfaces/Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.GoPlus/Credfeto.Defi.ApiClients.GoPlus.csproj" />
