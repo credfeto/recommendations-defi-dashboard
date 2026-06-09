@@ -52,6 +52,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Docker builder stage now installs python3, make, and g++ so better-sqlite3 native module compiles correctly on Alpine
 - SQL: FLOAT columns now use FLOAT(53) explicit precision to satisfy TSQLLint data-type-length rule
 - SQL: apply SQLFluff formatting (indentation, spacing, pascal-case aliases) across all stored procedures and tables
+- CI: added checkout step before local composite actions in on_new_pr.yml to prevent build failures on dependency PRs
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
