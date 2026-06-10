@@ -80,6 +80,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Reorganised solution file into logical folders (Apis, MCP, Models, Server, Services, Storage)
 - ContractSecurityInfo boolean fields (IsOpenSource, IsHoneypot, IsProxy, CannotBuy, HoneypotWithSameCreator) changed from double? to bool?
 - appsettings.json: set example SQL Server connection string for local development
+- SDK - Updated DotNet SDK to 10.0.301
 
 ### Removed
 - Removed husky pre-commit hooks
