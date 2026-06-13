@@ -206,4 +206,51 @@ public sealed class ContractAddressUtilsTests : TestBase
 
         Assert.Equal(expected: 3, actual: addresses.Length);
     }
+
+    [Fact]
+    public void BuildContractAddresses_RewardTokensAreNonContractStrings_Filtered()
+    {
+        RawPool pool = new()
+        {
+            Project = "aave",
+            Chain = "Ethereum",
+            Symbol = "USDC",
+            TvlUsd = 1_000_000,
+            Apy = 5.0,
+            Stablecoin = true,
+            IlRisk = "no",
+            PoolId = "uuid-only",
+            Predictions = new RawPredictions(),
+            RewardTokens = ["TOKEN", "not-an-address"],
+        };
+
+        string[] addresses = ContractAddressUtils.BuildContractAddresses(pool);
+
+        Assert.Empty(addresses);
+    }
+
+    [Fact]
+    public void BuildContractAddresses_RewardTokensMixed_OnlyContractAddressesIncluded()
+    {
+        const string VALID_REWARD = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
+
+        RawPool pool = new()
+        {
+            Project = "aave",
+            Chain = "Ethereum",
+            Symbol = "USDC",
+            TvlUsd = 1_000_000,
+            Apy = 5.0,
+            Stablecoin = true,
+            IlRisk = "no",
+            PoolId = "uuid-only",
+            Predictions = new RawPredictions(),
+            RewardTokens = [VALID_REWARD, "not-a-contract"],
+        };
+
+        string[] addresses = ContractAddressUtils.BuildContractAddresses(pool);
+
+        Assert.Single(addresses);
+        Assert.Equal(expected: "0xdac17f958d2ee523a2206206994597c13d831ec7", actual: addresses[0]);
+    }
 }
