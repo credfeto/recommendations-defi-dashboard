@@ -307,6 +307,55 @@ public sealed class ProxyResolverServiceTests : TestBase
         Assert.Null(result);
     }
 
+    [Theory]
+    [InlineData("Arbitrum")]
+    [InlineData("Base")]
+    [InlineData("BSC")]
+    public async Task ResolveProxyImplementationAsync_EmptyRpcUrlForChain_ReturnsNullAsync(string chain)
+    {
+        RpcConfig config = new();
+        IOptions<RpcConfig> options = Options.Create(config);
+        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
+        ILogger<ProxyResolverService> logger = GetSubstitute<ILogger<ProxyResolverService>>();
+
+        ProxyResolverService service = new(rpcConfig: options, httpClientFactory: factory, logger: logger);
+
+        string? result = await service.ResolveProxyImplementationAsync(
+            chain: chain,
+            proxyAddress: "0xabcdef1234567890abcdef1234567890abcdef12",
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task ResolveProxyImplementationAsync_NullJsonResponse_ReturnsNullAsync()
+    {
+        const string RESPONSE_JSON = "null";
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(RESPONSE_JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        ProxyResolverService service = CreateService(
+            chain: "Ethereum",
+            rpcUrl: "https://rpc.example.com",
+            httpClient: httpClient
+        );
+
+        string? result = await service.ResolveProxyImplementationAsync(
+            chain: "Ethereum",
+            proxyAddress: "0xabcdef1234567890abcdef1234567890abcdef12",
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Null(result);
+    }
+
     private sealed class FakeHttpHandler : HttpMessageHandler
     {
         private readonly HttpResponseMessage _response;

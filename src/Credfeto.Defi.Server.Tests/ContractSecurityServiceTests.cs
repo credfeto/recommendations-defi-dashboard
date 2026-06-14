@@ -22,7 +22,15 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class ContractSecurityServiceTests : TestBase
 {
-    private static readonly DateTimeOffset FixedNow = new(year: 2024, month: 6, day: 1, hour: 12, minute: 0, second: 0, offset: TimeSpan.Zero);
+    private static readonly DateTimeOffset FixedNow = new(
+        year: 2024,
+        month: 6,
+        day: 1,
+        hour: 12,
+        minute: 0,
+        second: 0,
+        offset: TimeSpan.Zero
+    );
 
     private readonly FakeTimeProvider _timeProvider;
     private readonly FakeDatabase _database;
@@ -32,10 +40,18 @@ public sealed class ContractSecurityServiceTests : TestBase
     {
         this._timeProvider = new FakeTimeProvider(startDateTime: FixedNow);
         this._database = new FakeDatabase();
-        this._cacheService = new ContractSecurityCacheService(database: this._database, timeProvider: this._timeProvider);
+        this._cacheService = new ContractSecurityCacheService(
+            database: this._database,
+            timeProvider: this._timeProvider
+        );
     }
 
-    private static ContractSecurityRow BuildRow(string chain, string address, bool? isProxy, string? parentAddress = null)
+    private static ContractSecurityRow BuildRow(
+        string chain,
+        string address,
+        bool? isProxy,
+        string? parentAddress = null
+    )
     {
         return new ContractSecurityRow(
             Chain: chain,
@@ -324,9 +340,81 @@ public sealed class ContractSecurityServiceTests : TestBase
         Assert.NotEmpty(result);
     }
 
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_NonNumericBoolField_ParsedAsNullAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+        // "is_honeypot" has a non-numeric string value — ParseBool returns null for unparseable input
+        const string JSON =
+            "{\"code\":1,\"result\":{\""
+            + ADDRESS
+            + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"maybe\",\"is_proxy\":\"0\"}}}";
+
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Single(result);
+        Assert.Null(result[0].IsHoneypot);
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_NumericTaxFields_ParsedCorrectlyAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+        // Tax fields with numeric string values — ParseNum returns the parsed double
+        // Also tests ParseNum when value is non-parseable ("n/a" → null)
+        const string JSON =
+            "{\"code\":1,\"result\":{\""
+            + ADDRESS
+            + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"0\","
+            + "\"buy_tax\":\"0.05\",\"sell_tax\":\"n/a\",\"transfer_tax\":\"0\"}}}";
+
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Single(result);
+        Assert.Equal(expected: 0.05, actual: result[0].BuyTax);
+        Assert.Null(result[0].SellTax);
+        Assert.Equal(expected: 0.0, actual: result[0].TransferTax);
+    }
+
     private static string BuildProxyGoPlusJson(string address)
     {
-        return "{\"code\":1,\"result\":{\"" + address + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"1\"}}}";
+        return "{\"code\":1,\"result\":{\""
+            + address
+            + "\":{\"is_open_source\":\"1\",\"is_honeypot\":\"0\",\"is_proxy\":\"1\"}}}";
     }
 
     private static string BuildRpcSlotJson(string slot)
