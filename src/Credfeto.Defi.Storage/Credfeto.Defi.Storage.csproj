@@ -36,20 +36,20 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Credfeto.Database.Interfaces" Version="1.2.204.1980" />
-    <PackageReference Include="Credfeto.Database.SqlServer" Version="1.2.204.1980" />
+    <PackageReference Include="Credfeto.Database.Interfaces" Version="1.2.212.2281" />
+    <PackageReference Include="Credfeto.Database.SqlServer" Version="1.2.212.2281" />
     <PackageReference Include="Credfeto.Services.Startup.Interfaces" Version="1.1.145.1592" />
     <PackageReference Include="DbUp-SqlServer" Version="7.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.9" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Credfeto.Database.Source.Generation" Version="1.2.209.2134" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Credfeto.Database.Source.Generation" Version="1.2.212.2281" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="FunFair.CodeAnalysis" Version="7.2.0.1978" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Meziantou.Analyzer" Version="3.0.98" PrivateAssets="All" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" PrivateAssets="All" ExcludeAssets="runtime" />
