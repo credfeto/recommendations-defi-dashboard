@@ -46,7 +46,10 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
-    <!-- Microsoft.Data.SqlClient does not fully support Native AOT; suppress the aggregate IL3053 error it produces -->
+    <!-- Microsoft.Data.SqlClient and its transitive dependencies (Microsoft.Data.SqlClient.Internal.Logging,
+         System.Configuration.ConfigurationManager) do not fully support Native AOT/trimming.
+         Suppress the IL2104 (assembly-level trim warnings) and IL3053 (AOT reflection warnings) they produce. -->
+    <IlcArg Include="--nowarn:IL2104" />
     <IlcArg Include="--nowarn:IL3053" />
   </ItemGroup>
   <ItemGroup>
