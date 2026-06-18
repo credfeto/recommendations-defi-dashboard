@@ -32,11 +32,10 @@
     <OptimizationPreference>speed</OptimizationPreference>
     <OutputType>Exe</OutputType>
     <PublishAot>true</PublishAot>
-    <PublishTrimmed>true</PublishTrimmed>
     <RepositoryUrl>https://github.com/credfeto/recommendations-defi-dashboard</RepositoryUrl>
     <RunAOTCompilation>false</RunAOTCompilation>
     <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
     <TargetFramework>net10.0</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
     <TieredPGO>true</TieredPGO>
@@ -47,7 +46,10 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
-    <!-- Microsoft.Data.SqlClient does not fully support Native AOT; suppress the aggregate IL3053 error it produces -->
+    <!-- Microsoft.Data.SqlClient and its transitive dependencies (Microsoft.Data.SqlClient.Internal.Logging,
+         System.Configuration.ConfigurationManager) do not fully support Native AOT/trimming.
+         Suppress the IL2104 (assembly-level trim warnings) and IL3053 (AOT reflection warnings) they produce. -->
+    <IlcArg Include="--nowarn:IL2104" />
     <IlcArg Include="--nowarn:IL3053" />
   </ItemGroup>
   <ItemGroup>
@@ -65,8 +67,8 @@
   <ItemGroup>
     <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.65.765" />
     <PackageReference Include="Credfeto.Services.Startup" Version="1.1.145.1592" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.9" />
     <PackageReference Include="Serilog" Version="4.3.1" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />

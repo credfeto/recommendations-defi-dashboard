@@ -40,6 +40,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Unit tests for Credfeto.Defi.Storage (ApiCacheService, ContractSecurityCacheService, DatabaseConfigurationValidator, DatabaseMigrationService, StorageSetup DI)
 - Credfeto.Defi.ApiClients.DefiLlama.Tests with 100% code coverage
 - Unit tests for Credfeto.Defi.ApiClients.CoinGecko to get 100% code coverage
+- Unit tests for Credfeto.Defi.Services to achieve 100% code coverage
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
@@ -53,6 +54,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SQL: FLOAT columns now use FLOAT(53) explicit precision to satisfy TSQLLint data-type-length rule
 - SQL: apply SQLFluff formatting (indentation, spacing, pascal-case aliases) across all stored procedures and tables
 - CI: added checkout step before local composite actions in on_new_pr.yml to prevent build failures on dependency PRs
+- Suppress IL2104 trim warnings from Microsoft.Data.SqlClient and its transitive dependencies during Native AOT publish
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
@@ -81,6 +83,9 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - ContractSecurityInfo boolean fields (IsOpenSource, IsHoneypot, IsProxy, CannotBuy, HoneypotWithSameCreator) changed from double? to bool?
 - appsettings.json: set example SQL Server connection string for local development
 - SDK - Updated DotNet SDK to 10.0.301
+- Updated Credfeto.Database.Interfaces, Credfeto.Database.SqlServer to 1.2.212.2281 (brings in Microsoft.Data.SqlClient 7.0.1 with runtime-only System.Configuration.ConfigurationManager reference)
+- Updated Credfeto.Database.Source.Generation to 1.2.212.2281
+- Updated Microsoft.AspNetCore.OpenApi, Microsoft.Extensions.Hosting.Abstractions, Microsoft.Extensions.Hosting.Systemd, Microsoft.Extensions.Http, Microsoft.Extensions.Logging.Abstractions, Microsoft.Extensions.Options to 10.0.9
 
 ### Removed
 - Removed husky pre-commit hooks
