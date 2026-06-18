@@ -43,11 +43,6 @@
             <_CoverageSettingsLines Include="        &lt;ModulePath&gt;.%2A$(_CoverageSisterAssembly).dll&lt;/ModulePath&gt;" />
             <_CoverageSettingsLines Include="      &lt;/Include&gt;" />
             <_CoverageSettingsLines Include="    &lt;/ModulePaths&gt;" />
-            <_CoverageSettingsLines Include="    &lt;Sources&gt;" />
-            <_CoverageSettingsLines Include="      &lt;Exclude&gt;" />
-            <_CoverageSettingsLines Include="        &lt;Source&gt;.%2A[/%5C]obj[/%5C].%2A&lt;/Source&gt;" />
-            <_CoverageSettingsLines Include="      &lt;/Exclude&gt;" />
-            <_CoverageSettingsLines Include="    &lt;/Sources&gt;" />
             <_CoverageSettingsLines Include="    &lt;Attributes&gt;" />
             <_CoverageSettingsLines Include="      &lt;Exclude&gt;" />
             <_CoverageSettingsLines Include="        &lt;Attribute&gt;^System%5C.CodeDom%5C.Compiler%5C.GeneratedCodeAttribute$&lt;/Attribute&gt;" />
