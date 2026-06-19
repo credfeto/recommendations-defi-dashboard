@@ -41,6 +41,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Credfeto.Defi.ApiClients.DefiLlama.Tests with 100% code coverage
 - Unit tests for Credfeto.Defi.ApiClients.CoinGecko to get 100% code coverage
 - Unit tests for Credfeto.Defi.Services to achieve 100% code coverage
+- Credfeto.Defi.ApiClients.GoPlus.Tests with 100% code coverage
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
