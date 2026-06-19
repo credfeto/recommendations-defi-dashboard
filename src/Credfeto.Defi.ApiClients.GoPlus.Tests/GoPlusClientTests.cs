@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.ApiClients.GoPlus.Tests;
 
 public sealed class GoPlusClientTests : TestBase
 {
@@ -90,6 +90,29 @@ public sealed class GoPlusClientTests : TestBase
     public async Task FetchTokenSecurityAsync_NullResult_ReturnsEmptyMapAsync()
     {
         const string JSON = """{"code":1,"result":null}""";
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        GoPlusClient client = CreateClient(httpClient);
+
+        IReadOnlyDictionary<string, GoPlusTokenResult> result = await client.FetchTokenSecurityAsync(
+            chain: "Ethereum",
+            addresses: ["0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task FetchTokenSecurityAsync_NullJsonResponse_ReturnsEmptyMapAsync()
+    {
+        const string JSON = "null";
         using FakeHttpHandler handler = new(
             new HttpResponseMessage(HttpStatusCode.OK)
             {
