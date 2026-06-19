@@ -76,6 +76,10 @@
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.ApiClients.GoPlus.Interfaces project"
 
+- name: "credfeto-defi-apiclients-goplus-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.ApiClients.GoPlus.Tests project"
+
 - name: "credfeto-defi-apiclients-pendle"
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.ApiClients.Pendle project"

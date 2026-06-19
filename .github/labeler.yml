@@ -28,6 +28,8 @@
   - any: ['src/Credfeto.Defi.ApiClients.GoPlus/**/*']
 "credfeto-defi-apiclients-goplus-interfaces":
   - any: ['src/Credfeto.Defi.ApiClients.GoPlus.Interfaces/**/*']
+"credfeto-defi-apiclients-goplus-tests":
+  - any: ['src/Credfeto.Defi.ApiClients.GoPlus.Tests/**/*']
 "credfeto-defi-apiclients-pendle":
   - any: ['src/Credfeto.Defi.ApiClients.Pendle/**/*']
 "credfeto-defi-apiclients-pendle-interfaces":
