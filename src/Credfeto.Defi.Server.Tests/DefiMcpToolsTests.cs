@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.ApiClients.Chainlink;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
@@ -133,12 +134,19 @@ public sealed class DefiMcpToolsTests : TestBase
             proxyResolver: proxyResolver
         );
 
+        ChainlinkStablecoinsClient chainlinkClient = new(
+            rpcConfig: rpcOptions,
+            httpClientFactory: factory,
+            logger: GetSubstitute<ILogger<ChainlinkStablecoinsClient>>()
+        );
+
         PoolEnrichmentService enrichmentService = new(
             llamaPoolsClient: llamaClient,
             pendleClient: pendleClient,
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
+            chainlinkClient: chainlinkClient,
             contractSecurityService: contractSecurityService,
             cache: this._apiCache
         );

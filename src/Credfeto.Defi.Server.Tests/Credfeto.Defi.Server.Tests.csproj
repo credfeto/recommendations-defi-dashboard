@@ -34,6 +34,8 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
+    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Chainlink\Credfeto.Defi.ApiClients.Chainlink.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Chainlink.Interfaces\Credfeto.Defi.ApiClients.Chainlink.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko\Credfeto.Defi.ApiClients.CoinGecko.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko.Interfaces\Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />

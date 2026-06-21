@@ -1,3 +1,5 @@
+using Credfeto.Defi.ApiClients.Chainlink;
+using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama;
@@ -45,6 +47,7 @@ internal static class ServiceRegistration
             .AddSingleton<IDefiLlamaHacksClient, DefiLlamaHacksClient>()
             .AddSingleton<IDefiLlamaProtocolsClient, DefiLlamaProtocolsClient>()
             .AddSingleton<ICoinGeckoStablecoinsClient, CoinGeckoStablecoinsClient>()
+            .AddSingleton<IChainlinkStablecoinsClient, ChainlinkStablecoinsClient>()
             .AddSingleton<IPendleMarketsClient, PendleMarketsClient>()
             .AddSingleton<IGoPlusClient, GoPlusClient>()
             .AddSingleton<ProxyResolverService>()
