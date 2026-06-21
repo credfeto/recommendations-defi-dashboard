@@ -38,6 +38,33 @@ public static partial class DepegService
     }
 
     /// <summary>
+    ///     Builds a unified normalised symbol → price map from CoinGecko and Chainlink data.
+    ///     Chainlink prices take precedence for deduplication (canonical on-chain source).
+    ///     Symbols are lowercased for case-insensitive matching.
+    /// </summary>
+    public static IReadOnlyDictionary<string, decimal> BuildMergedStablecoinPriceMap(
+        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins,
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds)
+    {
+        Dictionary<string, decimal> map = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (CoinGeckoStablecoin coin in coinGeckoCoins)
+        {
+            if (coin.CurrentPrice.HasValue)
+            {
+                _ = map.TryAdd(key: coin.Symbol.ToLowerInvariant(), value: coin.CurrentPrice.Value);
+            }
+        }
+
+        foreach (ChainlinkPriceFeed feed in chainlinkFeeds)
+        {
+            map[feed.Symbol.ToLowerInvariant()] = feed.CurrentPrice;
+        }
+
+        return map;
+    }
+
+    /// <summary>
     ///     Builds a contract address → stablecoin symbol map from the full CoinGecko coin list.
     ///     Only stablecoin IDs present in the price data are indexed.
     /// </summary>

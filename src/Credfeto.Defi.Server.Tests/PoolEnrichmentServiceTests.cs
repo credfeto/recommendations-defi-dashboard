@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.ApiClients.Chainlink;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
@@ -64,6 +65,11 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: GetSubstitute<ILogger<GoPlusClient>>());
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
+        ChainlinkStablecoinsClient chainlinkClient = new(
+            rpcConfig: rpcOptions,
+            httpClientFactory: factory,
+            logger: GetSubstitute<ILogger<ChainlinkStablecoinsClient>>()
+        );
         ProxyResolverService proxyResolver = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
@@ -82,6 +88,7 @@ public sealed class PoolEnrichmentServiceTests : TestBase
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
+            chainlinkClient: chainlinkClient,
             contractSecurityService: contractSecurity,
             cache: this._apiCache
         );

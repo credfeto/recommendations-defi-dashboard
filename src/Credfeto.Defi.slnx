@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/Apis/">
+    <Project Path="Credfeto.Defi.ApiClients.Chainlink.Interfaces/Credfeto.Defi.ApiClients.Chainlink.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Chainlink.Tests/Credfeto.Defi.ApiClients.Chainlink.Tests.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Chainlink/Credfeto.Defi.ApiClients.Chainlink.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.CoinGecko.Tests/Credfeto.Defi.ApiClients.CoinGecko.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.CoinGecko/Credfeto.Defi.ApiClients.CoinGecko.csproj" />

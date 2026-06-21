@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
@@ -23,8 +24,10 @@ public sealed class PoolEnrichmentService
     private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
     private const string CACHE_KEY_STABLECOINS = "coingecko_stablecoins";
     private const string CACHE_KEY_COIN_LIST = "coingecko_coin_list";
+    private const string CACHE_KEY_CHAINLINK_STABLECOINS = "chainlink_stablecoins";
 
     private readonly ApiCacheService _cache;
+    private readonly IChainlinkStablecoinsClient _chainlinkClient;
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly ContractSecurityService _contractSecurityService;
     private readonly IDefiLlamaHacksClient _hacksClient;
@@ -41,6 +44,7 @@ public sealed class PoolEnrichmentService
         IDefiLlamaHacksClient hacksClient,
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
+        IChainlinkStablecoinsClient chainlinkClient,
         ContractSecurityService contractSecurityService,
         ApiCacheService cache
     )
@@ -50,6 +54,7 @@ public sealed class PoolEnrichmentService
         this._hacksClient = hacksClient;
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
+        this._chainlinkClient = chainlinkClient;
         this._contractSecurityService = contractSecurityService;
         this._cache = cache;
     }
@@ -117,19 +122,25 @@ public sealed class PoolEnrichmentService
 
     /// <summary>
     ///     Returns a symbol → price map for stablecoins from the cache or live fetch.
+    ///     Merges CoinGecko and Chainlink data; Chainlink takes precedence.
     /// </summary>
     public async ValueTask<IReadOnlyDictionary<string, decimal>> GetStablecoinPriceMapAsync(
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<CoinGeckoStablecoin> coins = await this._cache.GetOrFetchAsync(
+        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins = await this._cache.GetOrFetchAsync(
             key: CACHE_KEY_STABLECOINS,
             fetcher: this._coinGeckoClient.FetchStablecoinsAsync,
             typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoStablecoin,
-            cancellationToken: cancellationToken
-        );
+            cancellationToken: cancellationToken);
 
-        return DepegService.BuildStablecoinPriceMap(coins);
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await this._cache.GetOrFetchAsync(
+            key: CACHE_KEY_CHAINLINK_STABLECOINS,
+            fetcher: this._chainlinkClient.FetchStablecoinsAsync,
+            typeInfo: AppJsonContext.Default.IReadOnlyListChainlinkPriceFeed,
+            cancellationToken: cancellationToken);
+
+        return DepegService.BuildMergedStablecoinPriceMap(coinGeckoCoins, chainlinkFeeds);
     }
 
     /// <summary>
