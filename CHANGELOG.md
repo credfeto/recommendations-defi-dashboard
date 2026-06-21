@@ -41,6 +41,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Credfeto.Defi.ApiClients.GoPlus.Tests with 100% code coverage
 - Pool access information and contract addresses: each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status, lockup description) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool contract address); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API and MCP `get_pools` tool
 - PoolAccessInfo record type: exposes `kycRequiredForEntry`, `kycRequiredForExit`, `canSwapToExit`, `isLiquid` (`bool?`), and `lockupDescription` (`string?`) — `null` means unknown rather than false
+- Chainlink on-chain price feeds for stablecoin depeg detection (#254)
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
