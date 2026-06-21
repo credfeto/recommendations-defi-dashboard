@@ -11,9 +11,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 ### Security
 
 ### Added
-- **Pool access information** — each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool address field); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API, MCP `get_pools` tool, and five new UI columns (KYC Entry, KYC Exit, Swap Exit, Liquid, Contracts)
-- **`PoolAccessInfo` shared type** — new interface with `kycEntryRequired`, `kycExitRequired`, `canUseSwapToExit`, `isLiquid` (`boolean | null`), and `lockupDescription` (`string | null`); `null` means unknown rather than false
-
 - **`docs/api.http`** — VS Code REST Client examples for all REST API endpoints (`GET /api/pools` and `GET /api/pools/:poolName` for all five pool types: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP)
 
 - **`docker-compose.yml`** — local deployment config bringing up the `defi` service (image `credfeto/defi:latest`, port `443:443`, `./data:/app/data` volume for SQLite persistence) alongside `watchtower` (image `nickfedor/watchtower:latest`, 15-minute poll interval, monitors only the `defi` container via `WATCHTOWER_CONTAINER_LIST`)
@@ -42,6 +39,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Unit tests for Credfeto.Defi.ApiClients.CoinGecko to get 100% code coverage
 - Unit tests for Credfeto.Defi.Services to achieve 100% code coverage
 - Credfeto.Defi.ApiClients.GoPlus.Tests with 100% code coverage
+- Pool access information and contract addresses: each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status, lockup description) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool contract address); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API and MCP `get_pools` tool
+- PoolAccessInfo record type: exposes `kycRequiredForEntry`, `kycRequiredForExit`, `canSwapToExit`, `isLiquid` (`bool?`), and `lockupDescription` (`string?`) — `null` means unknown rather than false
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
