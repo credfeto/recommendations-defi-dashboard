@@ -103,6 +103,18 @@ public sealed class ChainlinkStablecoinsClientTests : TestBase
     }
 
     [Fact]
+    public async Task FetchStablecoinsAsync_NullJsonBody_SkipsFeedAsync()
+    {
+        using FreshJsonResponseHandler handler = new(json: "null");
+
+        ChainlinkStablecoinsClient client = CreateClient(handler);
+
+        IReadOnlyList<ChainlinkPriceFeed> result = await client.FetchStablecoinsAsync(this.CancellationToken());
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public async Task FetchStablecoinsAsync_ShortResponse_SkipsFeedAsync()
     {
         // Response hex is too short to contain answer field
