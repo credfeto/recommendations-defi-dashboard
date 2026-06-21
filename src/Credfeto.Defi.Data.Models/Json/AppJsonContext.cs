@@ -50,6 +50,9 @@ namespace Credfeto.Defi.Data.Models.Json;
 [JsonSerializable(typeof(GoPlusTokenResult))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(IReadOnlyList<string>))]
+[JsonSerializable(typeof(ChainlinkPriceFeed))]
+[JsonSerializable(typeof(ChainlinkPriceFeed[]))]
+[JsonSerializable(typeof(IReadOnlyList<ChainlinkPriceFeed>))]
 [JsonSerializable(typeof(RpcRequest))]
 [JsonSerializable(typeof(RpcResponse))]
 [JsonSourceGenerationOptions(
