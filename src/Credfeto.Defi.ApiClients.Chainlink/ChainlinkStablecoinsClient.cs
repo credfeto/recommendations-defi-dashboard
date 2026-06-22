@@ -83,7 +83,7 @@ public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
 
             if (price is not null)
             {
-                results.Add(price);
+                results.Add(price.Value);
             }
         }
 
@@ -135,7 +135,7 @@ public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
                 return null;
             }
 
-            return new ChainlinkPriceFeed { Symbol = symbol, CurrentPrice = price.Value };
+            return new ChainlinkPriceFeed(symbol, price.Value);
         }
         catch (Exception ex)
         {
