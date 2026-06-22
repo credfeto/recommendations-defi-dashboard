@@ -49,32 +49,32 @@ public sealed class PoolEnrichmentServiceTests : TestBase
 
         PendleMarketsClient pendleClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<PendleMarketsClient>>()
+            logger: this.GetTypedLogger<PendleMarketsClient>()
         );
         DefiLlamaHacksClient hacksClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<DefiLlamaHacksClient>>()
+            logger: this.GetTypedLogger<DefiLlamaHacksClient>()
         );
         DefiLlamaProtocolsClient protocolsClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<DefiLlamaProtocolsClient>>()
+            logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
         );
         CoinGeckoStablecoinsClient coinGeckoClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>()
+            logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
         );
-        GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: GetSubstitute<ILogger<GoPlusClient>>());
+        GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
         ChainlinkStablecoinsClient chainlinkClient = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<ChainlinkStablecoinsClient>>()
+            logger: this.GetTypedLogger<ChainlinkStablecoinsClient>()
         );
         ProxyResolverService proxyResolver = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<ProxyResolverService>>()
+            logger: this.GetTypedLogger<ProxyResolverService>()
         );
 
         ContractSecurityService contractSecurity = new(
