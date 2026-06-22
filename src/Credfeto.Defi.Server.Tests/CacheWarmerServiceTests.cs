@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -28,7 +28,7 @@ public sealed class CacheWarmerServiceTests : TestBase
         this._apiCache = new ApiCacheService(database: new FakeDatabase(), timeProvider: this._timeProvider);
     }
 
-    private static T CreateApiClient<T>(HttpMessageHandler handler)
+    private T CreateApiClient<T>(HttpMessageHandler handler)
         where T : class
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
@@ -40,7 +40,7 @@ public sealed class CacheWarmerServiceTests : TestBase
                 (object)
                     new DefiLlamaPoolsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<DefiLlamaPoolsClient>>()
+                        logger: this.GetTypedLogger<DefiLlamaPoolsClient>()
                     );
         }
 
@@ -50,7 +50,7 @@ public sealed class CacheWarmerServiceTests : TestBase
                 (object)
                     new PendleMarketsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<PendleMarketsClient>>()
+                        logger: this.GetTypedLogger<PendleMarketsClient>()
                     );
         }
 
@@ -60,7 +60,7 @@ public sealed class CacheWarmerServiceTests : TestBase
                 (object)
                     new DefiLlamaHacksClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<DefiLlamaHacksClient>>()
+                        logger: this.GetTypedLogger<DefiLlamaHacksClient>()
                     );
         }
 
@@ -70,7 +70,7 @@ public sealed class CacheWarmerServiceTests : TestBase
                 (object)
                     new DefiLlamaProtocolsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<DefiLlamaProtocolsClient>>()
+                        logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
                     );
         }
 
@@ -80,7 +80,7 @@ public sealed class CacheWarmerServiceTests : TestBase
                 (object)
                     new CoinGeckoStablecoinsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>()
+                        logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
                     );
         }
 
@@ -108,14 +108,14 @@ public sealed class CacheWarmerServiceTests : TestBase
         );
 
         CacheWarmerService warmer = new(
-            llamaPoolsClient: CreateApiClient<DefiLlamaPoolsClient>(handler),
-            pendleClient: CreateApiClient<PendleMarketsClient>(handler),
-            hacksClient: CreateApiClient<DefiLlamaHacksClient>(handler),
-            protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(handler),
-            coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(handler),
+            llamaPoolsClient: this.CreateApiClient<DefiLlamaPoolsClient>(handler),
+            pendleClient: this.CreateApiClient<PendleMarketsClient>(handler),
+            hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(handler),
+            protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(handler),
+            coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(handler),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
-            logger: GetSubstitute<ILogger<CacheWarmerService>>()
+            logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
         Task result = warmer.StartAsync(this.CancellationToken());
@@ -150,14 +150,14 @@ public sealed class CacheWarmerServiceTests : TestBase
 
         // Use a separate warmer to prime all cache entries
         CacheWarmerService primeWarmer = new(
-            llamaPoolsClient: CreateApiClient<DefiLlamaPoolsClient>(primeHandler),
-            pendleClient: CreateApiClient<PendleMarketsClient>(primeHandler),
-            hacksClient: CreateApiClient<DefiLlamaHacksClient>(primeHandler),
-            protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(primeHandler),
-            coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(primeHandler),
+            llamaPoolsClient: this.CreateApiClient<DefiLlamaPoolsClient>(primeHandler),
+            pendleClient: this.CreateApiClient<PendleMarketsClient>(primeHandler),
+            hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(primeHandler),
+            protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(primeHandler),
+            coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(primeHandler),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
-            logger: GetSubstitute<ILogger<CacheWarmerService>>()
+            logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
         await primeWarmer.StartAsync(this.CancellationToken());
@@ -167,14 +167,14 @@ public sealed class CacheWarmerServiceTests : TestBase
         using FreshResponseHttpHandler secondHandler = new([]);
 
         CacheWarmerService warmer = new(
-            llamaPoolsClient: CreateApiClient<DefiLlamaPoolsClient>(secondHandler),
-            pendleClient: CreateApiClient<PendleMarketsClient>(secondHandler),
-            hacksClient: CreateApiClient<DefiLlamaHacksClient>(secondHandler),
-            protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(secondHandler),
-            coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(secondHandler),
+            llamaPoolsClient: this.CreateApiClient<DefiLlamaPoolsClient>(secondHandler),
+            pendleClient: this.CreateApiClient<PendleMarketsClient>(secondHandler),
+            hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(secondHandler),
+            protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(secondHandler),
+            coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(secondHandler),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
-            logger: GetSubstitute<ILogger<CacheWarmerService>>()
+            logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
         await warmer.StartAsync(this.CancellationToken());
@@ -187,14 +187,14 @@ public sealed class CacheWarmerServiceTests : TestBase
         using FreshResponseHttpHandler handler = new([]);
 
         CacheWarmerService warmer = new(
-            llamaPoolsClient: CreateApiClient<DefiLlamaPoolsClient>(handler),
-            pendleClient: CreateApiClient<PendleMarketsClient>(handler),
-            hacksClient: CreateApiClient<DefiLlamaHacksClient>(handler),
-            protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(handler),
-            coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(handler),
+            llamaPoolsClient: this.CreateApiClient<DefiLlamaPoolsClient>(handler),
+            pendleClient: this.CreateApiClient<PendleMarketsClient>(handler),
+            hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(handler),
+            protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(handler),
+            coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(handler),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
-            logger: GetSubstitute<ILogger<CacheWarmerService>>()
+            logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
         Task result = warmer.StopAsync(this.CancellationToken());
