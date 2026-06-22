@@ -44,6 +44,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Firewall script to open Docker ports (8080/tcp, 8081/tcp, 8081/udp, 443/tcp, 443/udp) for private networks using firewall-cmd
 - Default public RPC endpoints (drpc.org) for Ethereum, Arbitrum, Base, and BSC in appsettings.json
 - Chainlink on-chain price feeds for stablecoin depeg detection (#254)
+- Store DefiLlama pools in structured `DefiLlama` schema (Pool, PoolRewardToken, PoolUnderlyingToken tables with TVP sync stored procedures) replacing ApiCache JSON blob (#382)
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
