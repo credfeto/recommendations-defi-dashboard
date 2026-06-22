@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services;
@@ -360,5 +360,125 @@ public sealed class DepegServiceExtendedTests : TestBase
         );
 
         Assert.Empty(alerts);
+    }
+
+    [Fact]
+    public void BuildMergedStablecoinPriceMap_EmptyBothSources_ReturnsEmptyMap()
+    {
+        IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
+            coinGeckoCoins: [],
+            chainlinkFeeds: []
+        );
+
+        Assert.Empty(map);
+    }
+
+    [Fact]
+    public void BuildMergedStablecoinPriceMap_OnlyCoinGecko_ReturnsCoinGeckoPrices()
+    {
+        CoinGeckoStablecoin[] coins =
+        [
+            new CoinGeckoStablecoin
+            {
+                Id = "usd-coin",
+                Symbol = "USDC",
+                Name = "USD Coin",
+                CurrentPrice = 1.0m,
+            },
+        ];
+
+        IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
+            coinGeckoCoins: coins,
+            chainlinkFeeds: []
+        );
+
+        Assert.True(map.ContainsKey("usdc"), "expected 'usdc' to be in merged map");
+        Assert.Equal(expected: 1.0m, actual: map["usdc"]);
+    }
+
+    [Fact]
+    public void BuildMergedStablecoinPriceMap_OnlyChainlink_ReturnsChainlinkPrices()
+    {
+        ChainlinkPriceFeed[] feeds = [new ChainlinkPriceFeed("usdc", 1.0001m)];
+
+        IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
+            coinGeckoCoins: [],
+            chainlinkFeeds: feeds
+        );
+
+        Assert.True(map.ContainsKey("usdc"), "expected 'usdc' to be in merged map");
+        Assert.Equal(expected: 1.0001m, actual: map["usdc"]);
+    }
+
+    [Fact]
+    public void BuildMergedStablecoinPriceMap_ChainlinkOverridesCoinGecko_ChainlinkPriceTakesPrecedence()
+    {
+        CoinGeckoStablecoin[] coins =
+        [
+            new CoinGeckoStablecoin
+            {
+                Id = "usd-coin",
+                Symbol = "USDC",
+                Name = "USD Coin",
+                CurrentPrice = 0.999m,
+            },
+        ];
+
+        ChainlinkPriceFeed[] feeds = [new ChainlinkPriceFeed("usdc", 1.0001m)];
+
+        IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
+            coinGeckoCoins: coins,
+            chainlinkFeeds: feeds
+        );
+
+        Assert.Equal(expected: 1.0001m, actual: map["usdc"]);
+    }
+
+    [Fact]
+    public void BuildMergedStablecoinPriceMap_CoinGeckoWithoutPrice_NotIncluded()
+    {
+        CoinGeckoStablecoin[] coins =
+        [
+            new CoinGeckoStablecoin
+            {
+                Id = "usd-coin",
+                Symbol = "USDC",
+                Name = "USD Coin",
+                CurrentPrice = null,
+            },
+        ];
+
+        IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
+            coinGeckoCoins: coins,
+            chainlinkFeeds: []
+        );
+
+        Assert.Empty(map);
+    }
+
+    [Fact]
+    public void BuildMergedStablecoinPriceMap_BothSources_MergesDistinctSymbols()
+    {
+        CoinGeckoStablecoin[] coins =
+        [
+            new CoinGeckoStablecoin
+            {
+                Id = "tether",
+                Symbol = "USDT",
+                Name = "Tether",
+                CurrentPrice = 1.0m,
+            },
+        ];
+
+        ChainlinkPriceFeed[] feeds = [new ChainlinkPriceFeed("usdc", 1.0001m)];
+
+        IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
+            coinGeckoCoins: coins,
+            chainlinkFeeds: feeds
+        );
+
+        Assert.True(map.ContainsKey("usdt"), "expected 'usdt' from CoinGecko in merged map");
+        Assert.True(map.ContainsKey("usdc"), "expected 'usdc' from Chainlink in merged map");
+        Assert.Equal(expected: 2, actual: map.Count);
     }
 }
