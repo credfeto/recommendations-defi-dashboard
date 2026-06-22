@@ -14,3 +14,7 @@ This is an index of local instructions that apply to just this project.
 
 ## Instruction Files
 <!-- Locally Maintained -->
+
+| File | Load When | Covers |
+| --- | --- | --- |
+| [database.instructions.md](database.instructions.md) | Any `.sql` file is present or database schema work is being done | Schema-per-source layout, TVP sync pattern, mandatory timestamp columns, stored procedure conventions |
