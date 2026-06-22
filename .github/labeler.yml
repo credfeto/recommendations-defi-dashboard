@@ -12,6 +12,12 @@
   - any: ['CHANGELOG.md']
 "Config Change":
   - any: ['src/**/*.json', '!src/global.json']
+"credfeto-defi-apiclients-chainlink":
+  - any: ['src/Credfeto.Defi.ApiClients.Chainlink/**/*']
+"credfeto-defi-apiclients-chainlink-interfaces":
+  - any: ['src/Credfeto.Defi.ApiClients.Chainlink.Interfaces/**/*']
+"credfeto-defi-apiclients-chainlink-tests":
+  - any: ['src/Credfeto.Defi.ApiClients.Chainlink.Tests/**/*']
 "credfeto-defi-apiclients-coingecko":
   - any: ['src/Credfeto.Defi.ApiClients.CoinGecko/**/*']
 "credfeto-defi-apiclients-coingecko-interfaces":
