@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services;
@@ -367,7 +367,8 @@ public sealed class DepegServiceExtendedTests : TestBase
     {
         IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
             coinGeckoCoins: [],
-            chainlinkFeeds: []);
+            chainlinkFeeds: []
+        );
 
         Assert.Empty(map);
     }
@@ -388,7 +389,8 @@ public sealed class DepegServiceExtendedTests : TestBase
 
         IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
             coinGeckoCoins: coins,
-            chainlinkFeeds: []);
+            chainlinkFeeds: []
+        );
 
         Assert.True(map.ContainsKey("usdc"), "expected 'usdc' to be in merged map");
         Assert.Equal(expected: 1.0m, actual: map["usdc"]);
@@ -397,14 +399,12 @@ public sealed class DepegServiceExtendedTests : TestBase
     [Fact]
     public void BuildMergedStablecoinPriceMap_OnlyChainlink_ReturnsChainlinkPrices()
     {
-        ChainlinkPriceFeed[] feeds =
-        [
-            new ChainlinkPriceFeed { Symbol = "usdc", CurrentPrice = 1.0001m },
-        ];
+        ChainlinkPriceFeed[] feeds = [new ChainlinkPriceFeed("usdc", 1.0001m)];
 
         IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
             coinGeckoCoins: [],
-            chainlinkFeeds: feeds);
+            chainlinkFeeds: feeds
+        );
 
         Assert.True(map.ContainsKey("usdc"), "expected 'usdc' to be in merged map");
         Assert.Equal(expected: 1.0001m, actual: map["usdc"]);
@@ -424,14 +424,12 @@ public sealed class DepegServiceExtendedTests : TestBase
             },
         ];
 
-        ChainlinkPriceFeed[] feeds =
-        [
-            new ChainlinkPriceFeed { Symbol = "usdc", CurrentPrice = 1.0001m },
-        ];
+        ChainlinkPriceFeed[] feeds = [new ChainlinkPriceFeed("usdc", 1.0001m)];
 
         IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
             coinGeckoCoins: coins,
-            chainlinkFeeds: feeds);
+            chainlinkFeeds: feeds
+        );
 
         Assert.Equal(expected: 1.0001m, actual: map["usdc"]);
     }
@@ -452,7 +450,8 @@ public sealed class DepegServiceExtendedTests : TestBase
 
         IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
             coinGeckoCoins: coins,
-            chainlinkFeeds: []);
+            chainlinkFeeds: []
+        );
 
         Assert.Empty(map);
     }
@@ -471,14 +470,12 @@ public sealed class DepegServiceExtendedTests : TestBase
             },
         ];
 
-        ChainlinkPriceFeed[] feeds =
-        [
-            new ChainlinkPriceFeed { Symbol = "usdc", CurrentPrice = 1.0001m },
-        ];
+        ChainlinkPriceFeed[] feeds = [new ChainlinkPriceFeed("usdc", 1.0001m)];
 
         IReadOnlyDictionary<string, decimal> map = DepegService.BuildMergedStablecoinPriceMap(
             coinGeckoCoins: coins,
-            chainlinkFeeds: feeds);
+            chainlinkFeeds: feeds
+        );
 
         Assert.True(map.ContainsKey("usdt"), "expected 'usdt' from CoinGecko in merged map");
         Assert.True(map.ContainsKey("usdc"), "expected 'usdc' from Chainlink in merged map");
