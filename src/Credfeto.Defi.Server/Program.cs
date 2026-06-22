@@ -34,9 +34,11 @@ internal static class Program
         {
             WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 
+            builder.Configuration.Sources.Clear();
             _ = builder
                 .Configuration.SetBasePath(builder.Environment.ContentRootPath)
                 .AddJsonFile(path: "appsettings.json", optional: false, reloadOnChange: false)
+                .AddJsonFile(path: "appsettings-local.json", optional: true, reloadOnChange: false)
                 .AddEnvironmentVariables();
 
             ConfigureLogging(builder);
