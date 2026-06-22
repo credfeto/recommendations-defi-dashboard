@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -109,9 +108,10 @@ public sealed class DefiMcpToolsTests : TestBase
         return GetSubstitute<T>();
     }
 
-    private DefiMcpTools CreateMcpTools(HttpClient httpClient)
+    private DefiMcpTools CreateMcpTools(HttpClient httpClient, IDefiLlamaPoolStorage? poolStorage = null)
     {
-        DefiLlamaPoolsClient llamaClient = CreateClient<DefiLlamaPoolsClient>(httpClient);
+        poolStorage ??= new FakePoolStorage();
+
         PendleMarketsClient pendleClient = CreateClient<PendleMarketsClient>(httpClient);
         DefiLlamaHacksClient hacksClient = CreateClient<DefiLlamaHacksClient>(httpClient);
         DefiLlamaProtocolsClient protocolsClient = CreateClient<DefiLlamaProtocolsClient>(httpClient);
@@ -141,13 +141,13 @@ public sealed class DefiMcpToolsTests : TestBase
         );
 
         PoolEnrichmentService enrichmentService = new(
-            llamaPoolsClient: llamaClient,
             pendleClient: pendleClient,
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
             chainlinkClient: chainlinkClient,
             contractSecurityService: contractSecurityService,
+            poolStorage: poolStorage,
             cache: this._apiCache
         );
 
@@ -182,13 +182,11 @@ public sealed class DefiMcpToolsTests : TestBase
     [Fact]
     public async Task GetPoolsAsync_ValidPoolType_EmptySource_ReturnsEmptyListAsync()
     {
-        const string EMPTY_POOLS_JSON = """{"data":[]}""";
         const string EMPTY_ARRAY_JSON = "[]";
 
         int requestCount = 0;
         using MultiResponseHttpHandler handler = new(
             [
-                EMPTY_POOLS_JSON, // llama pools
                 EMPTY_ARRAY_JSON, // pendle
                 EMPTY_ARRAY_JSON, // pendle chain 2
                 EMPTY_ARRAY_JSON, // pendle chain 3
@@ -216,12 +214,10 @@ public sealed class DefiMcpToolsTests : TestBase
     [Fact]
     public async Task GetPoolsAsync_LimitClampsToOne_WhenLimitIsZeroAsync()
     {
-        const string EMPTY_POOLS_JSON = """{"data":[]}""";
         const string EMPTY_ARRAY_JSON = "[]";
 
         using MultiResponseHttpHandler handler = new(
             [
-                EMPTY_POOLS_JSON,
                 EMPTY_ARRAY_JSON,
                 EMPTY_ARRAY_JSON,
                 EMPTY_ARRAY_JSON,
@@ -249,12 +245,10 @@ public sealed class DefiMcpToolsTests : TestBase
     [Fact]
     public async Task GetPoolsAsync_LimitGreaterThan50_ClampsTo50Async()
     {
-        const string EMPTY_POOLS_JSON = """{"data":[]}""";
         const string EMPTY_ARRAY_JSON = "[]";
 
         using MultiResponseHttpHandler handler = new(
             [
-                EMPTY_POOLS_JSON,
                 EMPTY_ARRAY_JSON,
                 EMPTY_ARRAY_JSON,
                 EMPTY_ARRAY_JSON,
@@ -282,14 +276,12 @@ public sealed class DefiMcpToolsTests : TestBase
     [Fact]
     public async Task GetPoolsAsync_WithMorePoolsThanLimit_SlicesToLimitAsync()
     {
-        // Build a pools JSON that has many ETH pools, so slice kicks in
-        // We create pools with ETH in symbol and valid base filter values
-        string poolsJson = BuildEthPoolsJson(count: 20);
         const string EMPTY_ARRAY_JSON = "[]";
+
+        IDefiLlamaPoolStorage poolStorage = new FakePoolStorage(BuildRawEthPools(count: 20));
 
         using MultiResponseHttpHandler handler = new(
             [
-                poolsJson, // llama pools
                 EMPTY_ARRAY_JSON, // pendle chain 1
                 EMPTY_ARRAY_JSON, // pendle chain 2
                 EMPTY_ARRAY_JSON, // pendle chain 3
@@ -302,7 +294,7 @@ public sealed class DefiMcpToolsTests : TestBase
         );
         using HttpClient httpClient = new(handler);
 
-        DefiMcpTools tools = this.CreateMcpTools(httpClient);
+        DefiMcpTools tools = this.CreateMcpTools(httpClient, poolStorage: poolStorage);
 
         // Request only 5 pools; the Slice helper should cap the enrichment input at 5
         IReadOnlyList<Pool> pools = await tools.GetPoolsAsync(
@@ -314,38 +306,28 @@ public sealed class DefiMcpToolsTests : TestBase
         Assert.True(pools.Count <= 5, userMessage: "Result should be at most 5 pools");
     }
 
-    private static string BuildEthPoolsJson(int count)
+    private static IReadOnlyList<RawPool> BuildRawEthPools(int count)
     {
-        StringBuilder sb = new();
-        sb.Append("{\"data\":[");
+        RawPool[] pools = new RawPool[count];
 
         for (int i = 0; i < count; i++)
         {
-            if (i > 0)
+            pools[i] = new RawPool
             {
-                sb.Append(',');
-            }
-
-            string apy = (10.0 + i).ToString(CultureInfo.InvariantCulture);
-            string tvl = (5_000_000 + i).ToString(CultureInfo.InvariantCulture);
-
-            sb.Append('{');
-            sb.Append("\"pool\":\"pool-eth-").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\",");
-            sb.Append("\"chain\":\"Ethereum\",");
-            sb.Append("\"project\":\"aave-v3\",");
-            sb.Append("\"symbol\":\"ETH-WETH\",");
-            sb.Append("\"tvlUsd\":").Append(tvl).Append(',');
-            sb.Append("\"apy\":").Append(apy).Append(',');
-            sb.Append("\"apyBase\":").Append(apy).Append(',');
-            sb.Append("\"stablecoin\":false,");
-            sb.Append("\"ilRisk\":\"no\",");
-            sb.Append("\"exposure\":\"single\"");
-            sb.Append('}');
+                PoolId = $"pool-eth-{i}",
+                Chain = "Ethereum",
+                Project = "aave-v3",
+                Symbol = "ETH-WETH",
+                TvlUsd = 5_000_000 + i,
+                Apy = 10.0 + i,
+                ApyBase = 10.0 + i,
+                Stablecoin = false,
+                IlRisk = "no",
+                Exposure = "single",
+            };
         }
 
-        sb.Append("]}");
-
-        return sb.ToString();
+        return pools;
     }
 
     [Fact]
@@ -454,5 +436,27 @@ public sealed class DefiMcpToolsTests : TestBase
 
             return Task.FromResult(response);
         }
+    }
+
+    private sealed class FakePoolStorage : IDefiLlamaPoolStorage
+    {
+        private readonly IReadOnlyList<RawPool> _pools;
+
+        public FakePoolStorage()
+            : this([]) { }
+
+        public FakePoolStorage(IReadOnlyList<RawPool> pools)
+        {
+            this._pools = pools;
+        }
+
+        public ValueTask StorePoolsAsync(
+            IReadOnlyList<RawPool> pools,
+            DateTimeOffset? dataDate,
+            CancellationToken cancellationToken
+        ) => ValueTask.CompletedTask;
+
+        public ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken) =>
+            ValueTask.FromResult(this._pools);
     }
 }

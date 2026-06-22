@@ -114,6 +114,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(handler),
             coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(handler),
             apiCache: this._apiCache,
+            poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
             logger: GetSubstitute<ILogger<CacheWarmerService>>()
         );
 
@@ -155,6 +156,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(primeHandler),
             coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(primeHandler),
             apiCache: this._apiCache,
+            poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
             logger: GetSubstitute<ILogger<CacheWarmerService>>()
         );
 
@@ -171,6 +173,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(secondHandler),
             coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(secondHandler),
             apiCache: this._apiCache,
+            poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
             logger: GetSubstitute<ILogger<CacheWarmerService>>()
         );
 
@@ -190,6 +193,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             protocolsClient: CreateApiClient<DefiLlamaProtocolsClient>(handler),
             coinGeckoClient: CreateApiClient<CoinGeckoStablecoinsClient>(handler),
             apiCache: this._apiCache,
+            poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
             logger: GetSubstitute<ILogger<CacheWarmerService>>()
         );
 
