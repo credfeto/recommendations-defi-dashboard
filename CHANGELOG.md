@@ -41,6 +41,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Credfeto.Defi.ApiClients.GoPlus.Tests with 100% code coverage
 - Pool access information and contract addresses: each pool now exposes `accessInfo` (KYC entry/exit requirements, swap-to-exit availability, liquidity status, lockup description) and `contractAddresses` (aggregated from `underlyingTokens`, `rewardTokens`, and the pool contract address); derived from DefiLlama `poolMeta` text and known protocol characteristics without additional API calls; exposed via REST API and MCP `get_pools` tool
 - PoolAccessInfo record type: exposes `kycRequiredForEntry`, `kycRequiredForExit`, `canSwapToExit`, `isLiquid` (`bool?`), and `lockupDescription` (`string?`) — `null` means unknown rather than false
+- Firewall script to open Docker ports (8080/tcp, 8081/tcp, 8081/udp, 443/tcp, 443/udp) for private networks using firewall-cmd
+- Default public RPC endpoints (drpc.org) for Ethereum, Arbitrum, Base, and BSC in appsettings.json
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
@@ -55,6 +57,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SQL: apply SQLFluff formatting (indentation, spacing, pascal-case aliases) across all stored procedures and tables
 - CI: added checkout step before local composite actions in on_new_pr.yml to prevent build failures on dependency PRs
 - Suppress IL2104 trim warnings from Microsoft.Data.SqlClient and its transitive dependencies during Native AOT publish
+- Load appsettings-local.json (optional) in Program.cs so machine-local config overrides are picked up at startup
+- Read database config from DatabaseConfiguration section to align with the dbappsettings provisioning script used across all apps on this machine
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
