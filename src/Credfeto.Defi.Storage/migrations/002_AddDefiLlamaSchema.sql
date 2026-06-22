@@ -108,7 +108,7 @@ CREATE TYPE [DefiLlama].[PoolRow] AS TABLE
   [Exposure] NVARCHAR(50) NULL,
   [PredictedClass] NVARCHAR(50) NULL,
   [PredictedProbability] FLOAT(53) NULL,
-  [BinnedConfidence] NVARCHAR(50) NULL,
+  [BinnedConfidence] FLOAT(53) NULL,
   [PoolMeta] NVARCHAR(MAX) NULL,
   [Mu] FLOAT(53) NOT NULL,
   [Sigma] FLOAT(53) NOT NULL,

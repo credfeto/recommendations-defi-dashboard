@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -46,7 +46,7 @@ public sealed class DefiMcpToolsTests : TestBase
         return factory;
     }
 
-    private static T CreateClient<T>(HttpClient httpClient)
+    private T CreateClient<T>(HttpClient httpClient)
         where T : class
     {
         IHttpClientFactory factory = CreateMockedFactory(httpClient);
@@ -56,7 +56,7 @@ public sealed class DefiMcpToolsTests : TestBase
                 (object)
                     new DefiLlamaPoolsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<DefiLlamaPoolsClient>>()
+                        logger: this.GetTypedLogger<DefiLlamaPoolsClient>()
                     );
         }
 
@@ -66,7 +66,7 @@ public sealed class DefiMcpToolsTests : TestBase
                 (object)
                     new PendleMarketsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<PendleMarketsClient>>()
+                        logger: this.GetTypedLogger<PendleMarketsClient>()
                     );
         }
 
@@ -76,7 +76,7 @@ public sealed class DefiMcpToolsTests : TestBase
                 (object)
                     new DefiLlamaHacksClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<DefiLlamaHacksClient>>()
+                        logger: this.GetTypedLogger<DefiLlamaHacksClient>()
                     );
         }
 
@@ -86,7 +86,7 @@ public sealed class DefiMcpToolsTests : TestBase
                 (object)
                     new DefiLlamaProtocolsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<DefiLlamaProtocolsClient>>()
+                        logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
                     );
         }
 
@@ -96,14 +96,13 @@ public sealed class DefiMcpToolsTests : TestBase
                 (object)
                     new CoinGeckoStablecoinsClient(
                         httpClientFactory: factory,
-                        logger: GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>()
+                        logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
                     );
         }
 
         if (typeof(T) == typeof(GoPlusClient))
         {
-            return (T)
-                (object)new GoPlusClient(httpClientFactory: factory, logger: GetSubstitute<ILogger<GoPlusClient>>());
+            return (T)(object)new GoPlusClient(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
         }
         return GetSubstitute<T>();
     }
@@ -112,11 +111,11 @@ public sealed class DefiMcpToolsTests : TestBase
     {
         poolStorage ??= new FakePoolStorage();
 
-        PendleMarketsClient pendleClient = CreateClient<PendleMarketsClient>(httpClient);
-        DefiLlamaHacksClient hacksClient = CreateClient<DefiLlamaHacksClient>(httpClient);
-        DefiLlamaProtocolsClient protocolsClient = CreateClient<DefiLlamaProtocolsClient>(httpClient);
-        CoinGeckoStablecoinsClient coinGeckoClient = CreateClient<CoinGeckoStablecoinsClient>(httpClient);
-        GoPlusClient goPlusClient = CreateClient<GoPlusClient>(httpClient);
+        PendleMarketsClient pendleClient = this.CreateClient<PendleMarketsClient>(httpClient);
+        DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
+        DefiLlamaProtocolsClient protocolsClient = this.CreateClient<DefiLlamaProtocolsClient>(httpClient);
+        CoinGeckoStablecoinsClient coinGeckoClient = this.CreateClient<CoinGeckoStablecoinsClient>(httpClient);
+        GoPlusClient goPlusClient = this.CreateClient<GoPlusClient>(httpClient);
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
@@ -125,7 +124,7 @@ public sealed class DefiMcpToolsTests : TestBase
         ProxyResolverService proxyResolver = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<ProxyResolverService>>()
+            logger: this.GetTypedLogger<ProxyResolverService>()
         );
 
         ContractSecurityService contractSecurityService = new(
@@ -137,7 +136,7 @@ public sealed class DefiMcpToolsTests : TestBase
         ChainlinkStablecoinsClient chainlinkClient = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<ChainlinkStablecoinsClient>>()
+            logger: this.GetTypedLogger<ChainlinkStablecoinsClient>()
         );
 
         PoolEnrichmentService enrichmentService = new(
