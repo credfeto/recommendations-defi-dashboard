@@ -25,6 +25,7 @@ public static class StorageSetup
             .AddSqlServer()
             .AddRunOnStartupTask<DatabaseMigrationService>()
             .AddSingleton<ApiCacheService>()
-            .AddSingleton<ContractSecurityCacheService>();
+            .AddSingleton<ContractSecurityCacheService>()
+            .AddSingleton<IDefiLlamaPoolStorage, DefiLlamaPoolStorage>();
     }
 }

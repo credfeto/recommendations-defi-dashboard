@@ -7,8 +7,8 @@ using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
-using Credfeto.Defi.Storage;
 using Credfeto.Defi.Services.LoggingExtensions;
+using Credfeto.Defi.Storage;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +27,7 @@ public sealed class CacheWarmerService : IHostedService
     private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
     private readonly ILogger<CacheWarmerService> _logger;
     private readonly IPendleMarketsClient _pendleClient;
+    private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolsClient _protocolsClient;
 
     /// <summary>
@@ -39,6 +40,7 @@ public sealed class CacheWarmerService : IHostedService
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
         ApiCacheService apiCache,
+        IDefiLlamaPoolStorage poolStorage,
         ILogger<CacheWarmerService> logger
     )
     {
@@ -48,6 +50,7 @@ public sealed class CacheWarmerService : IHostedService
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
         this._apiCache = apiCache;
+        this._poolStorage = poolStorage;
         this._logger = logger;
     }
 
@@ -118,12 +121,7 @@ public sealed class CacheWarmerService : IHostedService
     private async Task WarmLlamaPoolsAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<RawPool> data = await this._llamaPoolsClient.FetchPoolsAsync(cancellationToken);
-        _ = await this._apiCache.GetOrFetchAsync(
-            key: "defillama_pools",
-            fetcher: _ => new ValueTask<IReadOnlyList<RawPool>>(data),
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawPool,
-            cancellationToken: cancellationToken
-        );
+        await this._poolStorage.StorePoolsAsync(pools: data, dataDate: null, cancellationToken: cancellationToken);
     }
 
     private async Task WarmPendlePoolsAsync(CancellationToken cancellationToken)
