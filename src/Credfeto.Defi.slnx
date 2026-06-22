@@ -13,6 +13,7 @@
     <Project Path="Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
   </Folder>
   <Folder Name="/Config/">
+    <File Path="..\docker-compose.yml" />
     <File Path="..\Dockerfile" />
     <File Path="publish" />
   </Folder>
