@@ -1,3 +1,4 @@
+using System;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama;
@@ -10,7 +11,6 @@ using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Services;
-using System;
 using Credfeto.Defi.Storage;
 using Credfeto.Defi.Storage.Configuration;
 using Credfeto.Services.Startup;
@@ -31,7 +31,7 @@ internal static class ServiceRegistration
     public static WebApplicationBuilder AddDefiServices(this WebApplicationBuilder builder)
     {
         _ = builder.Services.Configure<DatabaseConfiguration>(
-            builder.Configuration.GetSection("Database")
+            builder.Configuration.GetSection("DatabaseConfiguration")
         );
 
         _ = builder.Services.AddOptions<RpcConfig>().BindConfiguration("Rpc");
