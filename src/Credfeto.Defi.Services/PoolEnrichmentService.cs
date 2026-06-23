@@ -8,8 +8,8 @@ using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
-using Credfeto.Defi.Storage;
 using Credfeto.Defi.Services.Utils;
+using Credfeto.Defi.Storage;
 
 namespace Credfeto.Defi.Services;
 
@@ -18,7 +18,6 @@ namespace Credfeto.Defi.Services;
 /// </summary>
 public sealed class PoolEnrichmentService
 {
-    private const string CACHE_KEY_LLAMA_POOLS = "defillama_pools";
     private const string CACHE_KEY_PENDLE_POOLS = "pendle_pools";
     private const string CACHE_KEY_HACKS = "defillama_hacks";
     private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
@@ -31,31 +30,31 @@ public sealed class PoolEnrichmentService
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly ContractSecurityService _contractSecurityService;
     private readonly IDefiLlamaHacksClient _hacksClient;
-    private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
     private readonly IPendleMarketsClient _pendleClient;
+    private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolsClient _protocolsClient;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="PoolEnrichmentService" />.
     /// </summary>
     public PoolEnrichmentService(
-        IDefiLlamaPoolsClient llamaPoolsClient,
         IPendleMarketsClient pendleClient,
         IDefiLlamaHacksClient hacksClient,
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
         IChainlinkStablecoinsClient chainlinkClient,
         ContractSecurityService contractSecurityService,
+        IDefiLlamaPoolStorage poolStorage,
         ApiCacheService cache
     )
     {
-        this._llamaPoolsClient = llamaPoolsClient;
         this._pendleClient = pendleClient;
         this._hacksClient = hacksClient;
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
         this._chainlinkClient = chainlinkClient;
         this._contractSecurityService = contractSecurityService;
+        this._poolStorage = poolStorage;
         this._cache = cache;
     }
 
@@ -64,12 +63,7 @@ public sealed class PoolEnrichmentService
     /// </summary>
     public async ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken)
     {
-        ValueTask<IReadOnlyList<RawPool>> llamaTask = this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_LLAMA_POOLS,
-            fetcher: this._llamaPoolsClient.FetchPoolsAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawPool,
-            cancellationToken: cancellationToken
-        );
+        ValueTask<IReadOnlyList<RawPool>> llamaTask = this._poolStorage.GetAllPoolsAsync(cancellationToken);
 
         ValueTask<IReadOnlyList<RawPool>> pendleTask = this._cache.GetOrFetchAsync(
             key: CACHE_KEY_PENDLE_POOLS,
@@ -132,13 +126,15 @@ public sealed class PoolEnrichmentService
             key: CACHE_KEY_STABLECOINS,
             fetcher: this._coinGeckoClient.FetchStablecoinsAsync,
             typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoStablecoin,
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
 
         IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await this._cache.GetOrFetchAsync(
             key: CACHE_KEY_CHAINLINK_STABLECOINS,
             fetcher: this._chainlinkClient.FetchStablecoinsAsync,
             typeInfo: AppJsonContext.Default.IReadOnlyListChainlinkPriceFeed,
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
 
         return DepegService.BuildMergedStablecoinPriceMap(coinGeckoCoins, chainlinkFeeds);
     }

@@ -37,43 +37,44 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
     }
 
-    private PoolEnrichmentService CreateEnrichmentService(HttpMessageHandler httpHandler)
+    private PoolEnrichmentService CreateEnrichmentService(
+        HttpMessageHandler httpHandler,
+        IDefiLlamaPoolStorage? poolStorage = null
+    )
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
         factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(httpHandler));
 
-        DefiLlamaPoolsClient llamaClient = new(
-            httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<DefiLlamaPoolsClient>>()
-        );
+        poolStorage ??= new FakePoolStorage();
+
         PendleMarketsClient pendleClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<PendleMarketsClient>>()
+            logger: this.GetTypedLogger<PendleMarketsClient>()
         );
         DefiLlamaHacksClient hacksClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<DefiLlamaHacksClient>>()
+            logger: this.GetTypedLogger<DefiLlamaHacksClient>()
         );
         DefiLlamaProtocolsClient protocolsClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<DefiLlamaProtocolsClient>>()
+            logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
         );
         CoinGeckoStablecoinsClient coinGeckoClient = new(
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>()
+            logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
         );
-        GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: GetSubstitute<ILogger<GoPlusClient>>());
+        GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
         ChainlinkStablecoinsClient chainlinkClient = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<ChainlinkStablecoinsClient>>()
+            logger: this.GetTypedLogger<ChainlinkStablecoinsClient>()
         );
         ProxyResolverService proxyResolver = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
-            logger: GetSubstitute<ILogger<ProxyResolverService>>()
+            logger: this.GetTypedLogger<ProxyResolverService>()
         );
 
         ContractSecurityService contractSecurity = new(
@@ -83,13 +84,13 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         );
 
         return new PoolEnrichmentService(
-            llamaPoolsClient: llamaClient,
             pendleClient: pendleClient,
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
             chainlinkClient: chainlinkClient,
             contractSecurityService: contractSecurity,
+            poolStorage: poolStorage,
             cache: this._apiCache
         );
     }
@@ -97,12 +98,10 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     [Fact]
     public async Task GetAllPoolsAsync_EmptyData_ReturnsEmptyListAsync()
     {
-        const string EMPTY_POOLS = """{"data":[]}""";
         const string EMPTY_ARRAY = "[]";
 
         using MultiResponseHttpHandler handler = new(
             [
-                EMPTY_POOLS, // llama pools
                 EMPTY_ARRAY, // pendle chain 1
                 EMPTY_ARRAY, // pendle chain 2
                 EMPTY_ARRAY, // pendle chain 3
@@ -373,5 +372,27 @@ public sealed class PoolEnrichmentServiceTests : TestBase
 
             return Task.FromResult(response);
         }
+    }
+
+    private sealed class FakePoolStorage : IDefiLlamaPoolStorage
+    {
+        private readonly IReadOnlyList<RawPool> _pools;
+
+        public FakePoolStorage()
+            : this([]) { }
+
+        public FakePoolStorage(IReadOnlyList<RawPool> pools)
+        {
+            this._pools = pools;
+        }
+
+        public ValueTask StorePoolsAsync(
+            IReadOnlyList<RawPool> pools,
+            DateTimeOffset? dataDate,
+            CancellationToken cancellationToken
+        ) => ValueTask.CompletedTask;
+
+        public ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken) =>
+            ValueTask.FromResult(this._pools);
     }
 }
