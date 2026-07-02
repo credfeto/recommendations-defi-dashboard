@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
@@ -23,10 +22,9 @@ public sealed class PoolEnrichmentService
     private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
     private const string CACHE_KEY_STABLECOINS = "coingecko_stablecoins";
     private const string CACHE_KEY_COIN_LIST = "coingecko_coin_list";
-    private const string CACHE_KEY_CHAINLINK_STABLECOINS = "chainlink_stablecoins";
 
     private readonly ApiCacheService _cache;
-    private readonly IChainlinkStablecoinsClient _chainlinkClient;
+    private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly ContractSecurityService _contractSecurityService;
     private readonly IDefiLlamaHacksClient _hacksClient;
@@ -42,7 +40,7 @@ public sealed class PoolEnrichmentService
         IDefiLlamaHacksClient hacksClient,
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
-        IChainlinkStablecoinsClient chainlinkClient,
+        IChainlinkPriceFeedStorageService chainlinkStorage,
         ContractSecurityService contractSecurityService,
         IDefiLlamaPoolStorage poolStorage,
         ApiCacheService cache
@@ -52,7 +50,7 @@ public sealed class PoolEnrichmentService
         this._hacksClient = hacksClient;
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
-        this._chainlinkClient = chainlinkClient;
+        this._chainlinkStorage = chainlinkStorage;
         this._contractSecurityService = contractSecurityService;
         this._poolStorage = poolStorage;
         this._cache = cache;
@@ -129,12 +127,7 @@ public sealed class PoolEnrichmentService
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_CHAINLINK_STABLECOINS,
-            fetcher: this._chainlinkClient.FetchStablecoinsAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListChainlinkPriceFeed,
-            cancellationToken: cancellationToken
-        );
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await this._chainlinkStorage.GetAllAsync(cancellationToken);
 
         return DepegService.BuildMergedStablecoinPriceMap(coinGeckoCoins, chainlinkFeeds);
     }

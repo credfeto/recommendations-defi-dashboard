@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.Chainlink;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
@@ -107,9 +106,14 @@ public sealed class DefiMcpToolsTests : TestBase
         return GetSubstitute<T>();
     }
 
-    private DefiMcpTools CreateMcpTools(HttpClient httpClient, IDefiLlamaPoolStorage? poolStorage = null)
+    private DefiMcpTools CreateMcpTools(
+        HttpClient httpClient,
+        IDefiLlamaPoolStorage? poolStorage = null,
+        IChainlinkPriceFeedStorageService? chainlinkStorage = null
+    )
     {
         poolStorage ??= new FakePoolStorage();
+        chainlinkStorage ??= new FakeChainlinkStorage();
 
         PendleMarketsClient pendleClient = this.CreateClient<PendleMarketsClient>(httpClient);
         DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
@@ -133,18 +137,12 @@ public sealed class DefiMcpToolsTests : TestBase
             proxyResolver: proxyResolver
         );
 
-        ChainlinkStablecoinsClient chainlinkClient = new(
-            rpcConfig: rpcOptions,
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<ChainlinkStablecoinsClient>()
-        );
-
         PoolEnrichmentService enrichmentService = new(
             pendleClient: pendleClient,
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
-            chainlinkClient: chainlinkClient,
+            chainlinkStorage: chainlinkStorage,
             contractSecurityService: contractSecurityService,
             poolStorage: poolStorage,
             cache: this._apiCache
@@ -457,5 +455,24 @@ public sealed class DefiMcpToolsTests : TestBase
 
         public ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken) =>
             ValueTask.FromResult(this._pools);
+    }
+
+    private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
+    {
+        private readonly IReadOnlyList<ChainlinkPriceFeed> _feeds;
+
+        public FakeChainlinkStorage()
+            : this([]) { }
+
+        public FakeChainlinkStorage(IReadOnlyList<ChainlinkPriceFeed> feeds)
+        {
+            this._feeds = feeds;
+        }
+
+        public ValueTask StoreAsync(IReadOnlyList<ChainlinkPriceFeed> feeds, CancellationToken cancellationToken) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
+            ValueTask.FromResult(this._feeds);
     }
 }

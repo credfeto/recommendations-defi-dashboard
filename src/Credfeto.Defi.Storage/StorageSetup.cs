@@ -26,6 +26,7 @@ public static class StorageSetup
             .AddRunOnStartupTask<DatabaseMigrationService>()
             .AddSingleton<ApiCacheService>()
             .AddSingleton<ContractSecurityCacheService>()
-            .AddSingleton<IDefiLlamaPoolStorage, DefiLlamaPoolStorage>();
+            .AddSingleton<IDefiLlamaPoolStorage, DefiLlamaPoolStorage>()
+            .AddSingleton<IChainlinkPriceFeedStorageService, ChainlinkPriceFeedStorageService>();
     }
 }

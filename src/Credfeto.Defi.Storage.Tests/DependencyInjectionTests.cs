@@ -46,4 +46,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireServiceInCollectionFor<IRunOnStartup, DatabaseMigrationService>();
     }
+
+    [Fact]
+    public void ChainlinkPriceFeedStorageServiceIsRegistered()
+    {
+        this.RequireService<IChainlinkPriceFeedStorageService>();
+    }
 }
