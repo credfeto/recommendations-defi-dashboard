@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.Chainlink;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
@@ -39,13 +38,15 @@ public sealed class PoolEnrichmentServiceTests : TestBase
 
     private PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
-        IDefiLlamaPoolStorage? poolStorage = null
+        IDefiLlamaPoolStorage? poolStorage = null,
+        IChainlinkPriceFeedStorageService? chainlinkStorage = null
     )
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
         factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(httpHandler));
 
         poolStorage ??= new FakePoolStorage();
+        chainlinkStorage ??= new FakeChainlinkStorage();
 
         PendleMarketsClient pendleClient = new(
             httpClientFactory: factory,
@@ -66,11 +67,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
-        ChainlinkStablecoinsClient chainlinkClient = new(
-            rpcConfig: rpcOptions,
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<ChainlinkStablecoinsClient>()
-        );
         ProxyResolverService proxyResolver = new(
             rpcConfig: rpcOptions,
             httpClientFactory: factory,
@@ -88,7 +84,7 @@ public sealed class PoolEnrichmentServiceTests : TestBase
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
-            chainlinkClient: chainlinkClient,
+            chainlinkStorage: chainlinkStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
             cache: this._apiCache
@@ -394,5 +390,24 @@ public sealed class PoolEnrichmentServiceTests : TestBase
 
         public ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken) =>
             ValueTask.FromResult(this._pools);
+    }
+
+    private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
+    {
+        private readonly IReadOnlyList<ChainlinkPriceFeed> _feeds;
+
+        public FakeChainlinkStorage()
+            : this([]) { }
+
+        public FakeChainlinkStorage(IReadOnlyList<ChainlinkPriceFeed> feeds)
+        {
+            this._feeds = feeds;
+        }
+
+        public ValueTask StoreAsync(IReadOnlyList<ChainlinkPriceFeed> feeds, CancellationToken cancellationToken) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
+            ValueTask.FromResult(this._feeds);
     }
 }
