@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.Pendle;
+using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
@@ -113,8 +116,10 @@ public sealed class CacheWarmerServiceTests : TestBase
             hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(handler),
             protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(handler),
             coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(handler),
+            chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -155,8 +160,10 @@ public sealed class CacheWarmerServiceTests : TestBase
             hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(primeHandler),
             protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(primeHandler),
             coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(primeHandler),
+            chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -172,8 +179,10 @@ public sealed class CacheWarmerServiceTests : TestBase
             hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(secondHandler),
             protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(secondHandler),
             coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(secondHandler),
+            chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -192,8 +201,10 @@ public sealed class CacheWarmerServiceTests : TestBase
             hacksClient: this.CreateApiClient<DefiLlamaHacksClient>(handler),
             protocolsClient: this.CreateApiClient<DefiLlamaProtocolsClient>(handler),
             coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(handler),
+            chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -201,6 +212,11 @@ public sealed class CacheWarmerServiceTests : TestBase
 
         Assert.True(result.IsCompleted, userMessage: "StopAsync should return synchronously");
         await result;
+    }
+
+    private static IChainlinkStablecoinsClient CreateChainlinkClient()
+    {
+        return new FakeChainlinkClient();
     }
 
     private sealed class FreshResponseHttpHandler : HttpMessageHandler
@@ -227,5 +243,21 @@ public sealed class CacheWarmerServiceTests : TestBase
 
             return Task.FromResult(response);
         }
+    }
+
+    private sealed class FakeChainlinkClient : IChainlinkStablecoinsClient
+    {
+        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> FetchStablecoinsAsync(
+            CancellationToken cancellationToken
+        ) => ValueTask.FromResult<IReadOnlyList<ChainlinkPriceFeed>>([]);
+    }
+
+    private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
+    {
+        public ValueTask StoreAsync(IReadOnlyList<ChainlinkPriceFeed> feeds, CancellationToken cancellationToken) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
+            ValueTask.FromResult<IReadOnlyList<ChainlinkPriceFeed>>([]);
     }
 }
