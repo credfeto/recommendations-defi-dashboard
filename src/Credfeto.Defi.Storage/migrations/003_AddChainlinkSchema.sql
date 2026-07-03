@@ -40,7 +40,8 @@ CREATE TYPE [Chainlink].[PriceFeedRow] AS TABLE
 GO
 
 CREATE OR ALTER PROCEDURE [Chainlink].[PriceFeed_Sync]
-  @Rows [Chainlink].[PriceFeedRow] READONLY
+  @Rows [Chainlink].[PriceFeedRow] READONLY,
+  @DataDate DATETIMEOFFSET NULL
 AS
 BEGIN
   SET NOCOUNT ON;
@@ -52,7 +53,7 @@ BEGIN
     UPDATE
       SET
         [CurrentPrice] = Src.[CurrentPrice],
-        [DataDate] = NULL,
+        [DataDate] = @DataDate,
         [DateUpdated] = SYSDATETIMEOFFSET()
   WHEN NOT MATCHED BY TARGET
     THEN
@@ -66,7 +67,7 @@ BEGIN
     VALUES (
       Src.[Symbol],
       Src.[CurrentPrice],
-      NULL,
+      @DataDate,
       SYSDATETIMEOFFSET(),
       SYSDATETIMEOFFSET()
     )

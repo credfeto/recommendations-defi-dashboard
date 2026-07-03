@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -404,8 +404,11 @@ public sealed class PoolEnrichmentServiceTests : TestBase
             this._feeds = feeds;
         }
 
-        public ValueTask StoreAsync(IReadOnlyList<ChainlinkPriceFeed> feeds, CancellationToken cancellationToken) =>
-            ValueTask.CompletedTask;
+        public ValueTask StoreAsync(
+            IReadOnlyList<ChainlinkPriceFeed> feeds,
+            DateTimeOffset? dataDate,
+            CancellationToken cancellationToken
+        ) => ValueTask.CompletedTask;
 
         public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
             ValueTask.FromResult(this._feeds);
