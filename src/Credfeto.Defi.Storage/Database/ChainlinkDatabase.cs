@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
@@ -15,6 +16,7 @@ internal static partial class ChainlinkDatabase
         DbConnection connection,
         [SqlFieldMap<ChainlinkPriceFeedSyncRowMapper, IReadOnlyList<ChainlinkPriceFeedSyncRow>>]
             IReadOnlyList<ChainlinkPriceFeedSyncRow> rows,
+        DateTimeOffset? dataDate,
         CancellationToken cancellationToken
     );
 

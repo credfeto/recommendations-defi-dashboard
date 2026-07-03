@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
@@ -19,14 +20,18 @@ public sealed class ChainlinkPriceFeedStorageService : IChainlinkPriceFeedStorag
         this._database = database;
     }
 
-    public async ValueTask StoreAsync(IReadOnlyList<ChainlinkPriceFeed> feeds, CancellationToken cancellationToken)
+    public async ValueTask StoreAsync(
+        IReadOnlyList<ChainlinkPriceFeed> feeds,
+        DateTimeOffset? dataDate,
+        CancellationToken cancellationToken
+    )
     {
         IReadOnlyList<ChainlinkPriceFeedSyncRow> rows = BuildSyncRows(feeds);
 
         await this._database.ExecuteAsync(action: SyncAsync, cancellationToken: cancellationToken);
 
         ValueTask SyncAsync(DbConnection c, CancellationToken ct) =>
-            ChainlinkDatabase.PriceFeed_SyncAsync(connection: c, rows: rows, cancellationToken: ct);
+            ChainlinkDatabase.PriceFeed_SyncAsync(connection: c, rows: rows, dataDate: dataDate, cancellationToken: ct);
     }
 
     public async ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken)
