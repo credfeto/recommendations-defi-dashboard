@@ -190,6 +190,6 @@ public sealed class CacheWarmerService : IHostedService
     private async Task WarmChainlinkPriceFeedsAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<ChainlinkPriceFeed> data = await this._chainlinkClient.FetchStablecoinsAsync(cancellationToken);
-        await this._chainlinkStorage.StoreAsync(feeds: data, cancellationToken: cancellationToken);
+        await this._chainlinkStorage.StoreAsync(feeds: data, dataDate: null, cancellationToken: cancellationToken);
     }
 }

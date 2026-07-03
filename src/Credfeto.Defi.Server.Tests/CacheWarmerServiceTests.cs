@@ -254,8 +254,11 @@ public sealed class CacheWarmerServiceTests : TestBase
 
     private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
     {
-        public ValueTask StoreAsync(IReadOnlyList<ChainlinkPriceFeed> feeds, CancellationToken cancellationToken) =>
-            ValueTask.CompletedTask;
+        public ValueTask StoreAsync(
+            IReadOnlyList<ChainlinkPriceFeed> feeds,
+            DateTimeOffset? dataDate,
+            CancellationToken cancellationToken
+        ) => ValueTask.CompletedTask;
 
         public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
             ValueTask.FromResult<IReadOnlyList<ChainlinkPriceFeed>>([]);
