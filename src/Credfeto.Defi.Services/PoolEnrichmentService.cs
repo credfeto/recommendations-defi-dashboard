@@ -120,14 +120,17 @@ public sealed class PoolEnrichmentService
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins = await this._cache.GetOrFetchAsync(
+        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> coinsTask = this._cache.GetOrFetchAsync(
             key: CACHE_KEY_STABLECOINS,
             fetcher: this._coinGeckoClient.FetchStablecoinsAsync,
             typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoStablecoin,
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await this._chainlinkStorage.GetAllAsync(cancellationToken);
+        ValueTask<IReadOnlyList<ChainlinkPriceFeed>> feedsTask = this._chainlinkStorage.GetAllAsync(cancellationToken);
+
+        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins = await coinsTask;
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await feedsTask;
 
         return DepegService.BuildMergedStablecoinPriceMap(coinGeckoCoins, chainlinkFeeds);
     }
