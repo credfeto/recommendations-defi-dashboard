@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
@@ -22,6 +23,8 @@ namespace Credfeto.Defi.Services;
 public sealed class CacheWarmerService : IHostedService
 {
     private readonly ApiCacheService _apiCache;
+    private readonly IChainlinkStablecoinsClient _chainlinkClient;
+    private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly IDefiLlamaHacksClient _hacksClient;
     private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
@@ -39,8 +42,10 @@ public sealed class CacheWarmerService : IHostedService
         IDefiLlamaHacksClient hacksClient,
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
+        IChainlinkStablecoinsClient chainlinkClient,
         ApiCacheService apiCache,
         IDefiLlamaPoolStorage poolStorage,
+        IChainlinkPriceFeedStorageService chainlinkStorage,
         ILogger<CacheWarmerService> logger
     )
     {
@@ -49,8 +54,10 @@ public sealed class CacheWarmerService : IHostedService
         this._hacksClient = hacksClient;
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
+        this._chainlinkClient = chainlinkClient;
         this._apiCache = apiCache;
         this._poolStorage = poolStorage;
+        this._chainlinkStorage = chainlinkStorage;
         this._logger = logger;
     }
 
@@ -115,6 +122,7 @@ public sealed class CacheWarmerService : IHostedService
             ("defillama_protocols", this.WarmProtocolsAsync),
             ("coingecko_stablecoins", this.WarmStablecoinsAsync),
             ("coingecko_coin_list", this.WarmCoinListAsync),
+            ("chainlink_price_feeds", this.WarmChainlinkPriceFeedsAsync),
         ];
     }
 
@@ -177,5 +185,11 @@ public sealed class CacheWarmerService : IHostedService
             typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoCoinPlatforms,
             cancellationToken: cancellationToken
         );
+    }
+
+    private async Task WarmChainlinkPriceFeedsAsync(CancellationToken cancellationToken)
+    {
+        IReadOnlyList<ChainlinkPriceFeed> data = await this._chainlinkClient.FetchStablecoinsAsync(cancellationToken);
+        await this._chainlinkStorage.StoreAsync(feeds: data, dataDate: null, cancellationToken: cancellationToken);
     }
 }
