@@ -1,4 +1,4 @@
-<Project Sdk="MSBuild.Sdk.SqlProj/4.2.0">
+<Project Sdk="MSBuild.Sdk.SqlProj/4.3.0">
   <!-- SQLProj Github repo https://github.com/rr-wfm/MSBuild.Sdk.SqlProj -->
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>

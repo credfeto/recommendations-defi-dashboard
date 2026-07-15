@@ -93,6 +93,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated Credfeto.Database.Source.Generation to 1.2.212.2281
 - Updated Microsoft.AspNetCore.OpenApi, Microsoft.Extensions.Hosting.Abstractions, Microsoft.Extensions.Hosting.Systemd, Microsoft.Extensions.Http, Microsoft.Extensions.Logging.Abstractions, Microsoft.Extensions.Options to 10.0.9
 - SDK - Updated DotNet SDK to 10.0.302
+- Updated MSBuild.Sdk.SqlProj to 4.3.0
 
 ### Removed
 - Removed husky pre-commit hooks
