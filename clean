@@ -57,6 +57,7 @@ if [ "$CLEAR" != "all" ]; then
   NPM_OPTIONS="$NPM_OPTIONS --prefer-offline"
 fi
 
+# shellcheck disable=SC2086 # NPM_OPTIONS is intentionally a space-separated list of flags for word splitting
 npm i $NPM_OPTIONS || die "Failed to restore packages"
 
 if sed --version >/dev/null 2>&1; then
