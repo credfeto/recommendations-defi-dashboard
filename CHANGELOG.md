@@ -94,6 +94,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated Microsoft.AspNetCore.OpenApi, Microsoft.Extensions.Hosting.Abstractions, Microsoft.Extensions.Hosting.Systemd, Microsoft.Extensions.Http, Microsoft.Extensions.Logging.Abstractions, Microsoft.Extensions.Options to 10.0.9
 - SDK - Updated DotNet SDK to 10.0.302
 - Updated MSBuild.Sdk.SqlProj to 4.3.0
+- Fixed pre-commit baseline violations: added shellcheck suppression for intentional word-splitting in the `clean` script and added missing end-of-file newlines to two csproj files
 
 ### Removed
 - Removed husky pre-commit hooks
