@@ -2,14 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 <!--
 Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 -->
 
 ## [Unreleased]
-
 ### Security
-
 ### Added
 - **`docs/api.http`** — VS Code REST Client examples for all REST API endpoints (`GET /api/pools` and `GET /api/pools/:poolName` for all five pool types: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP)
 
@@ -62,6 +63,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Suppress IL2104 trim warnings from Microsoft.Data.SqlClient and its transitive dependencies during Native AOT publish
 - Load appsettings-local.json (optional) in Program.cs so machine-local config overrides are picked up at startup
 - Read database config from DatabaseConfiguration section to align with the dbappsettings provisioning script used across all apps on this machine
+- Fixed CHANGELOG.md missing the required Deprecated section header under Unreleased, which caused the changelog lint to fail on any commit touching the file
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
@@ -96,6 +98,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated MSBuild.Sdk.SqlProj to 4.3.0
 - Fixed pre-commit baseline violations: added shellcheck suppression for intentional word-splitting in the `clean` script and added missing end-of-file newlines to two csproj files
 
+### Deprecated
 ### Removed
 - Removed husky pre-commit hooks
 - Client package and nginx — server handles TLS directly via self-signed cert on port 443
