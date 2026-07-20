@@ -5,13 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Database;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.Server.Tests.Common;
 
-internal sealed class FakeDatabase : IDatabase
+public sealed class FakeDatabase : IDatabase
 {
     private readonly Dictionary<Type, Queue<object?>> _returnQueues = [];
 
-    internal FakeDatabase WithReturn<T>(T? value)
+    public FakeDatabase WithReturn<T>(T? value)
     {
         Type type = typeof(T);
 

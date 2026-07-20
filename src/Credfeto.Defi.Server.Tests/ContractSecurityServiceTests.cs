@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using Credfeto.Defi.Storage.Database.Rows;

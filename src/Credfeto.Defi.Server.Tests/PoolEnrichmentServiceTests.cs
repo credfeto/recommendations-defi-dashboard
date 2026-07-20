@@ -1,23 +1,15 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.CoinGecko;
-using Credfeto.Defi.ApiClients.DefiLlama;
-using Credfeto.Defi.ApiClients.GoPlus;
-using Credfeto.Defi.ApiClients.Pendle;
-using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
-using NSubstitute;
 using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
@@ -27,6 +19,7 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     private readonly ApiCacheService _apiCache;
     private readonly ContractSecurityCacheService _securityCache;
     private readonly FakeTimeProvider _timeProvider;
+    private readonly PoolEnrichmentServiceTestFactory _factory = new();
 
     public PoolEnrichmentServiceTests()
     {
@@ -42,52 +35,12 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         IChainlinkPriceFeedStorageService? chainlinkStorage = null
     )
     {
-        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
-        factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(httpHandler));
-
-        poolStorage ??= new FakePoolStorage();
-        chainlinkStorage ??= new FakeChainlinkStorage();
-
-        PendleMarketsClient pendleClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<PendleMarketsClient>()
-        );
-        DefiLlamaHacksClient hacksClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<DefiLlamaHacksClient>()
-        );
-        DefiLlamaProtocolsClient protocolsClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
-        );
-        CoinGeckoStablecoinsClient coinGeckoClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
-        );
-        GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
-
-        IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
-        ProxyResolverService proxyResolver = new(
-            rpcConfig: rpcOptions,
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<ProxyResolverService>()
-        );
-
-        ContractSecurityService contractSecurity = new(
-            goPlusClient: goPlusClient,
-            cache: this._securityCache,
-            proxyResolver: proxyResolver
-        );
-
-        return new PoolEnrichmentService(
-            pendleClient: pendleClient,
-            hacksClient: hacksClient,
-            protocolsClient: protocolsClient,
-            coinGeckoClient: coinGeckoClient,
-            chainlinkStorage: chainlinkStorage,
-            contractSecurityService: contractSecurity,
+        return this._factory.CreateEnrichmentService(
+            httpHandler: httpHandler,
+            cache: this._apiCache,
+            securityCache: this._securityCache,
             poolStorage: poolStorage,
-            cache: this._apiCache
+            chainlinkStorage: chainlinkStorage
         );
     }
 
@@ -324,26 +277,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         Assert.Empty(result);
     }
 
-    private sealed class FreshResponseHttpHandler : HttpMessageHandler
-    {
-        private readonly string _json;
-
-        public FreshResponseHttpHandler(string json) => this._json = json;
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken
-        )
-        {
-            return Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(this._json, Encoding.UTF8, mediaType: "application/json"),
-                }
-            );
-        }
-    }
-
     private sealed class MultiResponseHttpHandler : HttpMessageHandler
     {
         private readonly string[] _responses;
@@ -368,49 +301,5 @@ public sealed class PoolEnrichmentServiceTests : TestBase
 
             return Task.FromResult(response);
         }
-    }
-
-    private sealed class FakePoolStorage : IDefiLlamaPoolStorage
-    {
-        private readonly IReadOnlyList<RawPool> _pools;
-
-        public FakePoolStorage()
-            : this([]) { }
-
-        public FakePoolStorage(IReadOnlyList<RawPool> pools)
-        {
-            this._pools = pools;
-        }
-
-        public ValueTask StorePoolsAsync(
-            IReadOnlyList<RawPool> pools,
-            DateTimeOffset? dataDate,
-            CancellationToken cancellationToken
-        ) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken) =>
-            ValueTask.FromResult(this._pools);
-    }
-
-    private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
-    {
-        private readonly IReadOnlyList<ChainlinkPriceFeed> _feeds;
-
-        public FakeChainlinkStorage()
-            : this([]) { }
-
-        public FakeChainlinkStorage(IReadOnlyList<ChainlinkPriceFeed> feeds)
-        {
-            this._feeds = feeds;
-        }
-
-        public ValueTask StoreAsync(
-            IReadOnlyList<ChainlinkPriceFeed> feeds,
-            DateTimeOffset? dataDate,
-            CancellationToken cancellationToken
-        ) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
-            ValueTask.FromResult(this._feeds);
     }
 }

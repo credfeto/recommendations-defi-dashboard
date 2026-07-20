@@ -10,6 +10,7 @@ using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;

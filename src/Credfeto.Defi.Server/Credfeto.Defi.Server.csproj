@@ -78,15 +78,11 @@
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Chainlink\Credfeto.Defi.ApiClients.Chainlink.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko\Credfeto.Defi.ApiClients.CoinGecko.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle\Credfeto.Defi.ApiClients.Pendle.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
     <TrimmerRootAssembly Include="Credfeto.Defi.Storage" />
     <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Server.Composition\Credfeto.Defi.Server.Composition.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
   </ItemGroup>
   <ItemGroup>

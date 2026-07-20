@@ -27,6 +27,9 @@
     <Project Path="Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
   </Folder>
   <Folder Name="/Server/">
+    <Project Path="Credfeto.Defi.Server.Composition.Tests/Credfeto.Defi.Server.Composition.Tests.csproj" />
+    <Project Path="Credfeto.Defi.Server.Composition/Credfeto.Defi.Server.Composition.csproj" />
+    <Project Path="Credfeto.Defi.Server.Tests.Common/Credfeto.Defi.Server.Tests.Common.csproj" />
     <Project Path="Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj" />
     <Project Path="Credfeto.Defi.Server/Credfeto.Defi.Server.csproj" />
   </Folder>

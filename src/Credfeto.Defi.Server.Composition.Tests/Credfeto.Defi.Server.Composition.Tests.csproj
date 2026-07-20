@@ -4,7 +4,7 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <DebuggerSupport>true</DebuggerSupport>
-    <Description>DeFi Dashboard Server Tests</Description>
+    <Description>DeFi Dashboard Server Composition Tests</Description>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
@@ -46,10 +46,9 @@
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle.Interfaces\Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Server\Credfeto.Defi.Server.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Server.Tests.Common\Credfeto.Defi.Server.Tests.Common.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Server.Composition\Credfeto.Defi.Server.Composition.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Server.Tests.Common\Credfeto.Defi.Server.Tests.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
