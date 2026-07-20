@@ -14,6 +14,7 @@ namespace Credfeto.Defi.Server.Composition.Tests;
 
 public sealed class PoolsEndpointHandlersTests : TestBase
 {
+    private const string CACHE_CONTROL = "public, max-age=15, s-maxage=15, stale-while-revalidate=5";
     private const string EMPTY_ARRAY = "[]";
 
     private readonly PoolEnrichmentServiceTestFactory _factory = new();
@@ -27,10 +28,7 @@ public sealed class PoolsEndpointHandlersTests : TestBase
 
         Ok<PoolTypeMetadata[]> ok = Assert.IsType<Ok<PoolTypeMetadata[]>>(result);
         Assert.Equal(expected: PoolTypeService.GetAllPoolTypes(), actual: ok.Value);
-        Assert.Equal(
-            expected: PoolsEndpointHandlers.CACHE_CONTROL,
-            actual: context.Response.Headers.CacheControl.ToString()
-        );
+        Assert.Equal(expected: CACHE_CONTROL, actual: context.Response.Headers.CacheControl.ToString());
     }
 
     [Fact]
@@ -69,9 +67,6 @@ public sealed class PoolsEndpointHandlersTests : TestBase
         Ok<IReadOnlyList<Pool>> ok = Assert.IsType<Ok<IReadOnlyList<Pool>>>(result);
         Assert.NotNull(ok.Value);
         Assert.Empty(ok.Value);
-        Assert.Equal(
-            expected: PoolsEndpointHandlers.CACHE_CONTROL,
-            actual: context.Response.Headers.CacheControl.ToString()
-        );
+        Assert.Equal(expected: CACHE_CONTROL, actual: context.Response.Headers.CacheControl.ToString());
     }
 }

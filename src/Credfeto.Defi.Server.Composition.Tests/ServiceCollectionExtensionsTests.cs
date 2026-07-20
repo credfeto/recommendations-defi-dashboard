@@ -24,7 +24,7 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
     {
         return serviceCollection
             .AddOptions<DatabaseConfiguration>()
-            .Configure(opts => opts.ConnectionString = TestConnectionStrings.FAKE_SQL_SERVER)
+            .Configure(opts => opts.ConnectionString = TestConnectionStrings.FakeSqlServer)
             .Services.AddOptions<RpcConfig>()
             .Services.AddStorage()
             .AddDefiBusinessServices();

@@ -17,7 +17,7 @@ internal static class TestAppFactory
             new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
                 ["DatabaseConfiguration:Provider"] = "mssql",
-                ["DatabaseConfiguration:ConnectionString"] = TestConnectionStrings.FAKE_SQL_SERVER,
+                ["DatabaseConfiguration:ConnectionString"] = TestConnectionStrings.FakeSqlServer,
                 ["Rpc:Ethereum"] = string.Empty,
                 ["Rpc:Arbitrum"] = string.Empty,
                 ["Rpc:Base"] = string.Empty,

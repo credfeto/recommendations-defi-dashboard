@@ -9,7 +9,7 @@ namespace Credfeto.Defi.Server.Composition;
 
 public static class PoolsEndpointHandlers
 {
-    internal const string CACHE_CONTROL = "public, max-age=15, s-maxage=15, stale-while-revalidate=5";
+    private const string CACHE_CONTROL = "public, max-age=15, s-maxage=15, stale-while-revalidate=5";
 
     public static IResult GetPoolTypes(HttpContext context)
     {
@@ -28,7 +28,7 @@ public static class PoolsEndpointHandlers
         if (!PoolTypeService.IsValidPoolType(poolName))
         {
             return Results.BadRequest(
-                new { error = $"Invalid pool name. Valid options: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP" }
+                new { error = "Invalid pool name. Valid options: ETH, STABLES, HIGH_YIELD, LOW_TVL, BLUE_CHIP" }
             );
         }
 
