@@ -14,12 +14,9 @@ namespace Credfeto.Defi.Server.Composition.Tests;
 
 public sealed class PoolsEndpointHandlersTests : TestBase
 {
-    private readonly PoolEnrichmentServiceTestFactory _factory = new();
+    private const string EMPTY_ARRAY = "[]";
 
-    private PoolEnrichmentService CreateEnrichmentService(HttpMessageHandler httpHandler)
-    {
-        return this._factory.CreateEnrichmentService(httpHandler: httpHandler);
-    }
+    private readonly PoolEnrichmentServiceTestFactory _factory = new();
 
     [Fact]
     public void GetPoolTypes_ReturnsAllPoolTypesAndSetsCacheControl()
@@ -39,9 +36,8 @@ public sealed class PoolsEndpointHandlersTests : TestBase
     [Fact]
     public async Task GetPoolsByNameAsync_InvalidPoolName_ReturnsBadRequestAsync()
     {
-        const string EMPTY_ARRAY = "[]";
         using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
+        PoolEnrichmentService service = this._factory.CreateEnrichmentService(httpHandler: handler);
         DefaultHttpContext context = new();
 
         IResult result = await PoolsEndpointHandlers.GetPoolsByNameAsync(
@@ -59,9 +55,8 @@ public sealed class PoolsEndpointHandlersTests : TestBase
     [Fact]
     public async Task GetPoolsByNameAsync_ValidPoolName_ReturnsOkWithCacheControlAsync()
     {
-        const string EMPTY_ARRAY = "[]";
         using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
+        PoolEnrichmentService service = this._factory.CreateEnrichmentService(httpHandler: handler);
         DefaultHttpContext context = new();
 
         IResult result = await PoolsEndpointHandlers.GetPoolsByNameAsync(

@@ -15,17 +15,17 @@ namespace Credfeto.Defi.Server.Tests.Common;
 
 public sealed class PoolEnrichmentServiceTestFactory : TestBase
 {
-    public FakeTimeProvider TimeProvider { get; } = new();
+    private readonly FakeTimeProvider _timeProvider = new();
 
-    public ApiCacheService ApiCache { get; }
+    private readonly ApiCacheService _apiCache;
 
-    public ContractSecurityCacheService SecurityCache { get; }
+    private readonly ContractSecurityCacheService _securityCache;
 
     public PoolEnrichmentServiceTestFactory()
     {
         FakeDatabase database = new();
-        this.ApiCache = new ApiCacheService(database: database, timeProvider: this.TimeProvider);
-        this.SecurityCache = new ContractSecurityCacheService(database: database, timeProvider: this.TimeProvider);
+        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
+        this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
     }
 
     public PoolEnrichmentService CreateEnrichmentService(
@@ -67,7 +67,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 
         ContractSecurityService contractSecurity = new(
             goPlusClient: goPlusClient,
-            cache: this.SecurityCache,
+            cache: this._securityCache,
             proxyResolver: proxyResolver
         );
 
@@ -79,7 +79,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
             chainlinkStorage: chainlinkStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
-            cache: this.ApiCache
+            cache: this._apiCache
         );
     }
 }

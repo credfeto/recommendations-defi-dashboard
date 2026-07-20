@@ -34,15 +34,10 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Chainlink\Credfeto.Defi.ApiClients.Chainlink.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.Chainlink.Interfaces\Credfeto.Defi.ApiClients.Chainlink.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko\Credfeto.Defi.ApiClients.CoinGecko.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko.Interfaces\Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama.Interfaces\Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus.Interfaces\Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle\Credfeto.Defi.ApiClients.Pendle.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle.Interfaces\Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />

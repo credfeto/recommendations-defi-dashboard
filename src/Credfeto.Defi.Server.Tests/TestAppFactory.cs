@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Credfeto.Defi.Server.Tests.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 
@@ -16,8 +17,7 @@ internal static class TestAppFactory
             new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
                 ["DatabaseConfiguration:Provider"] = "mssql",
-                ["DatabaseConfiguration:ConnectionString"] =
-                    "Server=(local);Database=defi_test;Integrated Security=true;Connection Timeout=1;",
+                ["DatabaseConfiguration:ConnectionString"] = TestConnectionStrings.FAKE_SQL_SERVER,
                 ["Rpc:Ethereum"] = string.Empty,
                 ["Rpc:Arbitrum"] = string.Empty,
                 ["Rpc:Base"] = string.Empty,

@@ -4,6 +4,7 @@ using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
+using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using Credfeto.Defi.Storage.Configuration;
@@ -23,10 +24,7 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
     {
         return serviceCollection
             .AddOptions<DatabaseConfiguration>()
-            .Configure(opts =>
-                opts.ConnectionString =
-                    "Server=(local);Database=defi_test;Integrated Security=true;Connection Timeout=1;"
-            )
+            .Configure(opts => opts.ConnectionString = TestConnectionStrings.FAKE_SQL_SERVER)
             .Services.AddOptions<RpcConfig>()
             .Services.AddStorage()
             .AddDefiBusinessServices();

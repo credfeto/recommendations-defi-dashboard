@@ -436,47 +436,4 @@ public sealed class DefiMcpToolsTests : TestBase
         }
     }
 
-    private sealed class FakePoolStorage : IDefiLlamaPoolStorage
-    {
-        private readonly IReadOnlyList<RawPool> _pools;
-
-        public FakePoolStorage()
-            : this([]) { }
-
-        public FakePoolStorage(IReadOnlyList<RawPool> pools)
-        {
-            this._pools = pools;
-        }
-
-        public ValueTask StorePoolsAsync(
-            IReadOnlyList<RawPool> pools,
-            DateTimeOffset? dataDate,
-            CancellationToken cancellationToken
-        ) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken) =>
-            ValueTask.FromResult(this._pools);
-    }
-
-    private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
-    {
-        private readonly IReadOnlyList<ChainlinkPriceFeed> _feeds;
-
-        public FakeChainlinkStorage()
-            : this([]) { }
-
-        public FakeChainlinkStorage(IReadOnlyList<ChainlinkPriceFeed> feeds)
-        {
-            this._feeds = feeds;
-        }
-
-        public ValueTask StoreAsync(
-            IReadOnlyList<ChainlinkPriceFeed> feeds,
-            DateTimeOffset? dataDate,
-            CancellationToken cancellationToken
-        ) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
-            ValueTask.FromResult(this._feeds);
-    }
 }
