@@ -10,6 +10,7 @@ using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
@@ -252,15 +253,4 @@ public sealed class CacheWarmerServiceTests : TestBase
         ) => ValueTask.FromResult<IReadOnlyList<ChainlinkPriceFeed>>([]);
     }
 
-    private sealed class FakeChainlinkStorage : IChainlinkPriceFeedStorageService
-    {
-        public ValueTask StoreAsync(
-            IReadOnlyList<ChainlinkPriceFeed> feeds,
-            DateTimeOffset? dataDate,
-            CancellationToken cancellationToken
-        ) => ValueTask.CompletedTask;
-
-        public ValueTask<IReadOnlyList<ChainlinkPriceFeed>> GetAllAsync(CancellationToken cancellationToken) =>
-            ValueTask.FromResult<IReadOnlyList<ChainlinkPriceFeed>>([]);
-    }
 }

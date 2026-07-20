@@ -97,6 +97,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SDK - Updated DotNet SDK to 10.0.302
 - Updated MSBuild.Sdk.SqlProj to 4.3.0
 - Fixed pre-commit baseline violations: added shellcheck suppression for intentional word-splitting in the `clean` script and added missing end-of-file newlines to two csproj files
+- Increased Credfeto.Defi.Server's test coverage to 100% for all authored code by splitting host-agnostic DI registration and endpoint handler logic into a new Credfeto.Defi.Server.Composition project with dedicated tests
 
 ### Deprecated
 ### Removed

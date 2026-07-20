@@ -2,7 +2,12 @@
 
 ## Overview
 
-Tests use **xunit v3** with **FunFair.Test.Common** and **NSubstitute** for mocking. The test project is `src/Credfeto.Defi.Server.Tests`.
+Tests use **xunit v3** with **FunFair.Test.Common** and **NSubstitute** for mocking. The test projects are
+`src/Credfeto.Defi.Server.Tests` and `src/Credfeto.Defi.Server.Composition.Tests`.
+
+`Credfeto.Defi.Server.Composition` holds the host-agnostic DI registration (`AddDefiBusinessServices`) and
+endpoint handler bodies (`HealthEndpointHandlers`, `PoolsEndpointHandlers`) split out of `Credfeto.Defi.Server`
+so they can be exercised directly in unit tests without a real Kestrel host or `WebApplicationFactory`.
 
 ## Running Tests
 
@@ -11,9 +16,11 @@ cd src
 dotnet test Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj \
   -c Release \
   -p:SolutionDir=$(pwd)/
-```
 
-**268 tests, all passing.**
+dotnet test Credfeto.Defi.Server.Composition.Tests/Credfeto.Defi.Server.Composition.Tests.csproj \
+  -c Release \
+  -p:SolutionDir=$(pwd)/
+```
 
 ## Coverage
 
@@ -24,14 +31,37 @@ dotnet test Credfeto.Defi.Server.Tests/Credfeto.Defi.Server.Tests.csproj \
   -p:SolutionDir=$(pwd)/ \
   -- --coverage --coverage-output-format cobertura \
      --coverage-output /tmp/coverage/Credfeto.Defi.Server.coverage.cobertura.xml
+
+dotnet test Credfeto.Defi.Server.Composition.Tests/Credfeto.Defi.Server.Composition.Tests.csproj \
+  -c Release \
+  -p:SolutionDir=$(pwd)/ \
+  -- --coverage --coverage-output-format cobertura \
+     --coverage-output /tmp/coverage/Credfeto.Defi.Server.Composition.coverage.cobertura.xml
 ```
 
-Generate an HTML report:
+Generate an HTML report per assembly (`Credfeto.Defi.Server` references `Credfeto.Defi.Server.Composition`, so
+their cobertura files must never be passed to the same `reportgenerator` run - doing so would attribute
+`Composition`'s covered lines to `Server`'s report and understate `Server`'s real coverage):
 
 ```sh
 dotnet reportgenerator \
   -reports:/tmp/coverage/Credfeto.Defi.Server.coverage.cobertura.xml \
-  -targetdir:/tmp/coverage/report \
+  -targetdir:/tmp/coverage/Credfeto.Defi.Server \
+  -reporttypes:Html
+
+dotnet reportgenerator \
+  -reports:/tmp/coverage/Credfeto.Defi.Server.Composition.coverage.cobertura.xml \
+  -targetdir:/tmp/coverage/Credfeto.Defi.Server.Composition \
+  -reporttypes:Html
+```
+
+If a combined view is needed (e.g. for a summary dashboard), generate it as a separate step after the
+per-assembly reports above, not instead of them:
+
+```sh
+dotnet reportgenerator \
+  -reports:"/tmp/coverage/*.coverage.cobertura.xml" \
+  -targetdir:/tmp/coverage/combined \
   -reporttypes:Html
 ```
 

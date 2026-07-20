@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Storage;
 using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
