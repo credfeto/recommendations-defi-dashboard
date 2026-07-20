@@ -9,7 +9,7 @@ namespace Credfeto.Defi.Server.Composition;
 
 public static class PoolsEndpointHandlers
 {
-    private const string CACHE_CONTROL = "public, max-age=15, s-maxage=15, stale-while-revalidate=5";
+    internal const string CACHE_CONTROL = "public, max-age=15, s-maxage=15, stale-while-revalidate=5";
 
     public static IResult GetPoolTypes(HttpContext context)
     {

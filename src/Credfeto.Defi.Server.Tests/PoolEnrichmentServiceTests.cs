@@ -9,25 +9,13 @@ using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
-using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
 
 public sealed class PoolEnrichmentServiceTests : TestBase
 {
-    private readonly ApiCacheService _apiCache;
-    private readonly ContractSecurityCacheService _securityCache;
-    private readonly FakeTimeProvider _timeProvider;
     private readonly PoolEnrichmentServiceTestFactory _factory = new();
-
-    public PoolEnrichmentServiceTests()
-    {
-        this._timeProvider = new FakeTimeProvider();
-        FakeDatabase database = new();
-        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
-        this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
-    }
 
     private PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
@@ -37,8 +25,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     {
         return this._factory.CreateEnrichmentService(
             httpHandler: httpHandler,
-            cache: this._apiCache,
-            securityCache: this._securityCache,
             poolStorage: poolStorage,
             chainlinkStorage: chainlinkStorage
         );

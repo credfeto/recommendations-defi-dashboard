@@ -8,16 +8,28 @@ using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 
 namespace Credfeto.Defi.Server.Tests.Common;
 
 public sealed class PoolEnrichmentServiceTestFactory : TestBase
 {
+    public FakeTimeProvider TimeProvider { get; } = new();
+
+    public ApiCacheService ApiCache { get; }
+
+    public ContractSecurityCacheService SecurityCache { get; }
+
+    public PoolEnrichmentServiceTestFactory()
+    {
+        FakeDatabase database = new();
+        this.ApiCache = new ApiCacheService(database: database, timeProvider: this.TimeProvider);
+        this.SecurityCache = new ContractSecurityCacheService(database: database, timeProvider: this.TimeProvider);
+    }
+
     public PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
-        ApiCacheService cache,
-        ContractSecurityCacheService securityCache,
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null
     )
@@ -55,7 +67,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 
         ContractSecurityService contractSecurity = new(
             goPlusClient: goPlusClient,
-            cache: securityCache,
+            cache: this.SecurityCache,
             proxyResolver: proxyResolver
         );
 
@@ -67,7 +79,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
             chainlinkStorage: chainlinkStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
-            cache: cache
+            cache: this.ApiCache
         );
     }
 }
