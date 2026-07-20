@@ -46,8 +46,14 @@
   - any: ['src/Credfeto.Defi.Mcp/**/*']
 "credfeto-defi-server":
   - any: ['src/Credfeto.Defi.Server/**/*']
+"credfeto-defi-server-composition":
+  - any: ['src/Credfeto.Defi.Server.Composition/**/*']
+"credfeto-defi-server-composition-tests":
+  - any: ['src/Credfeto.Defi.Server.Composition.Tests/**/*']
 "credfeto-defi-server-tests":
   - any: ['src/Credfeto.Defi.Server.Tests/**/*']
+"credfeto-defi-server-tests-common":
+  - any: ['src/Credfeto.Defi.Server.Tests.Common/**/*']
 "credfeto-defi-services":
   - any: ['src/Credfeto.Defi.Services/**/*']
 "credfeto-defi-storage":

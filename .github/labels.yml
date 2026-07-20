@@ -112,9 +112,21 @@
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.Server project"
 
+- name: "credfeto-defi-server-composition"
+  color: "96f7d2"
+  description: "Changes in Credfeto.Defi.Server.Composition project"
+
+- name: "credfeto-defi-server-composition-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.Server.Composition.Tests project"
+
 - name: "credfeto-defi-server-tests"
   color: "0e8a16"
   description: "Changes in Credfeto.Defi.Server.Tests project"
+
+- name: "credfeto-defi-server-tests-common"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.Server.Tests.Common project"
 
 - name: "credfeto-defi-services"
   color: "96f7d2"
