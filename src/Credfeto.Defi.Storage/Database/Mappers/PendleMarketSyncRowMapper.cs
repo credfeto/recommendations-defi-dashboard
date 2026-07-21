@@ -53,20 +53,20 @@ internal sealed class PendleMarketSyncRowMapper : IMapper<IReadOnlyList<PendleMa
     // elsewhere, e.g. DefiLlamaPoolSyncRowMapper) to avoid a PH2071 "Duplicate shape found" false
     // positive: a flat sequence here would coincidentally match the AST shape of another mapper's
     // CreateTableHeader() method. Do not "simplify" this back to individual Columns.Add() calls.
-    private static readonly (string Name, Type Type)[] COLUMNS =
+    private static readonly ColumnDefinition[] COLUMNS =
     [
-        ("Address", typeof(string)),
-        ("ChainId", typeof(int)),
-        ("SimpleSymbol", typeof(string)),
-        ("Expiry", typeof(string)),
-        ("IsActive", typeof(bool)),
-        ("LiquidityUsd", typeof(double)),
-        ("AggregatedApy", typeof(double)),
-        ("UnderlyingApy", typeof(double)),
-        ("PendleApy", typeof(double)),
-        ("LpRewardApy", typeof(double)),
-        ("SwapFeeApy", typeof(double)),
-        ("TradingVolumeUsd", typeof(double)),
+        new(name: "Address", type: typeof(string)),
+        new(name: "ChainId", type: typeof(int)),
+        new(name: "SimpleSymbol", type: typeof(string)),
+        new(name: "Expiry", type: typeof(string)),
+        new(name: "IsActive", type: typeof(bool)),
+        new(name: "LiquidityUsd", type: typeof(double)),
+        new(name: "AggregatedApy", type: typeof(double)),
+        new(name: "UnderlyingApy", type: typeof(double)),
+        new(name: "PendleApy", type: typeof(double)),
+        new(name: "LpRewardApy", type: typeof(double)),
+        new(name: "SwapFeeApy", type: typeof(double)),
+        new(name: "TradingVolumeUsd", type: typeof(double)),
     ];
 
     [SuppressMessage(
@@ -78,11 +78,33 @@ internal sealed class PendleMarketSyncRowMapper : IMapper<IReadOnlyList<PendleMa
     {
         DataTable records = new(TABLE_TYPE);
 
-        foreach ((string name, Type type) in COLUMNS)
+        foreach (ColumnDefinition column in COLUMNS)
         {
-            records.Columns.Add(columnName: name, type: type);
+            records.Columns.Add(columnName: column.Name, type: column.Type);
         }
 
         return records;
+    }
+
+    private readonly struct ColumnDefinition
+    {
+        public ColumnDefinition(
+            string name,
+            [DynamicallyAccessedMembers(
+                DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+            )]
+                Type type
+        )
+        {
+            this.Name = name;
+            this.Type = type;
+        }
+
+        public string Name { get; }
+
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
+        )]
+        public Type Type { get; }
     }
 }
