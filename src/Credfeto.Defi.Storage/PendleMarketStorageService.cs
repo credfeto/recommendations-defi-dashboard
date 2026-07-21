@@ -92,28 +92,16 @@ public sealed class PendleMarketStorageService : IPendleMarketStorageService
 
     private static IReadOnlyList<PendleMarketCategorySyncRow> BuildCategoryRows(IReadOnlyList<PendleMarket> markets)
     {
-        List<PendleMarketCategorySyncRow> rows = [];
-
-        foreach (PendleMarket market in markets)
-        {
-            if (market.CategoryIds is null)
-            {
-                continue;
-            }
-
-            foreach (string categoryId in market.CategoryIds)
-            {
-                rows.Add(
-                    new PendleMarketCategorySyncRow(
-                        Address: market.Address,
-                        ChainId: market.ChainId,
-                        CategoryId: categoryId
-                    )
-                );
-            }
-        }
-
-        return rows;
+        return
+        [
+            .. markets
+                .Where(m => m.CategoryIds is not null)
+                .SelectMany(
+                    m => m.CategoryIds!,
+                    (m, categoryId) =>
+                        new PendleMarketCategorySyncRow(Address: m.Address, ChainId: m.ChainId, CategoryId: categoryId)
+                ),
+        ];
     }
 
     private static IReadOnlyList<RawPool> MapToRawPools(
