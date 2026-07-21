@@ -53,27 +53,27 @@ public sealed class PendleMarketStorageService : IPendleMarketStorageService
 
     public async ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<PendleMarketRow> marketRows = await this._database.ExecuteAsync(
+        ValueTask<IReadOnlyList<PendleMarketRow>> marketRowsTask = this._database.ExecuteAsync(
             action: PendleDatabase.Market_GetAllAsync,
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<PendleMarketCategoryRow> categoryRows = await this._database.ExecuteAsync(
+        ValueTask<IReadOnlyList<PendleMarketCategoryRow>> categoryRowsTask = this._database.ExecuteAsync(
             action: PendleDatabase.MarketCategory_GetAllAsync,
             cancellationToken: cancellationToken
         );
+
+        IReadOnlyList<PendleMarketRow> marketRows = await marketRowsTask;
+        IReadOnlyList<PendleMarketCategoryRow> categoryRows = await categoryRowsTask;
 
         return MapToRawPools(marketRows: marketRows, categoryRows: categoryRows);
     }
 
     private static IReadOnlyList<PendleMarketSyncRow> BuildMarketRows(IReadOnlyList<PendleMarket> markets)
     {
-        PendleMarketSyncRow[] rows = new PendleMarketSyncRow[markets.Count];
-
-        for (int i = 0; i < markets.Count; i++)
-        {
-            PendleMarket m = markets[i];
-            rows[i] = new PendleMarketSyncRow(
+        return
+        [
+            .. markets.Select(m => new PendleMarketSyncRow(
                 Address: m.Address,
                 ChainId: m.ChainId,
                 SimpleSymbol: m.SimpleSymbol,
@@ -86,10 +86,8 @@ public sealed class PendleMarketStorageService : IPendleMarketStorageService
                 LpRewardApy: m.LpRewardApy,
                 SwapFeeApy: m.SwapFeeApy,
                 TradingVolumeUsd: m.TradingVolume?.Usd
-            );
-        }
-
-        return rows;
+            )),
+        ];
     }
 
     private static IReadOnlyList<PendleMarketCategorySyncRow> BuildCategoryRows(IReadOnlyList<PendleMarket> markets)
@@ -123,25 +121,20 @@ public sealed class PendleMarketStorageService : IPendleMarketStorageService
         IReadOnlyList<PendleMarketCategoryRow> categoryRows
     )
     {
-        Dictionary<(string Address, int ChainId), List<string>> categoriesByMarket = GroupCategoriesByMarket(
-            categoryRows
+        ILookup<(string Address, int ChainId), string> categoriesByMarket = categoryRows.ToLookup(
+            keySelector: row => (row.Address, row.ChainId),
+            elementSelector: row => row.CategoryId
         );
 
-        RawPool[] result = new RawPool[marketRows.Count];
-
-        for (int i = 0; i < marketRows.Count; i++)
-        {
-            PendleMarketRow row = marketRows[i];
-
-            _ = categoriesByMarket.TryGetValue(key: (row.Address, row.ChainId), value: out List<string>? categoryIds);
-
-            result[i] = NormaliseMarket(row: row, categoryIds: categoryIds);
-        }
-
-        return result;
+        return
+        [
+            .. marketRows.Select(row =>
+                NormaliseMarket(row: row, categoryIds: categoriesByMarket[(row.Address, row.ChainId)])
+            ),
+        ];
     }
 
-    private static RawPool NormaliseMarket(PendleMarketRow row, IReadOnlyList<string>? categoryIds)
+    private static RawPool NormaliseMarket(PendleMarketRow row, IEnumerable<string> categoryIds)
     {
         string chain = ChainIdToName.TryGetValue(key: row.ChainId, out string? name)
             ? name
@@ -163,7 +156,7 @@ public sealed class PendleMarketStorageService : IPendleMarketStorageService
                 $"Maturity {expiry.ToString(format: "dd MMM yyyy", formatProvider: CultureInfo.InvariantCulture)}";
         }
 
-        bool isStable = categoryIds is not null && categoryIds.Contains("stables", StringComparer.OrdinalIgnoreCase);
+        bool isStable = categoryIds.Contains("stables", StringComparer.OrdinalIgnoreCase);
 
         return new RawPool
         {
@@ -182,27 +175,5 @@ public sealed class PendleMarketStorageService : IPendleMarketStorageService
             Predictions = new RawPredictions(),
             Outlier = false,
         };
-    }
-
-    private static Dictionary<(string Address, int ChainId), List<string>> GroupCategoriesByMarket(
-        IReadOnlyList<PendleMarketCategoryRow> categoryRows
-    )
-    {
-        Dictionary<(string Address, int ChainId), List<string>> result = [];
-
-        foreach (PendleMarketCategoryRow row in categoryRows)
-        {
-            (string Address, int ChainId) key = (row.Address, row.ChainId);
-
-            if (!result.TryGetValue(key: key, value: out List<string>? categoryIds))
-            {
-                categoryIds = [];
-                result[key] = categoryIds;
-            }
-
-            categoryIds.Add(row.CategoryId);
-        }
-
-        return result;
     }
 }
