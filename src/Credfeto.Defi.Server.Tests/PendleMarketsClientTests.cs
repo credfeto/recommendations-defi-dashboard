@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -34,7 +34,7 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.Empty(markets);
     }
@@ -48,15 +48,16 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         // 4 chains are queried, each returns the same active market
         Assert.Equal(expected: 4, actual: markets.Count);
-        Assert.Equal(expected: "pendle", actual: markets[0].Project);
+        Assert.Equal(expected: "0xmarket1", actual: markets[0].Address);
+        Assert.True(markets[0].IsActive, userMessage: "Market should be marked as active");
     }
 
     [Fact]
-    public async Task FetchMarketsAsync_InactiveMarket_IsExcludedAsync()
+    public async Task FetchMarketsAsync_InactiveMarket_IsIncludedAsync()
     {
         const string JSON =
             """{"total":1,"results":[{"address":"0xmarket1","chainId":1,"simpleSymbol":"PT-USDC","isActive":false,"aggregatedApy":0.05,"underlyingApy":0.03,"pendleApy":0.01,"lpRewardApy":0.005,"swapFeeApy":0.005}]}""";
@@ -64,9 +65,11 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
-        Assert.Empty(markets);
+        // Raw fetch no longer filters by activity status; that is now the storage layer's responsibility
+        Assert.NotEmpty(markets);
+        Assert.False(markets[0].IsActive, userMessage: "Market should be marked as inactive");
     }
 
     [Fact]
@@ -76,13 +79,13 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.Empty(markets);
     }
 
     [Fact]
-    public async Task FetchMarketsAsync_ActiveMarketWithExpiry_HasMaturityPoolMetaAsync()
+    public async Task FetchMarketsAsync_ActiveMarketWithExpiry_PreservesRawExpiryAsync()
     {
         const string JSON =
             """{"total":1,"results":[{"address":"0xmarket1","chainId":1,"simpleSymbol":"PT-USDC","expiry":"2025-06-30T00:00:00Z","isActive":true,"aggregatedApy":0.08,"underlyingApy":0.05,"pendleApy":0.02,"lpRewardApy":0.005,"swapFeeApy":0.005}]}""";
@@ -90,19 +93,14 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.NotEmpty(markets);
-        Assert.NotNull(markets[0].PoolMeta);
-        Assert.Contains(
-            expectedSubstring: "Maturity",
-            actualString: markets[0].PoolMeta!,
-            System.StringComparison.OrdinalIgnoreCase
-        );
+        Assert.Equal(expected: "2025-06-30T00:00:00Z", actual: markets[0].Expiry);
     }
 
     [Fact]
-    public async Task FetchMarketsAsync_StableMarket_HasStablecoinFlagAsync()
+    public async Task FetchMarketsAsync_StableMarket_HasStablesCategoryAsync()
     {
         const string JSON =
             """{"total":1,"results":[{"address":"0xmarket1","chainId":1,"simpleSymbol":"PT-USDC","isActive":true,"categoryIds":["stables"],"aggregatedApy":0.05,"underlyingApy":0.03,"pendleApy":0.01,"lpRewardApy":0.005,"swapFeeApy":0.005}]}""";
@@ -110,13 +108,11 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.NotEmpty(markets);
-        Assert.True(
-            markets[0].Stablecoin,
-            userMessage: "Market with 'stables' category should be marked as stablecoin"
-        );
+        Assert.NotNull(markets[0].CategoryIds);
+        Assert.Contains(expected: "stables", collection: markets[0].CategoryIds!);
     }
 
     [Fact]
@@ -127,7 +123,7 @@ public sealed class PendleMarketsClientTests : TestBase
 
         PendleMarketsClient client = CreateClientWithHandler(handler);
 
-        IReadOnlyList<RawPool> markets = await client.FetchMarketsAsync(this.CancellationToken());
+        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.Empty(markets);
     }

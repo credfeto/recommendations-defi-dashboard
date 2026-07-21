@@ -97,19 +97,17 @@ public sealed class CacheWarmerServiceTests : TestBase
         const string EMPTY_POOLS_JSON = """{"data":[]}""";
         const string EMPTY_JSON = "[]";
 
-        using FreshResponseHttpHandler handler = new(
-            [
-                EMPTY_POOLS_JSON, // llama pools
-                EMPTY_JSON, // pendle chain 1
-                EMPTY_JSON, // pendle chain 2
-                EMPTY_JSON, // pendle chain 3
-                EMPTY_JSON, // pendle chain 4
-                EMPTY_JSON, // hacks
-                EMPTY_JSON, // protocols
-                EMPTY_JSON, // stablecoins
-                EMPTY_JSON, // coin list
-            ]
-        );
+        using FreshResponseHttpHandler handler = new([
+            EMPTY_POOLS_JSON, // llama pools
+            EMPTY_JSON, // pendle chain 1
+            EMPTY_JSON, // pendle chain 2
+            EMPTY_JSON, // pendle chain 3
+            EMPTY_JSON, // pendle chain 4
+            EMPTY_JSON, // hacks
+            EMPTY_JSON, // protocols
+            EMPTY_JSON, // stablecoins
+            EMPTY_JSON, // coin list
+        ]);
 
         CacheWarmerService warmer = new(
             llamaPoolsClient: this.CreateApiClient<DefiLlamaPoolsClient>(handler),
@@ -120,6 +118,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
@@ -140,19 +139,17 @@ public sealed class CacheWarmerServiceTests : TestBase
         const string EMPTY_JSON = "[]";
         const string EMPTY_POOLS_JSON = """{"data":[]}""";
 
-        using FreshResponseHttpHandler primeHandler = new(
-            [
-                EMPTY_POOLS_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-                EMPTY_JSON,
-            ]
-        );
+        using FreshResponseHttpHandler primeHandler = new([
+            EMPTY_POOLS_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+            EMPTY_JSON,
+        ]);
 
         // Use a separate warmer to prime all cache entries
         CacheWarmerService primeWarmer = new(
@@ -164,6 +161,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
@@ -183,6 +181,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
@@ -205,6 +204,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
             poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
+            pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
@@ -252,5 +252,4 @@ public sealed class CacheWarmerServiceTests : TestBase
             CancellationToken cancellationToken
         ) => ValueTask.FromResult<IReadOnlyList<ChainlinkPriceFeed>>([]);
     }
-
 }

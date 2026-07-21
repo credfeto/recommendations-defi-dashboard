@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -20,35 +21,75 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     private PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
-        IChainlinkPriceFeedStorageService? chainlinkStorage = null
+        IChainlinkPriceFeedStorageService? chainlinkStorage = null,
+        IPendleMarketStorageService? pendleStorage = null
     )
     {
         return this._factory.CreateEnrichmentService(
             httpHandler: httpHandler,
             poolStorage: poolStorage,
-            chainlinkStorage: chainlinkStorage
+            chainlinkStorage: chainlinkStorage,
+            pendleStorage: pendleStorage
         );
     }
 
     [Fact]
     public async Task GetAllPoolsAsync_EmptyData_ReturnsEmptyListAsync()
     {
+        // GetAllPoolsAsync now reads directly from pool/pendle storage rather than HTTP, so no HTTP responses are needed
         const string EMPTY_ARRAY = "[]";
-
-        using MultiResponseHttpHandler handler = new(
-            [
-                EMPTY_ARRAY, // pendle chain 1
-                EMPTY_ARRAY, // pendle chain 2
-                EMPTY_ARRAY, // pendle chain 3
-                EMPTY_ARRAY, // pendle chain 4
-            ]
-        );
+        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
 
         PoolEnrichmentService service = this.CreateEnrichmentService(handler);
 
         IReadOnlyList<RawPool> pools = await service.GetAllPoolsAsync(this.CancellationToken());
 
         Assert.Empty(pools);
+    }
+
+    [Fact]
+    public async Task GetAllPoolsAsync_CombinesPoolAndPendleStorageAsync()
+    {
+        const string EMPTY_ARRAY = "[]";
+        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
+
+        RawPool llamaPool = new()
+        {
+            Project = "aave-v3",
+            Chain = "Ethereum",
+            Symbol = "USDC",
+            TvlUsd = 5_000_000,
+            Apy = 5.0,
+            Stablecoin = true,
+            IlRisk = "no",
+            PoolId = "llama-pool-1",
+            Predictions = new RawPredictions(),
+        };
+
+        RawPool pendlePool = new()
+        {
+            Project = "pendle",
+            Chain = "Ethereum",
+            Symbol = "PT-USDC",
+            TvlUsd = 2_000_000,
+            Apy = 8.0,
+            Stablecoin = false,
+            IlRisk = "no",
+            PoolId = "0xC374f7eC85F8C7DE3207a10bB1978bA104bdA3B2",
+            Predictions = new RawPredictions(),
+        };
+
+        PoolEnrichmentService service = this.CreateEnrichmentService(
+            handler,
+            poolStorage: new FakePoolStorage([llamaPool]),
+            pendleStorage: new FakePendleStorage([pendlePool])
+        );
+
+        IReadOnlyList<RawPool> pools = await service.GetAllPoolsAsync(this.CancellationToken());
+
+        Assert.Equal(expected: 2, actual: pools.Count);
+        Assert.Contains(pools, pool => string.Equals(pool.PoolId, llamaPool.PoolId, StringComparison.Ordinal));
+        Assert.Contains(pools, pool => string.Equals(pool.PoolId, pendlePool.PoolId, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -196,15 +237,13 @@ public sealed class PoolEnrichmentServiceTests : TestBase
             """[{"date":1672531200,"name":"Aave","classification":"Protocol","technique":"Flash Loan","amount":1000000,"source":"defillama"}]""";
         const string EMPTY_ARRAY = "[]";
 
-        using MultiResponseHttpHandler handler = new(
-            [
-                HACKS_JSON, // hacks (GetHackMapAsync is called first inside EnrichPoolsAsync)
-                EMPTY_ARRAY, // protocols
-                EMPTY_ARRAY, // stablecoins (price map)
-                EMPTY_ARRAY, // stablecoins (address map)
-                EMPTY_ARRAY, // coin list (address map)
-            ]
-        );
+        using MultiResponseHttpHandler handler = new([
+            HACKS_JSON, // hacks (GetHackMapAsync is called first inside EnrichPoolsAsync)
+            EMPTY_ARRAY, // protocols
+            EMPTY_ARRAY, // stablecoins (price map)
+            EMPTY_ARRAY, // stablecoins (address map)
+            EMPTY_ARRAY, // coin list (address map)
+        ]);
 
         PoolEnrichmentService service = this.CreateEnrichmentService(handler);
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
@@ -15,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Credfeto.Defi.ApiClients.Pendle;
 
 /// <summary>
-///     Fetches Pendle market data and normalises it into the common pool format.
+///     Fetches raw Pendle market data.
 /// </summary>
 public sealed class PendleMarketsClient : IPendleMarketsClient
 {
@@ -24,32 +23,24 @@ public sealed class PendleMarketsClient : IPendleMarketsClient
 
     private static readonly int[] PendleChainIds = [1, 42161, 8453, 56];
 
-    private static readonly IReadOnlyDictionary<int, string> ChainIdToName = new Dictionary<int, string>
-    {
-        [1] = "Ethereum",
-        [42161] = "Arbitrum",
-        [8453] = "Base",
-        [56] = "BSC",
-    };
-
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<PendleMarketsClient> _logger;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="PendleMarketsClient" />.
     /// </summary>
-    public PendleMarketsClient(IHttpClientFactory httpClientFactory, ILogger<PendleMarketsClient> logger)    {
+    public PendleMarketsClient(IHttpClientFactory httpClientFactory, ILogger<PendleMarketsClient> logger)
+    {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
     }
 
     /// <summary>
-    ///     Fetches all active markets from Pendle across all supported chains
-    ///     and normalises them into the common pool format.
+    ///     Fetches all markets from Pendle across all supported chains.
     /// </summary>
-    public async ValueTask<IReadOnlyList<RawPool>> FetchMarketsAsync(CancellationToken cancellationToken)
+    public async ValueTask<IReadOnlyList<PendleMarket>> FetchMarketsAsync(CancellationToken cancellationToken)
     {
-        List<RawPool> all = [];
+        List<PendleMarket> all = [];
 
         foreach (int chainId in PendleChainIds)
         {
@@ -60,13 +51,7 @@ public sealed class PendleMarketsClient : IPendleMarketsClient
                     cancellationToken: cancellationToken
                 );
 
-                foreach (PendleMarket market in markets)
-                {
-                    if (market.IsActive)
-                    {
-                        all.Add(NormaliseMarket(market));
-                    }
-                }
+                all.AddRange(markets);
             }
             catch (Exception ex)
             {
@@ -116,51 +101,5 @@ public sealed class PendleMarketsClient : IPendleMarketsClient
         }
 
         return markets;
-    }
-
-    private static RawPool NormaliseMarket(PendleMarket market)
-    {
-        string chain = ChainIdToName.TryGetValue(key: market.ChainId, out string? name)
-            ? name
-            : market.ChainId.ToString(CultureInfo.InvariantCulture);
-
-        string? poolMeta = null;
-
-        if (!string.IsNullOrEmpty(market.Expiry))
-        {
-            if (
-                DateTimeOffset.TryParse(
-                    input: market.Expiry,
-                    formatProvider: CultureInfo.InvariantCulture,
-                    styles: System.Globalization.DateTimeStyles.None,
-                    result: out DateTimeOffset expiry
-                )
-            )
-            {
-                poolMeta =
-                    $"Maturity {expiry.ToString(format: "dd MMM yyyy", formatProvider: CultureInfo.InvariantCulture)}";
-            }
-        }
-
-        bool isStable =
-            market.CategoryIds is not null && market.CategoryIds.Contains("stables", StringComparer.OrdinalIgnoreCase);
-
-        return new RawPool
-        {
-            Chain = chain,
-            Project = "pendle",
-            Symbol = market.SimpleSymbol,
-            TvlUsd = market.Liquidity?.Usd ?? 0,
-            Apy = market.AggregatedApy * 100,
-            ApyBase = market.UnderlyingApy * 100,
-            ApyReward = (market.PendleApy + market.LpRewardApy + market.SwapFeeApy) * 100,
-            IlRisk = "no",
-            Stablecoin = isStable,
-            PoolId = market.Address,
-            PoolMeta = poolMeta,
-            VolumeUsd1d = market.TradingVolume?.Usd,
-            Predictions = new RawPredictions(),
-            Outlier = false,
-        };
     }
 }

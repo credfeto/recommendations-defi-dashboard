@@ -30,6 +30,7 @@ public sealed class CacheWarmerService : IHostedService
     private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
     private readonly ILogger<CacheWarmerService> _logger;
     private readonly IPendleMarketsClient _pendleClient;
+    private readonly IPendleMarketStorageService _pendleStorage;
     private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolsClient _protocolsClient;
 
@@ -45,6 +46,7 @@ public sealed class CacheWarmerService : IHostedService
         IChainlinkStablecoinsClient chainlinkClient,
         ApiCacheService apiCache,
         IDefiLlamaPoolStorage poolStorage,
+        IPendleMarketStorageService pendleStorage,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ILogger<CacheWarmerService> logger
     )
@@ -57,6 +59,7 @@ public sealed class CacheWarmerService : IHostedService
         this._chainlinkClient = chainlinkClient;
         this._apiCache = apiCache;
         this._poolStorage = poolStorage;
+        this._pendleStorage = pendleStorage;
         this._chainlinkStorage = chainlinkStorage;
         this._logger = logger;
     }
@@ -134,11 +137,10 @@ public sealed class CacheWarmerService : IHostedService
 
     private async Task WarmPendlePoolsAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<RawPool> data = await this._pendleClient.FetchMarketsAsync(cancellationToken);
-        _ = await this._apiCache.GetOrFetchAsync(
-            key: "pendle_pools",
-            fetcher: _ => new ValueTask<IReadOnlyList<RawPool>>(data),
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawPool,
+        IReadOnlyList<PendleMarket> data = await this._pendleClient.FetchMarketsAsync(cancellationToken);
+        await this._pendleStorage.StoreMarketsAsync(
+            markets: data,
+            dataDate: null,
             cancellationToken: cancellationToken
         );
     }

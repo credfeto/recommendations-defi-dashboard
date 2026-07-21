@@ -52,4 +52,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireService<IChainlinkPriceFeedStorageService>();
     }
+
+    [Fact]
+    public void PendleMarketStorageServiceIsRegistered()
+    {
+        this.RequireService<IPendleMarketStorageService>();
+    }
 }

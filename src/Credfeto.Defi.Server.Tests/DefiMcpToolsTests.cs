@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
-using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Mcp;
@@ -60,16 +59,6 @@ public sealed class DefiMcpToolsTests : TestBase
                     );
         }
 
-        if (typeof(T) == typeof(PendleMarketsClient))
-        {
-            return (T)
-                (object)
-                    new PendleMarketsClient(
-                        httpClientFactory: factory,
-                        logger: this.GetTypedLogger<PendleMarketsClient>()
-                    );
-        }
-
         if (typeof(T) == typeof(DefiLlamaHacksClient))
         {
             return (T)
@@ -110,13 +99,14 @@ public sealed class DefiMcpToolsTests : TestBase
     private DefiMcpTools CreateMcpTools(
         HttpClient httpClient,
         IDefiLlamaPoolStorage? poolStorage = null,
-        IChainlinkPriceFeedStorageService? chainlinkStorage = null
+        IChainlinkPriceFeedStorageService? chainlinkStorage = null,
+        IPendleMarketStorageService? pendleStorage = null
     )
     {
         poolStorage ??= new FakePoolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
+        pendleStorage ??= new FakePendleStorage();
 
-        PendleMarketsClient pendleClient = this.CreateClient<PendleMarketsClient>(httpClient);
         DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
         DefiLlamaProtocolsClient protocolsClient = this.CreateClient<DefiLlamaProtocolsClient>(httpClient);
         CoinGeckoStablecoinsClient coinGeckoClient = this.CreateClient<CoinGeckoStablecoinsClient>(httpClient);
@@ -139,13 +129,13 @@ public sealed class DefiMcpToolsTests : TestBase
         );
 
         PoolEnrichmentService enrichmentService = new(
-            pendleClient: pendleClient,
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
             chainlinkStorage: chainlinkStorage,
             contractSecurityService: contractSecurityService,
             poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
             cache: this._apiCache
         );
 
@@ -182,19 +172,12 @@ public sealed class DefiMcpToolsTests : TestBase
     {
         const string EMPTY_ARRAY_JSON = "[]";
 
-        int requestCount = 0;
-        using MultiResponseHttpHandler handler = new(
-            [
-                EMPTY_ARRAY_JSON, // pendle
-                EMPTY_ARRAY_JSON, // pendle chain 2
-                EMPTY_ARRAY_JSON, // pendle chain 3
-                EMPTY_ARRAY_JSON, // pendle chain 4
-                EMPTY_ARRAY_JSON, // hacks
-                EMPTY_ARRAY_JSON, // protocols
-                EMPTY_ARRAY_JSON, // stablecoins
-                EMPTY_ARRAY_JSON, // coin list
-            ]
-        );
+        using MultiResponseHttpHandler handler = new([
+            EMPTY_ARRAY_JSON, // hacks
+            EMPTY_ARRAY_JSON, // protocols
+            EMPTY_ARRAY_JSON, // stablecoins
+            EMPTY_ARRAY_JSON, // coin list
+        ]);
         using HttpClient httpClient = new(handler);
 
         DefiMcpTools tools = this.CreateMcpTools(httpClient);
@@ -206,7 +189,6 @@ public sealed class DefiMcpToolsTests : TestBase
         );
 
         Assert.Empty(pools);
-        UnusedVariable(requestCount);
     }
 
     [Fact]
@@ -214,18 +196,12 @@ public sealed class DefiMcpToolsTests : TestBase
     {
         const string EMPTY_ARRAY_JSON = "[]";
 
-        using MultiResponseHttpHandler handler = new(
-            [
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-            ]
-        );
+        using MultiResponseHttpHandler handler = new([
+            EMPTY_ARRAY_JSON, // hacks
+            EMPTY_ARRAY_JSON, // protocols
+            EMPTY_ARRAY_JSON, // stablecoins
+            EMPTY_ARRAY_JSON, // coin list
+        ]);
         using HttpClient httpClient = new(handler);
 
         DefiMcpTools tools = this.CreateMcpTools(httpClient);
@@ -245,18 +221,12 @@ public sealed class DefiMcpToolsTests : TestBase
     {
         const string EMPTY_ARRAY_JSON = "[]";
 
-        using MultiResponseHttpHandler handler = new(
-            [
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-                EMPTY_ARRAY_JSON,
-            ]
-        );
+        using MultiResponseHttpHandler handler = new([
+            EMPTY_ARRAY_JSON, // hacks
+            EMPTY_ARRAY_JSON, // protocols
+            EMPTY_ARRAY_JSON, // stablecoins
+            EMPTY_ARRAY_JSON, // coin list
+        ]);
         using HttpClient httpClient = new(handler);
 
         DefiMcpTools tools = this.CreateMcpTools(httpClient);
@@ -278,18 +248,12 @@ public sealed class DefiMcpToolsTests : TestBase
 
         IDefiLlamaPoolStorage poolStorage = new FakePoolStorage(BuildRawEthPools(count: 20));
 
-        using MultiResponseHttpHandler handler = new(
-            [
-                EMPTY_ARRAY_JSON, // pendle chain 1
-                EMPTY_ARRAY_JSON, // pendle chain 2
-                EMPTY_ARRAY_JSON, // pendle chain 3
-                EMPTY_ARRAY_JSON, // pendle chain 4
-                EMPTY_ARRAY_JSON, // hacks
-                EMPTY_ARRAY_JSON, // protocols
-                EMPTY_ARRAY_JSON, // stablecoins
-                EMPTY_ARRAY_JSON, // coin list
-            ]
-        );
+        using MultiResponseHttpHandler handler = new([
+            EMPTY_ARRAY_JSON, // hacks
+            EMPTY_ARRAY_JSON, // protocols
+            EMPTY_ARRAY_JSON, // stablecoins
+            EMPTY_ARRAY_JSON, // coin list
+        ]);
         using HttpClient httpClient = new(handler);
 
         DefiMcpTools tools = this.CreateMcpTools(httpClient, poolStorage: poolStorage);
@@ -435,5 +399,4 @@ public sealed class DefiMcpToolsTests : TestBase
             return Task.FromResult(response);
         }
     }
-
 }
