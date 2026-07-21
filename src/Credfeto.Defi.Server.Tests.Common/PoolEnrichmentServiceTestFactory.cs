@@ -2,7 +2,6 @@ using System.Net.Http;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
-using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
@@ -31,7 +30,8 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
     public PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
-        IChainlinkPriceFeedStorageService? chainlinkStorage = null
+        IChainlinkPriceFeedStorageService? chainlinkStorage = null,
+        IPendleMarketStorageService? pendleStorage = null
     )
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
@@ -39,11 +39,8 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 
         poolStorage ??= new FakePoolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
+        pendleStorage ??= new FakePendleStorage();
 
-        PendleMarketsClient pendleClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<PendleMarketsClient>()
-        );
         DefiLlamaHacksClient hacksClient = new(
             httpClientFactory: factory,
             logger: this.GetTypedLogger<DefiLlamaHacksClient>()
@@ -72,13 +69,13 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         );
 
         return new PoolEnrichmentService(
-            pendleClient: pendleClient,
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
             chainlinkStorage: chainlinkStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
             cache: this._apiCache
         );
     }

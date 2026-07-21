@@ -27,6 +27,7 @@ public static class StorageSetup
             .AddSingleton<ApiCacheService>()
             .AddSingleton<ContractSecurityCacheService>()
             .AddSingleton<IDefiLlamaPoolStorage, DefiLlamaPoolStorage>()
-            .AddSingleton<IChainlinkPriceFeedStorageService, ChainlinkPriceFeedStorageService>();
+            .AddSingleton<IChainlinkPriceFeedStorageService, ChainlinkPriceFeedStorageService>()
+            .AddSingleton<IPendleMarketStorageService, PendleMarketStorageService>();
     }
 }

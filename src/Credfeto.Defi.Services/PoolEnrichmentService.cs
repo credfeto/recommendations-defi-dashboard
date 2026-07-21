@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
-using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services.Utils;
@@ -17,7 +16,6 @@ namespace Credfeto.Defi.Services;
 /// </summary>
 public sealed class PoolEnrichmentService
 {
-    private const string CACHE_KEY_PENDLE_POOLS = "pendle_pools";
     private const string CACHE_KEY_HACKS = "defillama_hacks";
     private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
     private const string CACHE_KEY_STABLECOINS = "coingecko_stablecoins";
@@ -28,7 +26,7 @@ public sealed class PoolEnrichmentService
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly ContractSecurityService _contractSecurityService;
     private readonly IDefiLlamaHacksClient _hacksClient;
-    private readonly IPendleMarketsClient _pendleClient;
+    private readonly IPendleMarketStorageService _pendleStorage;
     private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolsClient _protocolsClient;
 
@@ -36,23 +34,23 @@ public sealed class PoolEnrichmentService
     ///     Initialises a new instance of <see cref="PoolEnrichmentService" />.
     /// </summary>
     public PoolEnrichmentService(
-        IPendleMarketsClient pendleClient,
         IDefiLlamaHacksClient hacksClient,
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ContractSecurityService contractSecurityService,
         IDefiLlamaPoolStorage poolStorage,
+        IPendleMarketStorageService pendleStorage,
         ApiCacheService cache
     )
     {
-        this._pendleClient = pendleClient;
         this._hacksClient = hacksClient;
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
         this._chainlinkStorage = chainlinkStorage;
         this._contractSecurityService = contractSecurityService;
         this._poolStorage = poolStorage;
+        this._pendleStorage = pendleStorage;
         this._cache = cache;
     }
 
@@ -63,12 +61,7 @@ public sealed class PoolEnrichmentService
     {
         ValueTask<IReadOnlyList<RawPool>> llamaTask = this._poolStorage.GetAllPoolsAsync(cancellationToken);
 
-        ValueTask<IReadOnlyList<RawPool>> pendleTask = this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_PENDLE_POOLS,
-            fetcher: this._pendleClient.FetchMarketsAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawPool,
-            cancellationToken: cancellationToken
-        );
+        ValueTask<IReadOnlyList<RawPool>> pendleTask = this._pendleStorage.GetAllPoolsAsync(cancellationToken);
 
         IReadOnlyList<RawPool> llamaPools = await llamaTask;
         IReadOnlyList<RawPool> pendlePools = await pendleTask;

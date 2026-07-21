@@ -6,12 +6,12 @@ using Credfeto.Defi.Data.Models.Models;
 namespace Credfeto.Defi.ApiClients.Pendle.Interfaces;
 
 /// <summary>
-///     Fetches Pendle market data and normalises it into the common pool format.
+///     Fetches raw Pendle market data.
 /// </summary>
 public interface IPendleMarketsClient
 {
     /// <summary>
-    ///     Fetches all active markets from Pendle across all supported chains.
+    ///     Fetches all markets from Pendle across all supported chains.
     /// </summary>
-    ValueTask<IReadOnlyList<RawPool>> FetchMarketsAsync(CancellationToken cancellationToken);
+    ValueTask<IReadOnlyList<PendleMarket>> FetchMarketsAsync(CancellationToken cancellationToken);
 }
