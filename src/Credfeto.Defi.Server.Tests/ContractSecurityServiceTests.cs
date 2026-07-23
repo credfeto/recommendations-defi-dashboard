@@ -47,14 +47,14 @@ public sealed class ContractSecurityServiceTests : TestBase
         );
     }
 
-    private static ContractSecurityRow BuildRow(
+    private static GoPlusTokenSecurityRow BuildRow(
         string chain,
         string address,
         bool? isProxy,
         string? parentAddress = null
     )
     {
-        return new ContractSecurityRow(
+        return new GoPlusTokenSecurityRow(
             Chain: chain,
             Address: address,
             ParentAddress: parentAddress,
@@ -68,7 +68,9 @@ public sealed class ContractSecurityServiceTests : TestBase
             HoneypotWithSameCreator: null,
             TokenName: null,
             TokenSymbol: null,
-            CheckedAt: FixedNow - TimeSpan.FromHours(1)
+            DateCreated: FixedNow - TimeSpan.FromHours(1),
+            DateUpdated: FixedNow - TimeSpan.FromHours(1),
+            DataDate: null
         );
     }
 
@@ -147,7 +149,7 @@ public sealed class ContractSecurityServiceTests : TestBase
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
-        this._database.WithReturn<ContractSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
 
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.InternalServerError));
         using HttpClient httpClient = new(handler);
@@ -204,10 +206,10 @@ public sealed class ContractSecurityServiceTests : TestBase
         const string PROXY_ADDRESS = "0xproxy00000000000000000000000000000000aa";
         const string IMPL_ADDRESS = "0ximpl000000000000000000000000000000000bb";
 
-        this._database.WithReturn<ContractSecurityRow?>(BuildRow("Ethereum", PROXY_ADDRESS, isProxy: true));
-        this._database.WithReturn<IReadOnlyList<ContractSecurityRow>>(
-            [BuildRow("Ethereum", IMPL_ADDRESS, isProxy: false, parentAddress: PROXY_ADDRESS)]
-        );
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", PROXY_ADDRESS, isProxy: true));
+        this._database.WithReturn<IReadOnlyList<GoPlusTokenSecurityRow>>([
+            BuildRow("Ethereum", IMPL_ADDRESS, isProxy: false, parentAddress: PROXY_ADDRESS),
+        ]);
 
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
         using HttpClient httpClient = new(handler);

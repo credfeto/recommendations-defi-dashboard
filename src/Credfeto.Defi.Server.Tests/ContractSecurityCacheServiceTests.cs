@@ -14,9 +14,17 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class ContractSecurityCacheServiceTests : TestBase
 {
-    private static readonly DateTimeOffset FixedNow = new(year: 2024, month: 6, day: 1, hour: 12, minute: 0, second: 0, offset: TimeSpan.Zero);
+    private static readonly DateTimeOffset FixedNow = new(
+        year: 2024,
+        month: 6,
+        day: 1,
+        hour: 12,
+        minute: 0,
+        second: 0,
+        offset: TimeSpan.Zero
+    );
 
-    private static readonly ContractSecurityRow SampleRow = new(
+    private static readonly GoPlusTokenSecurityRow SampleRow = new(
         Chain: "Ethereum",
         Address: "0xabc123def456abc123def456abc123def456abc1",
         ParentAddress: null,
@@ -30,7 +38,9 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
         HoneypotWithSameCreator: false,
         TokenName: "TestToken",
         TokenSymbol: "TEST",
-        CheckedAt: FixedNow - TimeSpan.FromHours(1)
+        DateCreated: FixedNow - TimeSpan.FromHours(1),
+        DateUpdated: FixedNow - TimeSpan.FromHours(1),
+        DataDate: null
     );
 
     private readonly FakeDatabase _database;
@@ -62,7 +72,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
     public async Task GetAsync_FreshEntry_ReturnsMappedInfoAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();
-        this._database.WithReturn<ContractSecurityRow?>(SampleRow);
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(SampleRow);
 
         ContractSecurityInfo? result = await this._cache.GetAsync(
             chain: SampleRow.Chain,
@@ -83,8 +93,8 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
-        ContractSecurityRow expiredRow = SampleRow with { CheckedAt = FixedNow - TimeSpan.FromHours(25) };
-        this._database.WithReturn<ContractSecurityRow?>(expiredRow);
+        GoPlusTokenSecurityRow expiredRow = SampleRow with { DateUpdated = FixedNow - TimeSpan.FromHours(25) };
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(expiredRow);
 
         ContractSecurityInfo? result = await this._cache.GetAsync(
             chain: SampleRow.Chain,
@@ -99,7 +109,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
     public async Task GetChildrenAsync_NoChildren_ReturnsEmptyListAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();
-        this._database.WithReturn<IReadOnlyList<ContractSecurityRow>>([]);
+        this._database.WithReturn<IReadOnlyList<GoPlusTokenSecurityRow>>([]);
 
         IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
             chain: "Ethereum",
@@ -117,7 +127,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
 
         const string PARENT_ADDRESS = "0xparent00000000000000000000000000000000ab";
 
-        ContractSecurityRow childRow = new(
+        GoPlusTokenSecurityRow childRow = new(
             Chain: "Ethereum",
             Address: "0xchild000000000000000000000000000000000ab",
             ParentAddress: PARENT_ADDRESS,
@@ -131,10 +141,12 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
             HoneypotWithSameCreator: null,
             TokenName: null,
             TokenSymbol: null,
-            CheckedAt: FixedNow - TimeSpan.FromHours(1)
+            DateCreated: FixedNow - TimeSpan.FromHours(1),
+            DateUpdated: FixedNow - TimeSpan.FromHours(1),
+            DataDate: null
         );
 
-        this._database.WithReturn<IReadOnlyList<ContractSecurityRow>>([childRow]);
+        this._database.WithReturn<IReadOnlyList<GoPlusTokenSecurityRow>>([childRow]);
 
         IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
             chain: "Ethereum",
@@ -146,7 +158,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
     }
 
     [Fact]
-    public async Task SetAsync_CallsUpsertAsync()
+    public async Task SetAsync_CallsSyncAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();
 

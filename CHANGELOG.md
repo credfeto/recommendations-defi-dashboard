@@ -48,7 +48,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store DefiLlama pools in structured `DefiLlama` schema (Pool, PoolRewardToken, PoolUnderlyingToken tables with TVP sync stored procedures) replacing ApiCache JSON blob (#382)
 - Chainlink price feeds now stored in a structured Chainlink.PriceFeed SQL table instead of the JSON blob ApiCache
 - Store Pendle markets in structured Pendle schema tables instead of the ApiCache JSON blob
-- Move dbo.ContractSecurity into a GoPlus schema with TVP-based sync (#387)
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
@@ -100,6 +99,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated MSBuild.Sdk.SqlProj to 4.3.0
 - Fixed pre-commit baseline violations: added shellcheck suppression for intentional word-splitting in the `clean` script and added missing end-of-file newlines to two csproj files
 - Increased Credfeto.Defi.Server's test coverage to 100% for all authored code by splitting host-agnostic DI registration and endpoint handler logic into a new Credfeto.Defi.Server.Composition project with dedicated tests
+- Renamed and moved the ContractSecurity cache table from dbo to a dedicated GoPlus.TokenSecurity table with a TVP-based sync procedure, replacing the scalar upsert procedure and the CheckedAt column with DateCreated/DateUpdated timestamps, for consistency with the schema-per-source convention (#387)
 
 ### Deprecated
 ### Removed

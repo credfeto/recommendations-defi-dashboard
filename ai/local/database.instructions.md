@@ -16,7 +16,7 @@ Each external API source gets its own SQL schema named after the source:
 | Pendle | `Pendle` |
 | Chainlink | `Chainlink` |
 
-Do not put API-sourced tables in `dbo`. The `dbo` schema is reserved for cross-source or infrastructure tables (e.g. `ApiCache`, `ContractSecurity`).
+Do not put API-sourced tables in `dbo`. The `dbo` schema is reserved for cross-source or infrastructure tables (e.g. `ApiCache`).
 
 ## Table Per API Endpoint (MANDATORY)
 
@@ -65,6 +65,10 @@ WHEN NOT MATCHED BY SOURCE
 - `DataDate` is the exception: it is passed as a parameter (`@DataDate DATETIMEOFFSET NULL`) because it originates from the API response, not the server clock.
 - `DateCreated` is set on INSERT only; the MERGE `WHEN MATCHED` branch must never touch it.
 - The `WHEN NOT MATCHED BY SOURCE` / DELETE branch removes rows that the API no longer returns, keeping the table current.
+
+### On-Demand Cache Exception
+
+A `_Sync` procedure invoked with a single row, or a partial row set representing an on-demand per-key cache lookup rather than a full bulk snapshot refresh (e.g. `GoPlus.TokenSecurity_Sync`, called once per contract address looked up), omits the `WHEN NOT MATCHED BY SOURCE` / DELETE branch. Deleting would wipe every other cached row on each individual lookup. This is a narrow, deliberate exception to the full-MERGE rule above and does not apply to procedures that sync a complete API response (e.g. `DefiLlama.Pool_Sync`, `Pendle.Market_Sync`).
 
 ## Data Merging Across Sources
 
