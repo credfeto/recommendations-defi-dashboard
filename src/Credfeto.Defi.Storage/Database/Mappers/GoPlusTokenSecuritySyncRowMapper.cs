@@ -50,23 +50,6 @@ internal sealed class GoPlusTokenSecuritySyncRowMapper : IMapper<IReadOnlyList<G
         tvpParam.Value = records;
     }
 
-    private static readonly ColumnDefinition[] COLUMNS =
-    [
-        new(name: "Chain", type: typeof(string)),
-        new(name: "Address", type: typeof(string)),
-        new(name: "ParentAddress", type: typeof(string)),
-        new(name: "IsOpenSource", type: typeof(bool)),
-        new(name: "IsHoneypot", type: typeof(bool)),
-        new(name: "IsProxy", type: typeof(bool)),
-        new(name: "BuyTax", type: typeof(double)),
-        new(name: "SellTax", type: typeof(double)),
-        new(name: "TransferTax", type: typeof(double)),
-        new(name: "CannotBuy", type: typeof(bool)),
-        new(name: "HoneypotWithSameCreator", type: typeof(bool)),
-        new(name: "TokenName", type: typeof(string)),
-        new(name: "TokenSymbol", type: typeof(string)),
-    ];
-
     [SuppressMessage(
         category: "SmartAnalyzers.CSharpExtensions.Annotations",
         checkId: "CSE007: Handle disposal correctly",
@@ -76,33 +59,20 @@ internal sealed class GoPlusTokenSecuritySyncRowMapper : IMapper<IReadOnlyList<G
     {
         DataTable records = new(TABLE_TYPE);
 
-        foreach (ColumnDefinition column in COLUMNS)
-        {
-            records.Columns.Add(columnName: column.Name, type: column.Type);
-        }
+        records.Columns.Add("Chain", typeof(string));
+        records.Columns.Add("Address", typeof(string));
+        records.Columns.Add("ParentAddress", typeof(string));
+        records.Columns.Add("IsOpenSource", typeof(bool));
+        records.Columns.Add("IsHoneypot", typeof(bool));
+        records.Columns.Add("IsProxy", typeof(bool));
+        records.Columns.Add("BuyTax", typeof(double));
+        records.Columns.Add("SellTax", typeof(double));
+        records.Columns.Add("TransferTax", typeof(double));
+        records.Columns.Add("CannotBuy", typeof(bool));
+        records.Columns.Add("HoneypotWithSameCreator", typeof(bool));
+        records.Columns.Add("TokenName", typeof(string));
+        records.Columns.Add("TokenSymbol", typeof(string));
 
         return records;
-    }
-
-    private readonly struct ColumnDefinition
-    {
-        public ColumnDefinition(
-            string name,
-            [DynamicallyAccessedMembers(
-                DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
-            )]
-                Type type
-        )
-        {
-            this.Name = name;
-            this.Type = type;
-        }
-
-        public string Name { get; }
-
-        [DynamicallyAccessedMembers(
-            DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties
-        )]
-        public Type Type { get; }
     }
 }
