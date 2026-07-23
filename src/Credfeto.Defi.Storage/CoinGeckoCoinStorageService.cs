@@ -43,15 +43,18 @@ public sealed class CoinGeckoCoinStorageService : ICoinGeckoCoinStorageService
 
     public async ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> GetAllAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<CoinGeckoCoinRow> coinRows = await this._database.ExecuteAsync(
+        ValueTask<IReadOnlyList<CoinGeckoCoinRow>> coinRowsTask = this._database.ExecuteAsync(
             action: CoinGeckoDatabase.Coin_GetAllAsync,
             cancellationToken: cancellationToken
         );
 
-        IReadOnlyList<CoinGeckoCoinPlatformAddressRow> addressRows = await this._database.ExecuteAsync(
+        ValueTask<IReadOnlyList<CoinGeckoCoinPlatformAddressRow>> addressRowsTask = this._database.ExecuteAsync(
             action: CoinGeckoDatabase.CoinPlatformAddress_GetAllAsync,
             cancellationToken: cancellationToken
         );
+
+        IReadOnlyList<CoinGeckoCoinRow> coinRows = await coinRowsTask;
+        IReadOnlyList<CoinGeckoCoinPlatformAddressRow> addressRows = await addressRowsTask;
 
         return MapToCoins(coinRows: coinRows, addressRows: addressRows);
     }
