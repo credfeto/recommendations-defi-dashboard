@@ -99,6 +99,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated MSBuild.Sdk.SqlProj to 4.3.0
 - Fixed pre-commit baseline violations: added shellcheck suppression for intentional word-splitting in the `clean` script and added missing end-of-file newlines to two csproj files
 - Increased Credfeto.Defi.Server's test coverage to 100% for all authored code by splitting host-agnostic DI registration and endpoint handler logic into a new Credfeto.Defi.Server.Composition project with dedicated tests
+- Renamed and moved the ContractSecurity cache table from dbo to a dedicated GoPlus.TokenSecurity table with a TVP-based sync procedure, replacing the scalar upsert procedure and the CheckedAt column with DateCreated/DateUpdated timestamps, for consistency with the schema-per-source convention (#387)
 
 ### Deprecated
 ### Removed

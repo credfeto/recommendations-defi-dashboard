@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Credfeto.Database;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Storage.Database;
+using Credfeto.Defi.Storage.Database.Mappers;
 using Credfeto.Defi.Storage.Database.Rows;
 
 namespace Credfeto.Defi.Storage;
@@ -34,9 +35,9 @@ public sealed class ContractSecurityCacheService
     {
         DateTimeOffset now = this._timeProvider.GetUtcNow();
 
-        ContractSecurityRow? row = await this._database.ExecuteAsync(
+        GoPlusTokenSecurityRow? row = await this._database.ExecuteAsync(
             action: (c, ct) =>
-                DefiDatabase.ContractSecurity_GetByChainAndAddressAsync(
+                GoPlusDatabase.TokenSecurity_GetByChainAndAddressAsync(
                     connection: c,
                     chain: chain,
                     address: address.ToLowerInvariant(),
@@ -45,7 +46,7 @@ public sealed class ContractSecurityCacheService
             cancellationToken: cancellationToken
         );
 
-        if (row is null || now - row.CheckedAt >= SecurityTtl)
+        if (row is null || now - row.DateUpdated >= SecurityTtl)
         {
             return null;
         }
@@ -62,9 +63,9 @@ public sealed class ContractSecurityCacheService
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<ContractSecurityRow> rows = await this._database.ExecuteAsync(
+        IReadOnlyList<GoPlusTokenSecurityRow> rows = await this._database.ExecuteAsync(
             action: (c, ct) =>
-                DefiDatabase.ContractSecurity_GetChildrenByParentAddressAsync(
+                GoPlusDatabase.TokenSecurity_GetChildrenByParentAddressAsync(
                     connection: c,
                     chain: chain,
                     parentAddress: parentAddress.ToLowerInvariant(),
@@ -88,33 +89,30 @@ public sealed class ContractSecurityCacheService
     /// </summary>
     public ValueTask SetAsync(ContractSecurityInfo info, CancellationToken cancellationToken)
     {
-        DateTimeOffset now = this._timeProvider.GetUtcNow();
+        GoPlusTokenSecuritySyncRow row = new(
+            Chain: info.Chain,
+            Address: info.Address.ToLowerInvariant(),
+            ParentAddress: info.ParentAddress,
+            IsOpenSource: info.IsOpenSource,
+            IsHoneypot: info.IsHoneypot,
+            IsProxy: info.IsProxy,
+            BuyTax: info.BuyTax,
+            SellTax: info.SellTax,
+            TransferTax: info.TransferTax,
+            CannotBuy: info.CannotBuy,
+            HoneypotWithSameCreator: info.HoneypotWithSameCreator,
+            TokenName: info.TokenName,
+            TokenSymbol: info.TokenSymbol
+        );
 
         return this._database.ExecuteAsync(
             action: (c, ct) =>
-                DefiDatabase.ContractSecurity_UpsertAsync(
-                    connection: c,
-                    chain: info.Chain,
-                    address: info.Address.ToLowerInvariant(),
-                    parentAddress: info.ParentAddress,
-                    isOpenSource: info.IsOpenSource,
-                    isHoneypot: info.IsHoneypot,
-                    isProxy: info.IsProxy,
-                    buyTax: info.BuyTax,
-                    sellTax: info.SellTax,
-                    transferTax: info.TransferTax,
-                    cannotBuy: info.CannotBuy,
-                    honeypotWithSameCreator: info.HoneypotWithSameCreator,
-                    tokenName: info.TokenName,
-                    tokenSymbol: info.TokenSymbol,
-                    checkedAt: now,
-                    cancellationToken: ct
-                ),
+                GoPlusDatabase.TokenSecurity_SyncAsync(connection: c, rows: [row], cancellationToken: ct),
             cancellationToken: cancellationToken
         );
     }
 
-    private static ContractSecurityInfo MapToModel(ContractSecurityRow row)
+    private static ContractSecurityInfo MapToModel(GoPlusTokenSecurityRow row)
     {
         return new ContractSecurityInfo
         {

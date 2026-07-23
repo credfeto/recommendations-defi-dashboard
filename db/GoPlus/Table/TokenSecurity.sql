@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[ContractSecurity]
+CREATE TABLE [GoPlus].[TokenSecurity]
 (
   [Chain] NVARCHAR(100) NOT NULL,
   [Address] NVARCHAR(100) NOT NULL,
@@ -13,6 +13,8 @@ CREATE TABLE [dbo].[ContractSecurity]
   [HoneypotWithSameCreator] BIT NULL,
   [TokenName] NVARCHAR(MAX) NULL,
   [TokenSymbol] NVARCHAR(MAX) NULL,
-  [CheckedAt] DATETIMEOFFSET NOT NULL,
-  CONSTRAINT [PK_ContractSecurity] PRIMARY KEY ([Chain], [Address])
+  [DateCreated] DATETIMEOFFSET NOT NULL,
+  [DateUpdated] DATETIMEOFFSET NOT NULL,
+  [DataDate] DATETIMEOFFSET NULL,
+  CONSTRAINT [PK_GoPlus_TokenSecurity] PRIMARY KEY ([Chain], [Address])
 );

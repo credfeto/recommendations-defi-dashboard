@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Credfeto.Defi.Storage.Database.Rows;
 
 [DebuggerDisplay("{Chain}/{Address} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
-public sealed record ContractSecurityRow(
+public sealed record GoPlusTokenSecurityRow(
     string Chain,
     string Address,
     string? ParentAddress,
@@ -18,5 +18,7 @@ public sealed record ContractSecurityRow(
     bool? HoneypotWithSameCreator,
     string? TokenName,
     string? TokenSymbol,
-    DateTimeOffset CheckedAt
+    DateTimeOffset DateCreated,
+    DateTimeOffset DateUpdated,
+    DateTimeOffset? DataDate
 );

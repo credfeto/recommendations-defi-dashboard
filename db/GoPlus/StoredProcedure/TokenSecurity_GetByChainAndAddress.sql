@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[ContractSecurity_GetByChainAndAddress]
+CREATE OR ALTER PROCEDURE [GoPlus].[TokenSecurity_GetByChainAndAddress]
   @Chain NVARCHAR(100),
   @Address NVARCHAR(100)
 AS
@@ -19,8 +19,10 @@ BEGIN
     [HoneypotWithSameCreator],
     [TokenName],
     [TokenSymbol],
-    [CheckedAt]
-  FROM [dbo].[ContractSecurity]
+    [DateCreated],
+    [DateUpdated],
+    [DataDate]
+  FROM [GoPlus].[TokenSecurity]
   WHERE [Chain] = @Chain
     AND [Address] = @Address;
 END;
