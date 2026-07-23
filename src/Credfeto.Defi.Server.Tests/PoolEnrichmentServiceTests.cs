@@ -22,14 +22,16 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
-        IPendleMarketStorageService? pendleStorage = null
+        IPendleMarketStorageService? pendleStorage = null,
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null
     )
     {
         return this._factory.CreateEnrichmentService(
             httpHandler: httpHandler,
             poolStorage: poolStorage,
             chainlinkStorage: chainlinkStorage,
-            pendleStorage: pendleStorage
+            pendleStorage: pendleStorage,
+            coinGeckoStorage: coinGeckoStorage
         );
     }
 
@@ -242,7 +244,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
             EMPTY_ARRAY, // protocols
             EMPTY_ARRAY, // stablecoins (price map)
             EMPTY_ARRAY, // stablecoins (address map)
-            EMPTY_ARRAY, // coin list (address map)
         ]);
 
         PoolEnrichmentService service = this.CreateEnrichmentService(handler);

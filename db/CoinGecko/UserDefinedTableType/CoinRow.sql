@@ -1,0 +1,5 @@
+CREATE TYPE [CoinGecko].[CoinRow] AS TABLE
+(
+  [Id] NVARCHAR(100) NOT NULL,
+  [Symbol] NVARCHAR(50) NOT NULL
+);

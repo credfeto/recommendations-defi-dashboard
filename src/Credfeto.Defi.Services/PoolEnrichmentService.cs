@@ -19,10 +19,10 @@ public sealed class PoolEnrichmentService
     private const string CACHE_KEY_HACKS = "defillama_hacks";
     private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
     private const string CACHE_KEY_STABLECOINS = "coingecko_stablecoins";
-    private const string CACHE_KEY_COIN_LIST = "coingecko_coin_list";
 
     private readonly ApiCacheService _cache;
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
+    private readonly ICoinGeckoCoinStorageService _coinGeckoStorage;
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly ContractSecurityService _contractSecurityService;
     private readonly IDefiLlamaHacksClient _hacksClient;
@@ -38,6 +38,7 @@ public sealed class PoolEnrichmentService
         IDefiLlamaProtocolsClient protocolsClient,
         ICoinGeckoStablecoinsClient coinGeckoClient,
         IChainlinkPriceFeedStorageService chainlinkStorage,
+        ICoinGeckoCoinStorageService coinGeckoStorage,
         ContractSecurityService contractSecurityService,
         IDefiLlamaPoolStorage poolStorage,
         IPendleMarketStorageService pendleStorage,
@@ -48,6 +49,7 @@ public sealed class PoolEnrichmentService
         this._protocolsClient = protocolsClient;
         this._coinGeckoClient = coinGeckoClient;
         this._chainlinkStorage = chainlinkStorage;
+        this._coinGeckoStorage = coinGeckoStorage;
         this._contractSecurityService = contractSecurityService;
         this._poolStorage = poolStorage;
         this._pendleStorage = pendleStorage;
@@ -142,11 +144,8 @@ public sealed class PoolEnrichmentService
             cancellationToken: cancellationToken
         );
 
-        ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> coinListTask = this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_COIN_LIST,
-            fetcher: this._coinGeckoClient.FetchCoinListAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoCoinPlatforms,
-            cancellationToken: cancellationToken
+        ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> coinListTask = this._coinGeckoStorage.GetAllAsync(
+            cancellationToken
         );
 
         IReadOnlyList<CoinGeckoStablecoin> coins = await coinsTask;

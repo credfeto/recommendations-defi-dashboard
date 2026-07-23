@@ -31,7 +31,8 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
-        IPendleMarketStorageService? pendleStorage = null
+        IPendleMarketStorageService? pendleStorage = null,
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null
     )
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
@@ -40,6 +41,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         poolStorage ??= new FakePoolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
+        coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
 
         DefiLlamaHacksClient hacksClient = new(
             httpClientFactory: factory,
@@ -73,6 +75,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
             chainlinkStorage: chainlinkStorage,
+            coinGeckoStorage: coinGeckoStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
             pendleStorage: pendleStorage,
