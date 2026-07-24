@@ -49,6 +49,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Chainlink price feeds now stored in a structured Chainlink.PriceFeed SQL table instead of the JSON blob ApiCache
 - Store Pendle markets in structured Pendle schema tables instead of the ApiCache JSON blob
 - Store CoinGecko coin list in structured CoinGecko schema (Coin, CoinPlatformAddress tables with TVP sync stored procedures) replacing ApiCache JSON blob (#386)
+- Store CoinGecko stablecoins in structured CoinGecko schema (Stablecoin table with TVP sync stored procedure) replacing ApiCache JSON blob (#385)
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
