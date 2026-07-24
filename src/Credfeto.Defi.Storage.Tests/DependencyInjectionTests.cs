@@ -58,4 +58,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireService<IPendleMarketStorageService>();
     }
+
+    [Fact]
+    public void CoinGeckoCoinStorageServiceIsRegistered()
+    {
+        this.RequireService<ICoinGeckoCoinStorageService>();
+    }
 }

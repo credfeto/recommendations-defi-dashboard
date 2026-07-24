@@ -1,0 +1,9 @@
+CREATE TABLE [CoinGecko].[Coin]
+(
+  [Id] NVARCHAR(100) NOT NULL,
+  [Symbol] NVARCHAR(50) NOT NULL,
+  [DateCreated] DATETIMEOFFSET NOT NULL,
+  [DateUpdated] DATETIMEOFFSET NOT NULL,
+  [DataDate] DATETIMEOFFSET NULL,
+  CONSTRAINT [PK_CoinGecko_Coin] PRIMARY KEY ([Id])
+);

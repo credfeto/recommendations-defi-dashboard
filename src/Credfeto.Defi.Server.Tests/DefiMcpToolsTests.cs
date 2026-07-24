@@ -100,12 +100,14 @@ public sealed class DefiMcpToolsTests : TestBase
         HttpClient httpClient,
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
-        IPendleMarketStorageService? pendleStorage = null
+        IPendleMarketStorageService? pendleStorage = null,
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null
     )
     {
         poolStorage ??= new FakePoolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
+        coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
 
         DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
         DefiLlamaProtocolsClient protocolsClient = this.CreateClient<DefiLlamaProtocolsClient>(httpClient);
@@ -133,6 +135,7 @@ public sealed class DefiMcpToolsTests : TestBase
             protocolsClient: protocolsClient,
             coinGeckoClient: coinGeckoClient,
             chainlinkStorage: chainlinkStorage,
+            coinGeckoStorage: coinGeckoStorage,
             contractSecurityService: contractSecurityService,
             poolStorage: poolStorage,
             pendleStorage: pendleStorage,
