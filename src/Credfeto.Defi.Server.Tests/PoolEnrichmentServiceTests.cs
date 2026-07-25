@@ -203,36 +203,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     }
 
     [Fact]
-    public async Task GetStablecoinPriceMapAsync_EmptyStablecoins_ReturnsEmptyMapAsync()
-    {
-        const string EMPTY_ARRAY = "[]";
-        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
-
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
-
-        IReadOnlyDictionary<string, decimal> priceMap = await service.GetStablecoinPriceMapAsync(
-            this.CancellationToken()
-        );
-
-        Assert.Empty(priceMap);
-    }
-
-    [Fact]
-    public async Task GetStablecoinAddressMapAsync_EmptyData_ReturnsEmptyMapAsync()
-    {
-        const string EMPTY_ARRAY = "[]";
-        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
-
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
-
-        IReadOnlyDictionary<string, string> addressMap = await service.GetStablecoinAddressMapAsync(
-            this.CancellationToken()
-        );
-
-        Assert.Empty(addressMap);
-    }
-
-    [Fact]
     public async Task EnrichPoolsAsync_PoolWithHacks_HacksIncludedInResultAsync()
     {
         // Return a hack for "aave" to ensure the non-empty ToArray path is exercised

@@ -106,33 +106,6 @@ public sealed class PoolEnrichmentService
     }
 
     /// <summary>
-    ///     Returns a symbol → price map for stablecoins from the cache or live fetch.
-    ///     Merges CoinGecko and Chainlink data; Chainlink takes precedence.
-    /// </summary>
-    public async ValueTask<IReadOnlyDictionary<string, decimal>> GetStablecoinPriceMapAsync(
-        CancellationToken cancellationToken
-    )
-    {
-        (IReadOnlyDictionary<string, decimal> priceMap, IReadOnlyDictionary<string, string> _) =
-            await this.GetStablecoinMapsAsync(cancellationToken);
-
-        return priceMap;
-    }
-
-    /// <summary>
-    ///     Returns an address → symbol map for stablecoins from the cache or live fetch.
-    /// </summary>
-    public async ValueTask<IReadOnlyDictionary<string, string>> GetStablecoinAddressMapAsync(
-        CancellationToken cancellationToken
-    )
-    {
-        (IReadOnlyDictionary<string, decimal> _, IReadOnlyDictionary<string, string> addressMap) =
-            await this.GetStablecoinMapsAsync(cancellationToken);
-
-        return addressMap;
-    }
-
-    /// <summary>
     ///     Fetches stablecoins, Chainlink feeds, and the CoinGecko coin list in parallel, then builds the
     ///     merged price map and address map from them. Chainlink takes precedence over CoinGecko for price.
     /// </summary>
