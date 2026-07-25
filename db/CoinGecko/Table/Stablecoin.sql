@@ -1,0 +1,11 @@
+CREATE TABLE [CoinGecko].[Stablecoin]
+(
+  [Id] NVARCHAR(100) NOT NULL,
+  [Symbol] NVARCHAR(50) NOT NULL,
+  [Name] NVARCHAR(200) NOT NULL,
+  [CurrentPrice] DECIMAL(28, 8) NULL,
+  [DateCreated] DATETIMEOFFSET NOT NULL,
+  [DateUpdated] DATETIMEOFFSET NOT NULL,
+  [DataDate] DATETIMEOFFSET NULL,
+  CONSTRAINT [PK_CoinGecko_Stablecoin] PRIMARY KEY ([Id])
+);

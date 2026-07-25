@@ -1,5 +1,4 @@
 using System.Net.Http;
-using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.Data.Models.Config;
@@ -32,7 +31,8 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
-        ICoinGeckoCoinStorageService? coinGeckoStorage = null
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null,
+        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null
     )
     {
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
@@ -42,6 +42,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
         coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
+        coinGeckoStablecoinStorage ??= new FakeCoinGeckoStablecoinStorage();
 
         DefiLlamaHacksClient hacksClient = new(
             httpClientFactory: factory,
@@ -50,10 +51,6 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         DefiLlamaProtocolsClient protocolsClient = new(
             httpClientFactory: factory,
             logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
-        );
-        CoinGeckoStablecoinsClient coinGeckoClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
         );
         GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
 
@@ -73,9 +70,9 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         return new PoolEnrichmentService(
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
-            coinGeckoClient: coinGeckoClient,
             chainlinkStorage: chainlinkStorage,
             coinGeckoStorage: coinGeckoStorage,
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
             pendleStorage: pendleStorage,

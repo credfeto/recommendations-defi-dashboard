@@ -29,6 +29,7 @@ public static class StorageSetup
             .AddSingleton<IDefiLlamaPoolStorage, DefiLlamaPoolStorage>()
             .AddSingleton<IChainlinkPriceFeedStorageService, ChainlinkPriceFeedStorageService>()
             .AddSingleton<IPendleMarketStorageService, PendleMarketStorageService>()
-            .AddSingleton<ICoinGeckoCoinStorageService, CoinGeckoCoinStorageService>();
+            .AddSingleton<ICoinGeckoCoinStorageService, CoinGeckoCoinStorageService>()
+            .AddSingleton<ICoinGeckoStablecoinStorageService, CoinGeckoStablecoinStorageService>();
     }
 }
