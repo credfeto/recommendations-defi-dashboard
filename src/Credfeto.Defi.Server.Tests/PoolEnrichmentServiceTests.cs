@@ -23,7 +23,8 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
-        ICoinGeckoCoinStorageService? coinGeckoStorage = null
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null,
+        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null
     )
     {
         return this._factory.CreateEnrichmentService(
@@ -31,7 +32,8 @@ public sealed class PoolEnrichmentServiceTests : TestBase
             poolStorage: poolStorage,
             chainlinkStorage: chainlinkStorage,
             pendleStorage: pendleStorage,
-            coinGeckoStorage: coinGeckoStorage
+            coinGeckoStorage: coinGeckoStorage,
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage
         );
     }
 
@@ -201,36 +203,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     }
 
     [Fact]
-    public async Task GetStablecoinPriceMapAsync_EmptyStablecoins_ReturnsEmptyMapAsync()
-    {
-        const string EMPTY_ARRAY = "[]";
-        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
-
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
-
-        IReadOnlyDictionary<string, decimal> priceMap = await service.GetStablecoinPriceMapAsync(
-            this.CancellationToken()
-        );
-
-        Assert.Empty(priceMap);
-    }
-
-    [Fact]
-    public async Task GetStablecoinAddressMapAsync_EmptyData_ReturnsEmptyMapAsync()
-    {
-        const string EMPTY_ARRAY = "[]";
-        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
-
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
-
-        IReadOnlyDictionary<string, string> addressMap = await service.GetStablecoinAddressMapAsync(
-            this.CancellationToken()
-        );
-
-        Assert.Empty(addressMap);
-    }
-
-    [Fact]
     public async Task EnrichPoolsAsync_PoolWithHacks_HacksIncludedInResultAsync()
     {
         // Return a hack for "aave" to ensure the non-empty ToArray path is exercised
@@ -242,8 +214,6 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         using MultiResponseHttpHandler handler = new([
             HACKS_JSON, // hacks (GetHackMapAsync is called first inside EnrichPoolsAsync)
             EMPTY_ARRAY, // protocols
-            EMPTY_ARRAY, // stablecoins (price map)
-            EMPTY_ARRAY, // stablecoins (address map)
         ]);
 
         PoolEnrichmentService service = this.CreateEnrichmentService(handler);
@@ -275,11 +245,21 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     public async Task EnrichPoolsAsync_PoolWithDepeggedToken_IsExcludedAsync()
     {
         // Stablecoin USDC at 0.94 is critically depegged
-        const string STABLECOINS_JSON =
-            """[{"id":"usd-coin","symbol":"USDC","name":"USD Coin","current_price":0.94}]""";
-        using FreshResponseHttpHandler handler = new(STABLECOINS_JSON);
+        const string EMPTY_ARRAY = "[]";
+        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
 
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
+        CoinGeckoStablecoin depeggedUsdc = new()
+        {
+            Id = "usd-coin",
+            Symbol = "USDC",
+            Name = "USD Coin",
+            CurrentPrice = 0.94m,
+        };
+
+        PoolEnrichmentService service = this.CreateEnrichmentService(
+            handler,
+            coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage([depeggedUsdc])
+        );
 
         RawPool pool = new()
         {

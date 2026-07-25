@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
@@ -18,12 +17,11 @@ public sealed class PoolEnrichmentService
 {
     private const string CACHE_KEY_HACKS = "defillama_hacks";
     private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
-    private const string CACHE_KEY_STABLECOINS = "coingecko_stablecoins";
 
     private readonly ApiCacheService _cache;
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
     private readonly ICoinGeckoCoinStorageService _coinGeckoStorage;
-    private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
+    private readonly ICoinGeckoStablecoinStorageService _coinGeckoStablecoinStorage;
     private readonly ContractSecurityService _contractSecurityService;
     private readonly IDefiLlamaHacksClient _hacksClient;
     private readonly IPendleMarketStorageService _pendleStorage;
@@ -36,9 +34,9 @@ public sealed class PoolEnrichmentService
     public PoolEnrichmentService(
         IDefiLlamaHacksClient hacksClient,
         IDefiLlamaProtocolsClient protocolsClient,
-        ICoinGeckoStablecoinsClient coinGeckoClient,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
+        ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage,
         ContractSecurityService contractSecurityService,
         IDefiLlamaPoolStorage poolStorage,
         IPendleMarketStorageService pendleStorage,
@@ -47,9 +45,9 @@ public sealed class PoolEnrichmentService
     {
         this._hacksClient = hacksClient;
         this._protocolsClient = protocolsClient;
-        this._coinGeckoClient = coinGeckoClient;
         this._chainlinkStorage = chainlinkStorage;
         this._coinGeckoStorage = coinGeckoStorage;
+        this._coinGeckoStablecoinStorage = coinGeckoStablecoinStorage;
         this._contractSecurityService = contractSecurityService;
         this._poolStorage = poolStorage;
         this._pendleStorage = pendleStorage;
@@ -108,50 +106,38 @@ public sealed class PoolEnrichmentService
     }
 
     /// <summary>
-    ///     Returns a symbol → price map for stablecoins from the cache or live fetch.
-    ///     Merges CoinGecko and Chainlink data; Chainlink takes precedence.
+    ///     Fetches stablecoins, Chainlink feeds, and the CoinGecko coin list in parallel, then builds the
+    ///     merged price map and address map from them. Chainlink takes precedence over CoinGecko for price.
     /// </summary>
-    public async ValueTask<IReadOnlyDictionary<string, decimal>> GetStablecoinPriceMapAsync(
-        CancellationToken cancellationToken
-    )
+    private async ValueTask<(
+        IReadOnlyDictionary<string, decimal> PriceMap,
+        IReadOnlyDictionary<string, string> AddressMap
+    )> GetStablecoinMapsAsync(CancellationToken cancellationToken)
     {
-        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> coinsTask = this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_STABLECOINS,
-            fetcher: this._coinGeckoClient.FetchStablecoinsAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoStablecoin,
-            cancellationToken: cancellationToken
+        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> stablecoinsTask = this._coinGeckoStablecoinStorage.GetAllAsync(
+            cancellationToken
         );
-
-        ValueTask<IReadOnlyList<ChainlinkPriceFeed>> feedsTask = this._chainlinkStorage.GetAllAsync(cancellationToken);
-
-        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins = await coinsTask;
-        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await feedsTask;
-
-        return DepegService.BuildMergedStablecoinPriceMap(coinGeckoCoins, chainlinkFeeds);
-    }
-
-    /// <summary>
-    ///     Returns an address → symbol map for stablecoins from the cache or live fetch.
-    /// </summary>
-    public async ValueTask<IReadOnlyDictionary<string, string>> GetStablecoinAddressMapAsync(
-        CancellationToken cancellationToken
-    )
-    {
-        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> coinsTask = this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_STABLECOINS,
-            fetcher: this._coinGeckoClient.FetchStablecoinsAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoStablecoin,
-            cancellationToken: cancellationToken
+        ValueTask<IReadOnlyList<ChainlinkPriceFeed>> chainlinkFeedsTask = this._chainlinkStorage.GetAllAsync(
+            cancellationToken
         );
-
         ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> coinListTask = this._coinGeckoStorage.GetAllAsync(
             cancellationToken
         );
 
-        IReadOnlyList<CoinGeckoStablecoin> coins = await coinsTask;
+        IReadOnlyList<CoinGeckoStablecoin> stablecoins = await stablecoinsTask;
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await chainlinkFeedsTask;
         IReadOnlyList<CoinGeckoCoinPlatforms> coinList = await coinListTask;
 
-        return DepegService.BuildStablecoinAddressMap(stablecoins: coins, coinList: coinList);
+        IReadOnlyDictionary<string, decimal> priceMap = DepegService.BuildMergedStablecoinPriceMap(
+            stablecoins,
+            chainlinkFeeds
+        );
+        IReadOnlyDictionary<string, string> addressMap = DepegService.BuildStablecoinAddressMap(
+            stablecoins: stablecoins,
+            coinList: coinList
+        );
+
+        return (priceMap, addressMap);
     }
 
     /// <summary>
@@ -168,8 +154,9 @@ public sealed class PoolEnrichmentService
         IReadOnlyDictionary<string, AuditInfo> protocolAuditMap = await this.GetProtocolAuditMapAsync(
             cancellationToken
         );
-        IReadOnlyDictionary<string, decimal> priceMap = await this.GetStablecoinPriceMapAsync(cancellationToken);
-        IReadOnlyDictionary<string, string> addressMap = await this.GetStablecoinAddressMapAsync(cancellationToken);
+
+        (IReadOnlyDictionary<string, decimal> priceMap, IReadOnlyDictionary<string, string> addressMap) =
+            await this.GetStablecoinMapsAsync(cancellationToken);
 
         List<Pool> result = [];
 

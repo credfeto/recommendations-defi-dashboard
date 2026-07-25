@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.Data.Models.Config;
@@ -79,16 +78,6 @@ public sealed class DefiMcpToolsTests : TestBase
                     );
         }
 
-        if (typeof(T) == typeof(CoinGeckoStablecoinsClient))
-        {
-            return (T)
-                (object)
-                    new CoinGeckoStablecoinsClient(
-                        httpClientFactory: factory,
-                        logger: this.GetTypedLogger<CoinGeckoStablecoinsClient>()
-                    );
-        }
-
         if (typeof(T) == typeof(GoPlusClient))
         {
             return (T)(object)new GoPlusClient(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
@@ -101,17 +90,18 @@ public sealed class DefiMcpToolsTests : TestBase
         IDefiLlamaPoolStorage? poolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
-        ICoinGeckoCoinStorageService? coinGeckoStorage = null
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null,
+        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null
     )
     {
         poolStorage ??= new FakePoolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
         coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
+        coinGeckoStablecoinStorage ??= new FakeCoinGeckoStablecoinStorage();
 
         DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
         DefiLlamaProtocolsClient protocolsClient = this.CreateClient<DefiLlamaProtocolsClient>(httpClient);
-        CoinGeckoStablecoinsClient coinGeckoClient = this.CreateClient<CoinGeckoStablecoinsClient>(httpClient);
         GoPlusClient goPlusClient = this.CreateClient<GoPlusClient>(httpClient);
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
@@ -133,9 +123,9 @@ public sealed class DefiMcpToolsTests : TestBase
         PoolEnrichmentService enrichmentService = new(
             hacksClient: hacksClient,
             protocolsClient: protocolsClient,
-            coinGeckoClient: coinGeckoClient,
             chainlinkStorage: chainlinkStorage,
             coinGeckoStorage: coinGeckoStorage,
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
             contractSecurityService: contractSecurityService,
             poolStorage: poolStorage,
             pendleStorage: pendleStorage,

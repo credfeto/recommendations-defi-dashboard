@@ -121,6 +121,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             coinGeckoStorage: new FakeCoinGeckoCoinStorage(),
+            coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -165,6 +166,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             coinGeckoStorage: new FakeCoinGeckoCoinStorage(),
+            coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -186,6 +188,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             coinGeckoStorage: new FakeCoinGeckoCoinStorage(),
+            coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 
@@ -210,6 +213,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: new FakeChainlinkStorage(),
             coinGeckoStorage: new FakeCoinGeckoCoinStorage(),
+            coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
 

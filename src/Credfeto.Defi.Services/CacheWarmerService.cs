@@ -27,6 +27,7 @@ public sealed class CacheWarmerService : IHostedService
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
     private readonly ICoinGeckoCoinStorageService _coinGeckoStorage;
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
+    private readonly ICoinGeckoStablecoinStorageService _coinGeckoStablecoinStorage;
     private readonly IDefiLlamaHacksClient _hacksClient;
     private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
     private readonly ILogger<CacheWarmerService> _logger;
@@ -50,6 +51,7 @@ public sealed class CacheWarmerService : IHostedService
         IPendleMarketStorageService pendleStorage,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
+        ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage,
         ILogger<CacheWarmerService> logger
     )
     {
@@ -64,6 +66,7 @@ public sealed class CacheWarmerService : IHostedService
         this._pendleStorage = pendleStorage;
         this._chainlinkStorage = chainlinkStorage;
         this._coinGeckoStorage = coinGeckoStorage;
+        this._coinGeckoStablecoinStorage = coinGeckoStablecoinStorage;
         this._logger = logger;
     }
 
@@ -173,10 +176,9 @@ public sealed class CacheWarmerService : IHostedService
     private async Task WarmStablecoinsAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<CoinGeckoStablecoin> data = await this._coinGeckoClient.FetchStablecoinsAsync(cancellationToken);
-        _ = await this._apiCache.GetOrFetchAsync(
-            key: "coingecko_stablecoins",
-            fetcher: _ => new ValueTask<IReadOnlyList<CoinGeckoStablecoin>>(data),
-            typeInfo: AppJsonContext.Default.IReadOnlyListCoinGeckoStablecoin,
+        await this._coinGeckoStablecoinStorage.StoreAsync(
+            stablecoins: data,
+            dataDate: null,
             cancellationToken: cancellationToken
         );
     }

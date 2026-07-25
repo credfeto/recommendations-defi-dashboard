@@ -37,4 +37,19 @@ internal static partial class CoinGeckoDatabase
         DbConnection connection,
         CancellationToken cancellationToken
     );
+
+    [SqlObjectMap("CoinGecko.Stablecoin_Sync", SqlObjectType.STORED_PROCEDURE, SqlDialect.MICROSOFT_SQL_SERVER)]
+    public static partial ValueTask Stablecoin_SyncAsync(
+        DbConnection connection,
+        [SqlFieldMap<CoinGeckoStablecoinSyncRowMapper, IReadOnlyList<CoinGeckoStablecoinSyncRow>>]
+            IReadOnlyList<CoinGeckoStablecoinSyncRow> rows,
+        DateTimeOffset? dataDate,
+        CancellationToken cancellationToken
+    );
+
+    [SqlObjectMap("CoinGecko.Stablecoin_GetAll", SqlObjectType.STORED_PROCEDURE, SqlDialect.MICROSOFT_SQL_SERVER)]
+    public static partial ValueTask<IReadOnlyList<CoinGeckoStablecoinRow>> Stablecoin_GetAllAsync(
+        DbConnection connection,
+        CancellationToken cancellationToken
+    );
 }
