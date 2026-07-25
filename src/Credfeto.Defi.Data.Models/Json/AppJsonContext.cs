@@ -37,7 +37,6 @@ namespace Credfeto.Defi.Data.Models.Json;
 [JsonSerializable(typeof(IReadOnlyList<RawProtocol>))]
 [JsonSerializable(typeof(CoinGeckoStablecoin))]
 [JsonSerializable(typeof(CoinGeckoStablecoin[]))]
-[JsonSerializable(typeof(IReadOnlyList<CoinGeckoStablecoin>))]
 [JsonSerializable(typeof(CoinGeckoCoinPlatforms))]
 [JsonSerializable(typeof(CoinGeckoCoinPlatforms[]))]
 [JsonSerializable(typeof(PendleMarketsResponse))]
