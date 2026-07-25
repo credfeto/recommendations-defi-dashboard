@@ -113,14 +113,22 @@ public sealed class PoolEnrichmentService
         CancellationToken cancellationToken
     )
     {
-        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> coinsTask = this._coinGeckoStablecoinStorage.GetAllAsync(
+        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins = await this._coinGeckoStablecoinStorage.GetAllAsync(
             cancellationToken
         );
 
-        ValueTask<IReadOnlyList<ChainlinkPriceFeed>> feedsTask = this._chainlinkStorage.GetAllAsync(cancellationToken);
+        return await this.BuildStablecoinPriceMapAsync(
+            coinGeckoCoins: coinGeckoCoins,
+            cancellationToken: cancellationToken
+        );
+    }
 
-        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins = await coinsTask;
-        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await feedsTask;
+    private async ValueTask<IReadOnlyDictionary<string, decimal>> BuildStablecoinPriceMapAsync(
+        IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins,
+        CancellationToken cancellationToken
+    )
+    {
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await this._chainlinkStorage.GetAllAsync(cancellationToken);
 
         return DepegService.BuildMergedStablecoinPriceMap(coinGeckoCoins, chainlinkFeeds);
     }
@@ -132,16 +140,19 @@ public sealed class PoolEnrichmentService
         CancellationToken cancellationToken
     )
     {
-        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> coinsTask = this._coinGeckoStablecoinStorage.GetAllAsync(
+        IReadOnlyList<CoinGeckoStablecoin> coins = await this._coinGeckoStablecoinStorage.GetAllAsync(
             cancellationToken
         );
 
-        ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> coinListTask = this._coinGeckoStorage.GetAllAsync(
-            cancellationToken
-        );
+        return await this.BuildStablecoinAddressMapAsync(coins: coins, cancellationToken: cancellationToken);
+    }
 
-        IReadOnlyList<CoinGeckoStablecoin> coins = await coinsTask;
-        IReadOnlyList<CoinGeckoCoinPlatforms> coinList = await coinListTask;
+    private async ValueTask<IReadOnlyDictionary<string, string>> BuildStablecoinAddressMapAsync(
+        IReadOnlyList<CoinGeckoStablecoin> coins,
+        CancellationToken cancellationToken
+    )
+    {
+        IReadOnlyList<CoinGeckoCoinPlatforms> coinList = await this._coinGeckoStorage.GetAllAsync(cancellationToken);
 
         return DepegService.BuildStablecoinAddressMap(stablecoins: coins, coinList: coinList);
     }
@@ -160,8 +171,29 @@ public sealed class PoolEnrichmentService
         IReadOnlyDictionary<string, AuditInfo> protocolAuditMap = await this.GetProtocolAuditMapAsync(
             cancellationToken
         );
-        IReadOnlyDictionary<string, decimal> priceMap = await this.GetStablecoinPriceMapAsync(cancellationToken);
-        IReadOnlyDictionary<string, string> addressMap = await this.GetStablecoinAddressMapAsync(cancellationToken);
+
+        ValueTask<IReadOnlyList<CoinGeckoStablecoin>> stablecoinsTask = this._coinGeckoStablecoinStorage.GetAllAsync(
+            cancellationToken
+        );
+        ValueTask<IReadOnlyList<ChainlinkPriceFeed>> chainlinkFeedsTask = this._chainlinkStorage.GetAllAsync(
+            cancellationToken
+        );
+        ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> coinListTask = this._coinGeckoStorage.GetAllAsync(
+            cancellationToken
+        );
+
+        IReadOnlyList<CoinGeckoStablecoin> stablecoins = await stablecoinsTask;
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds = await chainlinkFeedsTask;
+        IReadOnlyList<CoinGeckoCoinPlatforms> coinList = await coinListTask;
+
+        IReadOnlyDictionary<string, decimal> priceMap = DepegService.BuildMergedStablecoinPriceMap(
+            stablecoins,
+            chainlinkFeeds
+        );
+        IReadOnlyDictionary<string, string> addressMap = DepegService.BuildStablecoinAddressMap(
+            stablecoins: stablecoins,
+            coinList: coinList
+        );
 
         List<Pool> result = [];
 
