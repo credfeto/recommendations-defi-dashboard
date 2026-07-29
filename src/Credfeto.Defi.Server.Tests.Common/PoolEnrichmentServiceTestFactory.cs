@@ -29,6 +29,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
     public PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
+        IDefiLlamaProtocolStorageService? protocolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
@@ -39,6 +40,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(httpHandler));
 
         poolStorage ??= new FakePoolStorage();
+        protocolStorage ??= new FakeDefiLlamaProtocolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
         coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
@@ -47,10 +49,6 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         DefiLlamaHacksClient hacksClient = new(
             httpClientFactory: factory,
             logger: this.GetTypedLogger<DefiLlamaHacksClient>()
-        );
-        DefiLlamaProtocolsClient protocolsClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
         );
         GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
 
@@ -69,7 +67,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 
         return new PoolEnrichmentService(
             hacksClient: hacksClient,
-            protocolsClient: protocolsClient,
+            protocolStorage: protocolStorage,
             chainlinkStorage: chainlinkStorage,
             coinGeckoStorage: coinGeckoStorage,
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,

@@ -35,6 +35,7 @@ public sealed class CacheWarmerService : IHostedService
     private readonly IPendleMarketStorageService _pendleStorage;
     private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolsClient _protocolsClient;
+    private readonly IDefiLlamaProtocolStorageService _protocolStorage;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="CacheWarmerService" />.
@@ -48,6 +49,7 @@ public sealed class CacheWarmerService : IHostedService
         IChainlinkStablecoinsClient chainlinkClient,
         ApiCacheService apiCache,
         IDefiLlamaPoolStorage poolStorage,
+        IDefiLlamaProtocolStorageService protocolStorage,
         IPendleMarketStorageService pendleStorage,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
@@ -63,6 +65,7 @@ public sealed class CacheWarmerService : IHostedService
         this._chainlinkClient = chainlinkClient;
         this._apiCache = apiCache;
         this._poolStorage = poolStorage;
+        this._protocolStorage = protocolStorage;
         this._pendleStorage = pendleStorage;
         this._chainlinkStorage = chainlinkStorage;
         this._coinGeckoStorage = coinGeckoStorage;
@@ -165,10 +168,9 @@ public sealed class CacheWarmerService : IHostedService
     private async Task WarmProtocolsAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<RawProtocol> data = await this._protocolsClient.FetchProtocolsAsync(cancellationToken);
-        _ = await this._apiCache.GetOrFetchAsync(
-            key: "defillama_protocols",
-            fetcher: _ => new ValueTask<IReadOnlyList<RawProtocol>>(data),
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawProtocol,
+        await this._protocolStorage.StoreProtocolsAsync(
+            protocols: data,
+            dataDate: null,
             cancellationToken: cancellationToken
         );
     }

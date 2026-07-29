@@ -1,0 +1,9 @@
+CREATE TABLE [DefiLlama].[Protocol]
+(
+  [Slug] NVARCHAR(200) NOT NULL,
+  [Audits] NVARCHAR(10) NULL,
+  [DateCreated] DATETIMEOFFSET NOT NULL,
+  [DateUpdated] DATETIMEOFFSET NOT NULL,
+  [DataDate] DATETIMEOFFSET NULL,
+  CONSTRAINT [PK_DefiLlama_Protocol] PRIMARY KEY ([Slug])
+);

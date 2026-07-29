@@ -68,16 +68,6 @@ public sealed class DefiMcpToolsTests : TestBase
                     );
         }
 
-        if (typeof(T) == typeof(DefiLlamaProtocolsClient))
-        {
-            return (T)
-                (object)
-                    new DefiLlamaProtocolsClient(
-                        httpClientFactory: factory,
-                        logger: this.GetTypedLogger<DefiLlamaProtocolsClient>()
-                    );
-        }
-
         if (typeof(T) == typeof(GoPlusClient))
         {
             return (T)(object)new GoPlusClient(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
@@ -88,6 +78,7 @@ public sealed class DefiMcpToolsTests : TestBase
     private DefiMcpTools CreateMcpTools(
         HttpClient httpClient,
         IDefiLlamaPoolStorage? poolStorage = null,
+        IDefiLlamaProtocolStorageService? protocolStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
@@ -95,13 +86,13 @@ public sealed class DefiMcpToolsTests : TestBase
     )
     {
         poolStorage ??= new FakePoolStorage();
+        protocolStorage ??= new FakeDefiLlamaProtocolStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
         coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
         coinGeckoStablecoinStorage ??= new FakeCoinGeckoStablecoinStorage();
 
         DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
-        DefiLlamaProtocolsClient protocolsClient = this.CreateClient<DefiLlamaProtocolsClient>(httpClient);
         GoPlusClient goPlusClient = this.CreateClient<GoPlusClient>(httpClient);
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
@@ -122,7 +113,7 @@ public sealed class DefiMcpToolsTests : TestBase
 
         PoolEnrichmentService enrichmentService = new(
             hacksClient: hacksClient,
-            protocolsClient: protocolsClient,
+            protocolStorage: protocolStorage,
             chainlinkStorage: chainlinkStorage,
             coinGeckoStorage: coinGeckoStorage,
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
