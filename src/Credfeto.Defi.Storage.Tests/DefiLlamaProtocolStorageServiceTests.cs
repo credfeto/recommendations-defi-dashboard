@@ -5,21 +5,14 @@ using System.Threading.Tasks;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
+using FunFair.Test.Common.Mocks;
 using Xunit;
 
 namespace Credfeto.Defi.Storage.Tests;
 
 public sealed class DefiLlamaProtocolStorageServiceTests : TestBase
 {
-    private static readonly DateTimeOffset FixedNow = new(
-        year: 2024,
-        month: 6,
-        day: 1,
-        hour: 12,
-        minute: 0,
-        second: 0,
-        offset: TimeSpan.Zero
-    );
+    private static readonly DateTimeOffset FixedNow = MockDateTimeSources.Past.GetUtcNow();
 
     private readonly FakeDatabase _database;
     private readonly DefiLlamaProtocolStorageService _storage;
