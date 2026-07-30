@@ -16,7 +16,6 @@ namespace Credfeto.Defi.Services;
 public sealed class PoolEnrichmentService
 {
     private const string CACHE_KEY_HACKS = "defillama_hacks";
-    private const string CACHE_KEY_PROTOCOLS = "defillama_protocols";
 
     private readonly ApiCacheService _cache;
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
@@ -26,14 +25,14 @@ public sealed class PoolEnrichmentService
     private readonly IDefiLlamaHacksClient _hacksClient;
     private readonly IPendleMarketStorageService _pendleStorage;
     private readonly IDefiLlamaPoolStorage _poolStorage;
-    private readonly IDefiLlamaProtocolsClient _protocolsClient;
+    private readonly IDefiLlamaProtocolStorageService _protocolStorage;
 
     /// <summary>
     ///     Initialises a new instance of <see cref="PoolEnrichmentService" />.
     /// </summary>
     public PoolEnrichmentService(
         IDefiLlamaHacksClient hacksClient,
-        IDefiLlamaProtocolsClient protocolsClient,
+        IDefiLlamaProtocolStorageService protocolStorage,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
         ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage,
@@ -44,7 +43,7 @@ public sealed class PoolEnrichmentService
     )
     {
         this._hacksClient = hacksClient;
-        this._protocolsClient = protocolsClient;
+        this._protocolStorage = protocolStorage;
         this._chainlinkStorage = chainlinkStorage;
         this._coinGeckoStorage = coinGeckoStorage;
         this._coinGeckoStablecoinStorage = coinGeckoStablecoinStorage;
@@ -89,18 +88,13 @@ public sealed class PoolEnrichmentService
     }
 
     /// <summary>
-    ///     Returns a slug-keyed protocol audit map from the cache or live fetch.
+    ///     Returns a slug-keyed protocol audit map from structured storage.
     /// </summary>
     public async ValueTask<IReadOnlyDictionary<string, AuditInfo>> GetProtocolAuditMapAsync(
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<RawProtocol> protocols = await this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_PROTOCOLS,
-            fetcher: this._protocolsClient.FetchProtocolsAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawProtocol,
-            cancellationToken: cancellationToken
-        );
+        IReadOnlyList<RawProtocol> protocols = await this._protocolStorage.GetAllProtocolsAsync(cancellationToken);
 
         return ProtocolsService.BuildProtocolAuditMap(protocols);
     }

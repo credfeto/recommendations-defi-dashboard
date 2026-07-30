@@ -70,4 +70,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireService<ICoinGeckoStablecoinStorageService>();
     }
+
+    [Fact]
+    public void DefiLlamaProtocolStorageServiceIsRegistered()
+    {
+        this.RequireService<IDefiLlamaProtocolStorageService>();
+    }
 }

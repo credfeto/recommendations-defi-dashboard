@@ -209,11 +209,9 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         // RawHack fields: date (long unix timestamp), name, classification, technique, amount, source
         const string HACKS_JSON =
             """[{"date":1672531200,"name":"Aave","classification":"Protocol","technique":"Flash Loan","amount":1000000,"source":"defillama"}]""";
-        const string EMPTY_ARRAY = "[]";
 
         using MultiResponseHttpHandler handler = new([
-            HACKS_JSON, // hacks (GetHackMapAsync is called first inside EnrichPoolsAsync)
-            EMPTY_ARRAY, // protocols
+            HACKS_JSON, // hacks (GetHackMapAsync is called first inside EnrichPoolsAsync; protocols now come from storage, not HTTP)
         ]);
 
         PoolEnrichmentService service = this.CreateEnrichmentService(handler);

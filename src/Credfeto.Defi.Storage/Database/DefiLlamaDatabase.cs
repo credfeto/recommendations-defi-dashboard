@@ -63,4 +63,31 @@ internal static partial class DefiLlamaDatabase
         DbConnection connection,
         CancellationToken cancellationToken
     );
+
+    [SqlObjectMap("DefiLlama.Protocol_Sync", SqlObjectType.STORED_PROCEDURE, SqlDialect.MICROSOFT_SQL_SERVER)]
+    public static partial ValueTask Protocol_SyncAsync(
+        DbConnection connection,
+        [SqlFieldMap<DefiLlamaProtocolSyncRowMapper, IReadOnlyList<DefiLlamaProtocolSyncRow>>]
+            IReadOnlyList<DefiLlamaProtocolSyncRow> protocols,
+        [SqlFieldMap<DefiLlamaProtocolAuditLinkSyncRowMapper, IReadOnlyList<DefiLlamaProtocolAuditLinkSyncRow>>]
+            IReadOnlyList<DefiLlamaProtocolAuditLinkSyncRow> auditLinks,
+        DateTimeOffset? dataDate,
+        CancellationToken cancellationToken
+    );
+
+    [SqlObjectMap("DefiLlama.Protocol_GetAll", SqlObjectType.STORED_PROCEDURE, SqlDialect.MICROSOFT_SQL_SERVER)]
+    public static partial ValueTask<IReadOnlyList<DefiLlamaProtocolRow>> Protocol_GetAllAsync(
+        DbConnection connection,
+        CancellationToken cancellationToken
+    );
+
+    [SqlObjectMap(
+        "DefiLlama.ProtocolAuditLink_GetAll",
+        SqlObjectType.STORED_PROCEDURE,
+        SqlDialect.MICROSOFT_SQL_SERVER
+    )]
+    public static partial ValueTask<IReadOnlyList<DefiLlamaProtocolAuditLinkRow>> ProtocolAuditLink_GetAllAsync(
+        DbConnection connection,
+        CancellationToken cancellationToken
+    );
 }
