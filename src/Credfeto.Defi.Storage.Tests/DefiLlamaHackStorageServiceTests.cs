@@ -129,7 +129,7 @@ public sealed class DefiLlamaHackStorageServiceTests : TestBase
     }
 
     [Fact]
-    public async Task StoreHacksAsync_DuplicateNameAndDate_DedupesBeforeSyncAsync()
+    public async Task StoreHacksAsync_DuplicateNameAndDate_CompletesWithoutThrowingAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();
 
