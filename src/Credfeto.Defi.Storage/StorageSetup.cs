@@ -28,6 +28,7 @@ public static class StorageSetup
             .AddSingleton<ContractSecurityCacheService>()
             .AddSingleton<IDefiLlamaPoolStorage, DefiLlamaPoolStorage>()
             .AddSingleton<IDefiLlamaProtocolStorageService, DefiLlamaProtocolStorageService>()
+            .AddSingleton<IDefiLlamaHackStorageService, DefiLlamaHackStorageService>()
             .AddSingleton<IChainlinkPriceFeedStorageService, ChainlinkPriceFeedStorageService>()
             .AddSingleton<IPendleMarketStorageService, PendleMarketStorageService>()
             .AddSingleton<ICoinGeckoCoinStorageService, CoinGeckoCoinStorageService>()

@@ -6,7 +6,6 @@ using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
-using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services.LoggingExtensions;
 using Credfeto.Defi.Storage;
@@ -28,6 +27,7 @@ public sealed class CacheWarmerService : IHostedService
     private readonly ICoinGeckoCoinStorageService _coinGeckoStorage;
     private readonly ICoinGeckoStablecoinsClient _coinGeckoClient;
     private readonly ICoinGeckoStablecoinStorageService _coinGeckoStablecoinStorage;
+    private readonly IDefiLlamaHackStorageService _hackStorage;
     private readonly IDefiLlamaHacksClient _hacksClient;
     private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
     private readonly ILogger<CacheWarmerService> _logger;
@@ -50,6 +50,7 @@ public sealed class CacheWarmerService : IHostedService
         ApiCacheService apiCache,
         IDefiLlamaPoolStorage poolStorage,
         IDefiLlamaProtocolStorageService protocolStorage,
+        IDefiLlamaHackStorageService hackStorage,
         IPendleMarketStorageService pendleStorage,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
@@ -66,6 +67,7 @@ public sealed class CacheWarmerService : IHostedService
         this._apiCache = apiCache;
         this._poolStorage = poolStorage;
         this._protocolStorage = protocolStorage;
+        this._hackStorage = hackStorage;
         this._pendleStorage = pendleStorage;
         this._chainlinkStorage = chainlinkStorage;
         this._coinGeckoStorage = coinGeckoStorage;
@@ -157,12 +159,7 @@ public sealed class CacheWarmerService : IHostedService
     private async Task WarmHacksAsync(CancellationToken cancellationToken)
     {
         IReadOnlyList<RawHack> data = await this._hacksClient.FetchHacksAsync(cancellationToken);
-        _ = await this._apiCache.GetOrFetchAsync(
-            key: "defillama_hacks",
-            fetcher: _ => new ValueTask<IReadOnlyList<RawHack>>(data),
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawHack,
-            cancellationToken: cancellationToken
-        );
+        await this._hackStorage.StoreHacksAsync(hacks: data, dataDate: null, cancellationToken: cancellationToken);
     }
 
     private async Task WarmProtocolsAsync(CancellationToken cancellationToken)

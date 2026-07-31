@@ -76,4 +76,10 @@ public sealed class DependencyInjectionTests : DependencyInjectionTestsBase
     {
         this.RequireService<IDefiLlamaProtocolStorageService>();
     }
+
+    [Fact]
+    public void DefiLlamaHackStorageServiceIsRegistered()
+    {
+        this.RequireService<IDefiLlamaHackStorageService>();
+    }
 }

@@ -90,4 +90,19 @@ internal static partial class DefiLlamaDatabase
         DbConnection connection,
         CancellationToken cancellationToken
     );
+
+    [SqlObjectMap("DefiLlama.Hack_Sync", SqlObjectType.STORED_PROCEDURE, SqlDialect.MICROSOFT_SQL_SERVER)]
+    public static partial ValueTask Hack_SyncAsync(
+        DbConnection connection,
+        [SqlFieldMap<DefiLlamaHackSyncRowMapper, IReadOnlyList<DefiLlamaHackSyncRow>>]
+            IReadOnlyList<DefiLlamaHackSyncRow> hacks,
+        DateTimeOffset? dataDate,
+        CancellationToken cancellationToken
+    );
+
+    [SqlObjectMap("DefiLlama.Hack_GetAll", SqlObjectType.STORED_PROCEDURE, SqlDialect.MICROSOFT_SQL_SERVER)]
+    public static partial ValueTask<IReadOnlyList<DefiLlamaHackRow>> Hack_GetAllAsync(
+        DbConnection connection,
+        CancellationToken cancellationToken
+    );
 }

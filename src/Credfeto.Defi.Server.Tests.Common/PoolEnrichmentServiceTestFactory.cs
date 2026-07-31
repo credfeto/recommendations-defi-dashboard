@@ -1,5 +1,4 @@
 using System.Net.Http;
-using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Services;
@@ -15,14 +14,11 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 {
     private readonly FakeTimeProvider _timeProvider = new();
 
-    private readonly ApiCacheService _apiCache;
-
     private readonly ContractSecurityCacheService _securityCache;
 
     public PoolEnrichmentServiceTestFactory()
     {
         FakeDatabase database = new();
-        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
         this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
     }
 
@@ -30,6 +26,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
         IDefiLlamaProtocolStorageService? protocolStorage = null,
+        IDefiLlamaHackStorageService? hackStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
@@ -41,15 +38,12 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 
         poolStorage ??= new FakePoolStorage();
         protocolStorage ??= new FakeDefiLlamaProtocolStorage();
+        hackStorage ??= new FakeDefiLlamaHackStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
         coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
         coinGeckoStablecoinStorage ??= new FakeCoinGeckoStablecoinStorage();
 
-        DefiLlamaHacksClient hacksClient = new(
-            httpClientFactory: factory,
-            logger: this.GetTypedLogger<DefiLlamaHacksClient>()
-        );
         GoPlusClient goPlusClient = new(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
@@ -66,15 +60,14 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         );
 
         return new PoolEnrichmentService(
-            hacksClient: hacksClient,
+            hackStorage: hackStorage,
             protocolStorage: protocolStorage,
             chainlinkStorage: chainlinkStorage,
             coinGeckoStorage: coinGeckoStorage,
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
-            pendleStorage: pendleStorage,
-            cache: this._apiCache
+            pendleStorage: pendleStorage
         );
     }
 }
