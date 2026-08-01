@@ -31,6 +31,7 @@ public sealed class McpSetupTests : TestBase
     public async Task MapMcpEndpoint_RegistersMcpRouteAsync()
     {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
+        builder.Configuration.Sources.Clear();
         _ = builder.Services.AddMcpTools();
 
         await using WebApplication app = builder.Build();
@@ -39,11 +40,8 @@ public sealed class McpSetupTests : TestBase
 
         bool hasMcpEndpoint = ((IEndpointRouteBuilder)app)
             .DataSources.SelectMany(dataSource => dataSource.Endpoints)
-            .Any(endpoint =>
-                endpoint is RouteEndpoint routeEndpoint
-                && routeEndpoint.RoutePattern.RawText is not null
-                && routeEndpoint.RoutePattern.RawText.StartsWith("/mcp", StringComparison.Ordinal)
-            );
+            .OfType<RouteEndpoint>()
+            .Any(endpoint => endpoint.RoutePattern.RawText?.StartsWith("/mcp", StringComparison.Ordinal) == true);
 
         Assert.True(hasMcpEndpoint, userMessage: "Expected an endpoint registered under /mcp");
     }

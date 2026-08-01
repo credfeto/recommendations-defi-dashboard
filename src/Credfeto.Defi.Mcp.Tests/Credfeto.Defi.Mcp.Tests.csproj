@@ -38,14 +38,12 @@
   <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama.Interfaces\Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus.Interfaces\Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Server.Tests.Common\Credfeto.Defi.Server.Tests.Common.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
