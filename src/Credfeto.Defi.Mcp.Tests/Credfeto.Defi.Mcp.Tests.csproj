@@ -32,9 +32,6 @@
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
     <WarningsAsErrors />
   </PropertyGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
   <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
