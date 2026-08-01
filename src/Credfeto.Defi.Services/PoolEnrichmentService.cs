@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
-using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services.Utils;
 using Credfeto.Defi.Storage;
@@ -15,14 +13,11 @@ namespace Credfeto.Defi.Services;
 /// </summary>
 public sealed class PoolEnrichmentService
 {
-    private const string CACHE_KEY_HACKS = "defillama_hacks";
-
-    private readonly ApiCacheService _cache;
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
     private readonly ICoinGeckoCoinStorageService _coinGeckoStorage;
     private readonly ICoinGeckoStablecoinStorageService _coinGeckoStablecoinStorage;
     private readonly ContractSecurityService _contractSecurityService;
-    private readonly IDefiLlamaHacksClient _hacksClient;
+    private readonly IDefiLlamaHackStorageService _hackStorage;
     private readonly IPendleMarketStorageService _pendleStorage;
     private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolStorageService _protocolStorage;
@@ -31,18 +26,17 @@ public sealed class PoolEnrichmentService
     ///     Initialises a new instance of <see cref="PoolEnrichmentService" />.
     /// </summary>
     public PoolEnrichmentService(
-        IDefiLlamaHacksClient hacksClient,
+        IDefiLlamaHackStorageService hackStorage,
         IDefiLlamaProtocolStorageService protocolStorage,
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
         ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage,
         ContractSecurityService contractSecurityService,
         IDefiLlamaPoolStorage poolStorage,
-        IPendleMarketStorageService pendleStorage,
-        ApiCacheService cache
+        IPendleMarketStorageService pendleStorage
     )
     {
-        this._hacksClient = hacksClient;
+        this._hackStorage = hackStorage;
         this._protocolStorage = protocolStorage;
         this._chainlinkStorage = chainlinkStorage;
         this._coinGeckoStorage = coinGeckoStorage;
@@ -50,7 +44,6 @@ public sealed class PoolEnrichmentService
         this._contractSecurityService = contractSecurityService;
         this._poolStorage = poolStorage;
         this._pendleStorage = pendleStorage;
-        this._cache = cache;
     }
 
     /// <summary>
@@ -77,12 +70,7 @@ public sealed class PoolEnrichmentService
         CancellationToken cancellationToken
     )
     {
-        IReadOnlyList<RawHack> hacks = await this._cache.GetOrFetchAsync(
-            key: CACHE_KEY_HACKS,
-            fetcher: this._hacksClient.FetchHacksAsync,
-            typeInfo: AppJsonContext.Default.IReadOnlyListRawHack,
-            cancellationToken: cancellationToken
-        );
+        IReadOnlyList<RawHack> hacks = await this._hackStorage.GetAllHacksAsync(cancellationToken);
 
         return HacksService.BuildHackMap(hacks);
     }

@@ -24,7 +24,6 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class DefiMcpToolsTests : TestBase
 {
-    private readonly ApiCacheService _apiCache;
     private readonly ContractSecurityCacheService _securityCache;
     private readonly FakeTimeProvider _timeProvider;
 
@@ -32,7 +31,6 @@ public sealed class DefiMcpToolsTests : TestBase
     {
         this._timeProvider = new FakeTimeProvider();
         FakeDatabase database = new();
-        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
         this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
     }
 
@@ -58,16 +56,6 @@ public sealed class DefiMcpToolsTests : TestBase
                     );
         }
 
-        if (typeof(T) == typeof(DefiLlamaHacksClient))
-        {
-            return (T)
-                (object)
-                    new DefiLlamaHacksClient(
-                        httpClientFactory: factory,
-                        logger: this.GetTypedLogger<DefiLlamaHacksClient>()
-                    );
-        }
-
         if (typeof(T) == typeof(GoPlusClient))
         {
             return (T)(object)new GoPlusClient(httpClientFactory: factory, logger: this.GetTypedLogger<GoPlusClient>());
@@ -79,6 +67,7 @@ public sealed class DefiMcpToolsTests : TestBase
         HttpClient httpClient,
         IDefiLlamaPoolStorage? poolStorage = null,
         IDefiLlamaProtocolStorageService? protocolStorage = null,
+        IDefiLlamaHackStorageService? hackStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
@@ -87,12 +76,12 @@ public sealed class DefiMcpToolsTests : TestBase
     {
         poolStorage ??= new FakePoolStorage();
         protocolStorage ??= new FakeDefiLlamaProtocolStorage();
+        hackStorage ??= new FakeDefiLlamaHackStorage();
         chainlinkStorage ??= new FakeChainlinkStorage();
         pendleStorage ??= new FakePendleStorage();
         coinGeckoStorage ??= new FakeCoinGeckoCoinStorage();
         coinGeckoStablecoinStorage ??= new FakeCoinGeckoStablecoinStorage();
 
-        DefiLlamaHacksClient hacksClient = this.CreateClient<DefiLlamaHacksClient>(httpClient);
         GoPlusClient goPlusClient = this.CreateClient<GoPlusClient>(httpClient);
 
         IOptions<RpcConfig> rpcOptions = Options.Create(new RpcConfig());
@@ -112,15 +101,14 @@ public sealed class DefiMcpToolsTests : TestBase
         );
 
         PoolEnrichmentService enrichmentService = new(
-            hacksClient: hacksClient,
+            hackStorage: hackStorage,
             protocolStorage: protocolStorage,
             chainlinkStorage: chainlinkStorage,
             coinGeckoStorage: coinGeckoStorage,
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
             contractSecurityService: contractSecurityService,
             poolStorage: poolStorage,
-            pendleStorage: pendleStorage,
-            cache: this._apiCache
+            pendleStorage: pendleStorage
         );
 
         return new DefiMcpTools(enrichmentService: enrichmentService, contractSecurityService: contractSecurityService);

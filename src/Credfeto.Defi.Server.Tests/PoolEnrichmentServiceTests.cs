@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Server.Tests.Common;
@@ -21,6 +18,7 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     private PoolEnrichmentService CreateEnrichmentService(
         HttpMessageHandler httpHandler,
         IDefiLlamaPoolStorage? poolStorage = null,
+        IDefiLlamaHackStorageService? hackStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
@@ -30,6 +28,7 @@ public sealed class PoolEnrichmentServiceTests : TestBase
         return this._factory.CreateEnrichmentService(
             httpHandler: httpHandler,
             poolStorage: poolStorage,
+            hackStorage: hackStorage,
             chainlinkStorage: chainlinkStorage,
             pendleStorage: pendleStorage,
             coinGeckoStorage: coinGeckoStorage,
@@ -206,15 +205,23 @@ public sealed class PoolEnrichmentServiceTests : TestBase
     public async Task EnrichPoolsAsync_PoolWithHacks_HacksIncludedInResultAsync()
     {
         // Return a hack for "aave" to ensure the non-empty ToArray path is exercised
-        // RawHack fields: date (long unix timestamp), name, classification, technique, amount, source
-        const string HACKS_JSON =
-            """[{"date":1672531200,"name":"Aave","classification":"Protocol","technique":"Flash Loan","amount":1000000,"source":"defillama"}]""";
+        const string EMPTY_ARRAY = "[]";
+        using FreshResponseHttpHandler handler = new(EMPTY_ARRAY);
 
-        using MultiResponseHttpHandler handler = new([
-            HACKS_JSON, // hacks (GetHackMapAsync is called first inside EnrichPoolsAsync; protocols now come from storage, not HTTP)
-        ]);
+        RawHack hack = new()
+        {
+            Date = 1672531200,
+            Name = "Aave",
+            Classification = "Protocol",
+            Technique = "Flash Loan",
+            Amount = 1000000m,
+            Source = "defillama",
+        };
 
-        PoolEnrichmentService service = this.CreateEnrichmentService(handler);
+        PoolEnrichmentService service = this.CreateEnrichmentService(
+            handler,
+            hackStorage: new FakeDefiLlamaHackStorage([hack])
+        );
 
         RawPool pool = new()
         {
@@ -279,31 +286,5 @@ public sealed class PoolEnrichmentServiceTests : TestBase
 
         // Pool with depegged stablecoin should be excluded
         Assert.Empty(result);
-    }
-
-    private sealed class MultiResponseHttpHandler : HttpMessageHandler
-    {
-        private readonly string[] _responses;
-        private int _index;
-
-        public MultiResponseHttpHandler(string[] responses)
-        {
-            this._responses = responses;
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken
-        )
-        {
-            string json = this._index < this._responses.Length ? this._responses[this._index++] : "[]";
-
-            HttpResponseMessage response = new(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, Encoding.UTF8, mediaType: "application/json"),
-            };
-
-            return Task.FromResult(response);
-        }
     }
 }
