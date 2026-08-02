@@ -21,6 +21,7 @@
     <File Path="publish" />
   </Folder>
   <Folder Name="/MCP/">
+    <Project Path="Credfeto.Defi.Mcp.Tests/Credfeto.Defi.Mcp.Tests.csproj" />
     <Project Path="Credfeto.Defi.Mcp/Credfeto.Defi.Mcp.csproj" />
   </Folder>
   <Folder Name="/Models/">

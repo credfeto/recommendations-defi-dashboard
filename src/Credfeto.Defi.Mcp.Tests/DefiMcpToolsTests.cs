@@ -20,7 +20,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.Mcp.Tests;
 
 public sealed class DefiMcpToolsTests : TestBase
 {
