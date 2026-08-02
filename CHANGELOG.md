@@ -68,7 +68,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Load appsettings-local.json (optional) in Program.cs so machine-local config overrides are picked up at startup
 - Read database config from DatabaseConfiguration section to align with the dbappsettings provisioning script used across all apps on this machine
 - Fixed CHANGELOG.md missing the required Deprecated section header under Unreleased, which caused the changelog lint to fail on any commit touching the file
-- Investigate IL2104 Native AOT trim warning from System.Configuration.ConfigurationManager (issue #371)
+- Confirmed IL2104 Native AOT trim warning suppression remains necessary: trialed System.Configuration.ConfigurationManager 10.0.10 directly per issue #371's plan, but Microsoft.Data.SqlClient and Microsoft.Data.SqlClient.Internal.Logging also produce IL2104 independent of the ConfigurationManager version, so the existing IlcArg --nowarn:IL2104 suppression (issue #370) stays in place
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
