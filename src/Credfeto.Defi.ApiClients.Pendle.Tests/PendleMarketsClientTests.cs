@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -17,7 +18,10 @@ public sealed class PendleMarketsClientTests : TestBase
 {
     private const int PAGE_LIMIT = 100;
 
-    private static PendleMarketsClient CreateClientWithHandlerFactory(Func<HttpMessageHandler> handlerFactory)
+    private static PendleMarketsClient CreateClientWithHandlerFactory(
+        Func<HttpMessageHandler> handlerFactory,
+        bool loggingEnabled = false
+    )
     {
         // Each call to the factory must hand back a fresh handler, since
         // FetchMarketsForChainAsync disposes its HttpClient (and, by
@@ -26,43 +30,22 @@ public sealed class PendleMarketsClientTests : TestBase
         factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(handlerFactory()));
         ILogger<PendleMarketsClient> logger = GetSubstitute<ILogger<PendleMarketsClient>>();
 
-        return new PendleMarketsClient(httpClientFactory: factory, logger: logger);
-    }
-
-    private static PendleMarketsClient CreateClientWithHandlerFactoryAndLoggingEnabled(
-        Func<HttpMessageHandler> handlerFactory
-    )
-    {
-        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
-        factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(handlerFactory()));
-        ILogger<PendleMarketsClient> logger = GetSubstitute<ILogger<PendleMarketsClient>>();
-        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+        if (loggingEnabled)
+        {
+            logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+        }
 
         return new PendleMarketsClient(httpClientFactory: factory, logger: logger);
     }
 
     private static string BuildMarketsPageJson(int total, int count)
     {
-        StringBuilder sb = new();
-        sb.Append("{\"total\":");
-        sb.Append(total);
-        sb.Append(",\"results\":[");
+        string items = string.Join(
+            separator: ',',
+            values: Enumerable.Range(start: 0, count: count).Select(i => $$"""{"address":"0xitem{{i}}"}""")
+        );
 
-        for (int i = 0; i < count; i++)
-        {
-            if (i > 0)
-            {
-                sb.Append(',');
-            }
-
-            sb.Append("{\"address\":\"0xitem");
-            sb.Append(i);
-            sb.Append("\"}");
-        }
-
-        sb.Append("]}");
-
-        return sb.ToString();
+        return $$"""{"total":{{total}},"results":[{{items}}]}""";
     }
 
     [Fact]
@@ -118,7 +101,7 @@ public sealed class PendleMarketsClientTests : TestBase
     [Fact]
     public async Task FetchMarketsAsync_HttpErrorWithLoggingEnabled_LogsAndReturnsEmptyAsync()
     {
-        PendleMarketsClient client = CreateClientWithHandlerFactoryAndLoggingEnabled(() => new ErrorHttpHandler());
+        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new ErrorHttpHandler(), loggingEnabled: true);
 
         IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
