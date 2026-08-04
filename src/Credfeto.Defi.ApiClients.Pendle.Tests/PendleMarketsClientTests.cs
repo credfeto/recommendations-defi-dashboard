@@ -48,23 +48,27 @@ public sealed class PendleMarketsClientTests : TestBase
         return $$"""{"total":{{total}},"results":[{{items}}]}""";
     }
 
-    [Fact]
-    public async Task FetchMarketsAsync_EmptyResponseForAllChains_ReturnsEmptyListAsync()
+    [Theory]
+    [InlineData("""{"total":0,"results":[]}""")]
+    [InlineData("""{"total":5,"results":null}""")]
+    [InlineData("null")]
+    public async Task FetchMarketsAsync_EmptyOrNullResponse_ReturnsEmptyListAsync(string json)
     {
-        const string JSON = """{"total":0,"results":[]}""";
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(JSON));
+        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(json));
 
         IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.Empty(markets);
     }
 
-    [Fact]
-    public async Task FetchMarketsAsync_ActiveMarket_IsIncludedAsync()
+    [Theory]
+    [InlineData("2025-12-31")]
+    [InlineData("2025-06-30T00:00:00Z")]
+    public async Task FetchMarketsAsync_ActiveMarket_IsIncludedAsync(string expiry)
     {
-        const string JSON =
-            """{"total":1,"results":[{"address":"0xmarket1","chainId":1,"simpleSymbol":"PT-USDC","expiry":"2025-12-31","isActive":true,"aggregatedApy":0.05,"underlyingApy":0.03,"pendleApy":0.01,"lpRewardApy":0.005,"swapFeeApy":0.005,"liquidity":{"usd":1000000}}]}""";
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(JSON));
+        string json =
+            $$$"""{"total":1,"results":[{"address":"0xmarket1","chainId":1,"simpleSymbol":"PT-USDC","expiry":"{{{expiry}}}","isActive":true,"aggregatedApy":0.05,"underlyingApy":0.03,"pendleApy":0.01,"lpRewardApy":0.005,"swapFeeApy":0.005,"liquidity":{"usd":1000000}}]}""";
+        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(json));
 
         IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
@@ -72,6 +76,7 @@ public sealed class PendleMarketsClientTests : TestBase
         Assert.Equal(expected: 4, actual: markets.Count);
         Assert.Equal(expected: "0xmarket1", actual: markets[0].Address);
         Assert.True(markets[0].IsActive, userMessage: "Market should be marked as active");
+        Assert.Equal(expected: expiry, actual: markets[0].Expiry);
     }
 
     [Fact]
@@ -88,37 +93,19 @@ public sealed class PendleMarketsClientTests : TestBase
         Assert.False(markets[0].IsActive, userMessage: "Market should be marked as inactive");
     }
 
-    [Fact]
-    public async Task FetchMarketsAsync_HttpError_SkipsFailedChainsReturnsEmptyAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FetchMarketsAsync_HttpError_SkipsFailedChainsReturnsEmptyAsync(bool loggingEnabled)
     {
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new ErrorHttpHandler());
+        PendleMarketsClient client = CreateClientWithHandlerFactory(
+            () => new ErrorHttpHandler(),
+            loggingEnabled: loggingEnabled
+        );
 
         IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
         Assert.Empty(markets);
-    }
-
-    [Fact]
-    public async Task FetchMarketsAsync_HttpErrorWithLoggingEnabled_LogsAndReturnsEmptyAsync()
-    {
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new ErrorHttpHandler(), loggingEnabled: true);
-
-        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
-
-        Assert.Empty(markets);
-    }
-
-    [Fact]
-    public async Task FetchMarketsAsync_ActiveMarketWithExpiry_PreservesRawExpiryAsync()
-    {
-        const string JSON =
-            """{"total":1,"results":[{"address":"0xmarket1","chainId":1,"simpleSymbol":"PT-USDC","expiry":"2025-06-30T00:00:00Z","isActive":true,"aggregatedApy":0.08,"underlyingApy":0.05,"pendleApy":0.02,"lpRewardApy":0.005,"swapFeeApy":0.005}]}""";
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(JSON));
-
-        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
-
-        Assert.NotEmpty(markets);
-        Assert.Equal(expected: "2025-06-30T00:00:00Z", actual: markets[0].Expiry);
     }
 
     [Fact]
@@ -147,28 +134,6 @@ public sealed class PendleMarketsClientTests : TestBase
         Assert.NotEmpty(markets);
         Assert.NotNull(markets[0].TradingVolume);
         Assert.Equal(expected: 500, actual: markets[0].TradingVolume!.Usd);
-    }
-
-    [Fact]
-    public async Task FetchMarketsAsync_NullResultsResponse_ReturnsEmptyAsync()
-    {
-        const string JSON = """{"total":5,"results":null}""";
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(JSON));
-
-        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
-
-        Assert.Empty(markets);
-    }
-
-    [Fact]
-    public async Task FetchMarketsAsync_NullResponseBody_ReturnsEmptyAsync()
-    {
-        const string JSON = "null";
-        PendleMarketsClient client = CreateClientWithHandlerFactory(() => new FreshResponseHttpHandler(JSON));
-
-        IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
-
-        Assert.Empty(markets);
     }
 
     [Fact]
@@ -218,6 +183,16 @@ public sealed class PendleMarketsClientTests : TestBase
         }
     }
 
+    private static Task<HttpResponseMessage> JsonOkAsync(string json)
+    {
+        return Task.FromResult(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+    }
+
     private sealed class FreshResponseHttpHandler : HttpMessageHandler
     {
         private readonly string _json;
@@ -229,12 +204,7 @@ public sealed class PendleMarketsClientTests : TestBase
             CancellationToken cancellationToken
         )
         {
-            return Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(this._json, Encoding.UTF8, mediaType: "application/json"),
-                }
-            );
+            return JsonOkAsync(this._json);
         }
     }
 
@@ -249,16 +219,7 @@ public sealed class PendleMarketsClientTests : TestBase
             CancellationToken cancellationToken
         )
         {
-            return Task.FromResult(
-                new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(
-                        this._responses.Dequeue(),
-                        Encoding.UTF8,
-                        mediaType: "application/json"
-                    ),
-                }
-            );
+            return JsonOkAsync(this._responses.Dequeue());
         }
     }
 }
