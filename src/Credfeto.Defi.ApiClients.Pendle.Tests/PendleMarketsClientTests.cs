@@ -196,18 +196,10 @@ public sealed class PendleMarketsClientTests : TestBase
     {
         const string JSON = """{"total":1,"results":[{"address":"0xmarket1","chainId":1,"isActive":true}]}""";
 
-        IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
-        factory
-            .CreateClient(Arg.Any<string>())
-            .Returns(
-                _ => new HttpClient(new ErrorHttpHandler()),
-                _ => new HttpClient(new FreshResponseHttpHandler(JSON)),
-                _ => new HttpClient(new FreshResponseHttpHandler(JSON)),
-                _ => new HttpClient(new FreshResponseHttpHandler(JSON))
-            );
-        ILogger<PendleMarketsClient> logger = GetSubstitute<ILogger<PendleMarketsClient>>();
-
-        PendleMarketsClient client = new(httpClientFactory: factory, logger: logger);
+        int callCount = 0;
+        PendleMarketsClient client = CreateClientWithHandlerFactory(() =>
+            callCount++ == 0 ? new ErrorHttpHandler() : new FreshResponseHttpHandler(JSON)
+        );
 
         IReadOnlyList<PendleMarket> markets = await client.FetchMarketsAsync(this.CancellationToken());
 
