@@ -13,6 +13,7 @@
     <Project Path="Credfeto.Defi.ApiClients.GoPlus.Tests/Credfeto.Defi.ApiClients.GoPlus.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.GoPlus/Credfeto.Defi.ApiClients.GoPlus.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Pendle.Tests/Credfeto.Defi.ApiClients.Pendle.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
   </Folder>
   <Folder Name="/Config/">
