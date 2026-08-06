@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -95,10 +94,7 @@ public sealed class DefiMcpToolsTests : TestBase
             logger: this.GetTypedLogger<ProxyResolverService>()
         );
 
-        IHoneypotIsClient honeypotIsClient = GetSubstitute<IHoneypotIsClient>();
-        honeypotIsClient
-            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase));
+        IHoneypotIsClient honeypotIsClient = NoOpHoneypotIsClientFactory.Create();
 
         ContractSecurityService contractSecurityService = new(
             goPlusClient: goPlusClient,

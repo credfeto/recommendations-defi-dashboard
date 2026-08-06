@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Threading;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
-using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
@@ -58,10 +54,7 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
             logger: this.GetTypedLogger<ProxyResolverService>()
         );
 
-        IHoneypotIsClient honeypotIsClient = GetSubstitute<IHoneypotIsClient>();
-        honeypotIsClient
-            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase));
+        IHoneypotIsClient honeypotIsClient = NoOpHoneypotIsClientFactory.Create();
 
         ContractSecurityService contractSecurity = new(
             goPlusClient: goPlusClient,

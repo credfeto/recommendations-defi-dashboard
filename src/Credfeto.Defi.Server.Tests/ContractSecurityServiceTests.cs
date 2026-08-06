@@ -116,16 +116,6 @@ public sealed class ContractSecurityServiceTests : TestBase
         );
     }
 
-    private static IHoneypotIsClient CreateNoOpHoneypotIsClient()
-    {
-        IHoneypotIsClient client = GetSubstitute<IHoneypotIsClient>();
-        client
-            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
-            .Returns(new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase));
-
-        return client;
-    }
-
     private ContractSecurityService CreateService(
         GoPlusClient goPlusClient,
         ProxyResolverService proxyResolver,
@@ -134,7 +124,7 @@ public sealed class ContractSecurityServiceTests : TestBase
     {
         return new ContractSecurityService(
             goPlusClient: goPlusClient,
-            honeypotIsClient: honeypotIsClient ?? CreateNoOpHoneypotIsClient(),
+            honeypotIsClient: honeypotIsClient ?? NoOpHoneypotIsClientFactory.Create(),
             cache: this._cacheService,
             proxyResolver: proxyResolver
         );
@@ -439,7 +429,7 @@ public sealed class ContractSecurityServiceTests : TestBase
 
         using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
         using HttpClient httpClient = new(handler);
-        IHoneypotIsClient honeypotIsClient = CreateNoOpHoneypotIsClient();
+        IHoneypotIsClient honeypotIsClient = NoOpHoneypotIsClientFactory.Create();
 
         ContractSecurityService service = this.CreateService(
             goPlusClient: CreateGoPlusClient(httpClient),

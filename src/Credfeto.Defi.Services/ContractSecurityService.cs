@@ -79,11 +79,28 @@ public sealed class ContractSecurityService
         CancellationToken cancellationToken
     )
     {
-        (List<ContractSecurityInfo> results, List<string> staleAddresses) = await this.SeparateCachedAsync(
-            chain: chain,
+        (List<ContractSecurityInfo> results, List<string> staleAddresses) = await SplitCachedAsync(
             addresses: addresses,
+            getCached: (addr, ct) => this._cache.GetAsync(chain: chain, address: addr, cancellationToken: ct),
             cancellationToken: cancellationToken
         );
+
+        int cachedCount = results.Count;
+
+        for (int i = 0; i < cachedCount; ++i)
+        {
+            ContractSecurityInfo cached = results[i];
+
+            if (cached.IsProxy is true)
+            {
+                IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
+                    chain: chain,
+                    parentAddress: cached.Address,
+                    cancellationToken: cancellationToken
+                );
+                results.AddRange(children);
+            }
+        }
 
         if (staleAddresses.Count != 0)
         {
@@ -98,9 +115,9 @@ public sealed class ContractSecurityService
         return results;
     }
 
-    private async ValueTask<(List<ContractSecurityInfo> Results, List<string> StaleAddresses)> SeparateCachedAsync(
-        string chain,
+    private static async ValueTask<(List<ContractSecurityInfo> Results, List<string> StaleAddresses)> SplitCachedAsync(
         IReadOnlyList<string> addresses,
+        Func<string, CancellationToken, ValueTask<ContractSecurityInfo?>> getCached,
         CancellationToken cancellationToken
     )
     {
@@ -109,25 +126,11 @@ public sealed class ContractSecurityService
 
         foreach (string addr in addresses)
         {
-            ContractSecurityInfo? cached = await this._cache.GetAsync(
-                chain: chain,
-                address: addr,
-                cancellationToken: cancellationToken
-            );
+            ContractSecurityInfo? cached = await getCached(addr, cancellationToken);
 
             if (cached is not null)
             {
                 results.Add(cached);
-
-                if (cached.IsProxy is true)
-                {
-                    IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
-                        chain: chain,
-                        parentAddress: addr,
-                        cancellationToken: cancellationToken
-                    );
-                    results.AddRange(children);
-                }
             }
             else
             {
@@ -217,26 +220,11 @@ public sealed class ContractSecurityService
         CancellationToken cancellationToken
     )
     {
-        List<ContractSecurityInfo> results = [];
-        List<string> staleAddresses = [];
-
-        foreach (string addr in addresses)
-        {
-            ContractSecurityInfo? cached = await this._cache.GetHoneypotIsAsync(
-                chain: chain,
-                address: addr,
-                cancellationToken: cancellationToken
-            );
-
-            if (cached is not null)
-            {
-                results.Add(cached);
-            }
-            else
-            {
-                staleAddresses.Add(addr);
-            }
-        }
+        (List<ContractSecurityInfo> results, List<string> staleAddresses) = await SplitCachedAsync(
+            addresses: addresses,
+            getCached: (addr, ct) => this._cache.GetHoneypotIsAsync(chain: chain, address: addr, cancellationToken: ct),
+            cancellationToken: cancellationToken
+        );
 
         if (staleAddresses.Count == 0)
         {
