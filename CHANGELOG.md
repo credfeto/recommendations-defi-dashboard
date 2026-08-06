@@ -51,7 +51,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store CoinGecko coin list in structured CoinGecko schema (Coin, CoinPlatformAddress tables with TVP sync stored procedures) replacing ApiCache JSON blob (#386)
 - Store CoinGecko stablecoins in structured CoinGecko schema (Stablecoin table with TVP sync stored procedure) replacing ApiCache JSON blob (#385)
 - Store DefiLlama hacks in a structured DefiLlama.Hack table instead of an ApiCache JSON blob
-- Honeypot.is data source for contract security checks
+- Honeypot.is contract security data source - cross-checks GoPlus results per address on Ethereum, BSC, and Base via buy/sell simulation; results are cached independently for 24 hours and surfaced as source-tagged rows (`Source`, `SimulationSuccess` fields on ContractSecurityInfo) alongside GoPlus so agreement and disagreement between sources are both visible
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
@@ -38,12 +38,13 @@
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko.Interfaces\Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama.Interfaces\Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus.Interfaces\Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle.Interfaces\Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Server.Composition\Credfeto.Defi.Server.Composition.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Server.Tests.Common\Credfeto.Defi.Server.Tests.Common.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />

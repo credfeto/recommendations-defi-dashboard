@@ -3,9 +3,9 @@ using System.Diagnostics;
 namespace Credfeto.Defi.Data.Models.Models;
 
 /// <summary>
-///     GoPlus contract security information for an on-chain token contract.
+///     Contract security information for an on-chain token contract, as reported by one data source.
 /// </summary>
-[DebuggerDisplay("{Chain}/{Address} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
+[DebuggerDisplay("{Chain}/{Address} source={Source} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
 public sealed record ContractSecurityInfo
 {
     /// <summary>
@@ -17,6 +17,11 @@ public sealed record ContractSecurityInfo
     ///     Lowercased contract address.
     /// </summary>
     public required string Address { get; init; }
+
+    /// <summary>
+    ///     Data source identifier ("goplus" or "honeypotis").
+    /// </summary>
+    public string Source { get; init; } = "goplus";
 
     /// <summary>
     ///     When this row is a proxy implementation, points to the proxy contract address.
@@ -72,4 +77,9 @@ public sealed record ContractSecurityInfo
     ///     Token symbol as reported by the contract.
     /// </summary>
     public string? TokenSymbol { get; init; }
+
+    /// <summary>
+    ///     Whether the Honeypot.is buy/sell simulation completed successfully. Null for sources that don't simulate.
+    /// </summary>
+    public bool? SimulationSuccess { get; init; }
 }

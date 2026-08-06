@@ -169,4 +169,91 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
 
         await this._cache.SetAsync(info: info, cancellationToken: cancellationToken);
     }
+
+    [Fact]
+    public async Task GetHoneypotIsAsync_CacheMiss_ReturnsNullAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        ContractSecurityInfo? result = await this._cache.GetHoneypotIsAsync(
+            chain: "Ethereum",
+            address: "0xdeadbeef0000000000000000000000000000dead",
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetHoneypotIsAsync_FreshEntry_ReturnsMappedInfoAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        HoneypotIsTokenSecurityRow row = new(
+            Chain: "Ethereum",
+            Address: "0xabc123def456abc123def456abc123def456abc1",
+            IsHoneypot: true,
+            BuyTax: 5.0,
+            SellTax: 99.0,
+            SimulationSuccess: true,
+            DateCreated: FixedNow - TimeSpan.FromHours(1),
+            DateUpdated: FixedNow - TimeSpan.FromHours(1)
+        );
+        this._database.WithReturn<HoneypotIsTokenSecurityRow?>(row);
+
+        ContractSecurityInfo? result = await this._cache.GetHoneypotIsAsync(
+            chain: row.Chain,
+            address: row.Address,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.NotNull(result);
+        Assert.Equal(expected: "honeypotis", actual: result.Source);
+        Assert.True(result.IsHoneypot);
+        Assert.Equal(expected: 5.0, actual: result.BuyTax);
+        Assert.Equal(expected: 99.0, actual: result.SellTax);
+        Assert.True(result.SimulationSuccess);
+    }
+
+    [Fact]
+    public async Task GetHoneypotIsAsync_ExpiredEntry_ReturnsNullAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        HoneypotIsTokenSecurityRow row = new(
+            Chain: "Ethereum",
+            Address: "0xabc123def456abc123def456abc123def456abc1",
+            IsHoneypot: true,
+            BuyTax: null,
+            SellTax: null,
+            SimulationSuccess: true,
+            DateCreated: FixedNow - TimeSpan.FromHours(25),
+            DateUpdated: FixedNow - TimeSpan.FromHours(25)
+        );
+        this._database.WithReturn<HoneypotIsTokenSecurityRow?>(row);
+
+        ContractSecurityInfo? result = await this._cache.GetHoneypotIsAsync(
+            chain: row.Chain,
+            address: row.Address,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SetHoneypotIsAsync_CallsSyncAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        ContractSecurityInfo info = new()
+        {
+            Chain = "Ethereum",
+            Address = "0xnullable0000000000000000000000000000001a",
+            Source = "honeypotis",
+            IsHoneypot = false,
+        };
+
+        await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
+    }
 }

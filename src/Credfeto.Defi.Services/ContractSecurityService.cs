@@ -4,18 +4,20 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
+using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Storage;
 
 namespace Credfeto.Defi.Services;
 
 /// <summary>
-///     Fetches and caches GoPlus contract security information for pool token addresses.
+///     Fetches and caches contract security information from GoPlus and Honeypot.is for pool token addresses.
 /// </summary>
 public sealed class ContractSecurityService
 {
     private readonly ContractSecurityCacheService _cache;
     private readonly IGoPlusClient _goPlusClient;
+    private readonly IHoneypotIsClient _honeypotIsClient;
     private readonly ProxyResolverService _proxyResolver;
 
     /// <summary>
@@ -23,11 +25,13 @@ public sealed class ContractSecurityService
     /// </summary>
     public ContractSecurityService(
         IGoPlusClient goPlusClient,
+        IHoneypotIsClient honeypotIsClient,
         ContractSecurityCacheService cache,
         ProxyResolverService proxyResolver
     )
     {
         this._goPlusClient = goPlusClient;
+        this._honeypotIsClient = honeypotIsClient;
         this._cache = cache;
         this._proxyResolver = proxyResolver;
     }
@@ -40,9 +44,13 @@ public sealed class ContractSecurityService
     ///     2. Otherwise fetch from GoPlus, persist result.
     ///     3. If the contract is an upgradeable proxy, resolve its implementation
     ///        address via RPC, fetch + persist that too (with ParentAddress set).
+    ///     4. Independently, cross-check the requested addresses against Honeypot.is
+    ///        (24 h cache, same as GoPlus) and add its opinion as a separate,
+    ///        source-tagged row — agreement or disagreement with GoPlus is left for
+    ///        callers to interpret, both opinions are kept.
     ///
-    ///     Returns a flat list of <see cref="ContractSecurityInfo" /> covering all addresses and
-    ///     their implementations.
+    ///     Returns a flat list of <see cref="ContractSecurityInfo" /> covering all addresses,
+    ///     their implementations, and per-source opinions.
     /// </summary>
     public async ValueTask<IReadOnlyList<ContractSecurityInfo>> GetContractSecurityForAddressesAsync(
         string chain,
@@ -61,14 +69,19 @@ public sealed class ContractSecurityService
             cancellationToken: cancellationToken
         );
 
-        if (staleAddresses.Count == 0)
+        if (staleAddresses.Count != 0)
         {
-            return results;
+            await this.FetchAndCacheStaleAsync(
+                chain: chain,
+                staleAddresses: staleAddresses,
+                results: results,
+                cancellationToken: cancellationToken
+            );
         }
 
-        await this.FetchAndCacheStaleAsync(
+        await this.AppendHoneypotIsResultsAsync(
             chain: chain,
-            staleAddresses: staleAddresses,
+            addresses: addresses,
             results: results,
             cancellationToken: cancellationToken
         );
@@ -187,6 +200,72 @@ public sealed class ContractSecurityService
             await this._cache.SetAsync(info: implInfo, cancellationToken: cancellationToken);
             results.Add(implInfo);
         }
+    }
+
+    private async ValueTask AppendHoneypotIsResultsAsync(
+        string chain,
+        IReadOnlyList<string> addresses,
+        List<ContractSecurityInfo> results,
+        CancellationToken cancellationToken
+    )
+    {
+        List<string> staleAddresses = [];
+
+        foreach (string addr in addresses)
+        {
+            ContractSecurityInfo? cached = await this._cache.GetHoneypotIsAsync(
+                chain: chain,
+                address: addr,
+                cancellationToken: cancellationToken
+            );
+
+            if (cached is not null)
+            {
+                results.Add(cached);
+            }
+            else
+            {
+                staleAddresses.Add(addr);
+            }
+        }
+
+        if (staleAddresses.Count == 0)
+        {
+            return;
+        }
+
+        IReadOnlyDictionary<string, HoneypotIsResult> honeypotIsMap =
+            await this._honeypotIsClient.FetchTokenSecurityAsync(
+                chain: chain,
+                addresses: staleAddresses,
+                cancellationToken: cancellationToken
+            );
+
+        foreach (string addr in staleAddresses)
+        {
+            if (!honeypotIsMap.TryGetValue(key: addr.ToLowerInvariant(), out HoneypotIsResult? raw))
+            {
+                continue;
+            }
+
+            ContractSecurityInfo info = HoneypotRawToInfo(chain: chain, address: addr, raw: raw);
+            await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
+            results.Add(info);
+        }
+    }
+
+    private static ContractSecurityInfo HoneypotRawToInfo(string chain, string address, HoneypotIsResult raw)
+    {
+        return new ContractSecurityInfo
+        {
+            Chain = chain,
+            Address = address.ToLowerInvariant(),
+            Source = "honeypotis",
+            IsHoneypot = raw.IsHoneypot,
+            BuyTax = raw.BuyTax,
+            SellTax = raw.SellTax,
+            SimulationSuccess = raw.SimulationSuccess,
+        };
     }
 
     private static bool? ParseBool(string? val)

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus;
+using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Server.Tests.Common;
@@ -115,10 +116,25 @@ public sealed class ContractSecurityServiceTests : TestBase
         );
     }
 
-    private ContractSecurityService CreateService(GoPlusClient goPlusClient, ProxyResolverService proxyResolver)
+    private static IHoneypotIsClient CreateNoOpHoneypotIsClient()
+    {
+        IHoneypotIsClient client = GetSubstitute<IHoneypotIsClient>();
+        client
+            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase));
+
+        return client;
+    }
+
+    private ContractSecurityService CreateService(
+        GoPlusClient goPlusClient,
+        ProxyResolverService proxyResolver,
+        IHoneypotIsClient? honeypotIsClient = null
+    )
     {
         return new ContractSecurityService(
             goPlusClient: goPlusClient,
+            honeypotIsClient: honeypotIsClient ?? CreateNoOpHoneypotIsClient(),
             cache: this._cacheService,
             proxyResolver: proxyResolver
         );
@@ -411,6 +427,195 @@ public sealed class ContractSecurityServiceTests : TestBase
         Assert.Equal(expected: 0.05, actual: result[0].BuyTax);
         Assert.Null(result[0].SellTax);
         Assert.Equal(expected: 0.0, actual: result[0].TransferTax);
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_HoneypotIsCacheHit_DoesNotCallHoneypotIsClientAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
+        this._database.WithReturn<HoneypotIsTokenSecurityRow?>(BuildHoneypotIsRow(ADDRESS, isHoneypot: false));
+
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
+        using HttpClient httpClient = new(handler);
+        IHoneypotIsClient honeypotIsClient = CreateNoOpHoneypotIsClient();
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver(),
+            honeypotIsClient: honeypotIsClient
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: 2, actual: result.Count);
+        await honeypotIsClient
+            .DidNotReceive()
+            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_HoneypotIsCacheMiss_FetchesAndMergesBothSourcesAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+        const string JSON =
+            """{"code":1,"result":{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":{"is_open_source":"1","is_honeypot":"0","is_proxy":"0"}}}""";
+
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        IHoneypotIsClient honeypotIsClient = GetSubstitute<IHoneypotIsClient>();
+        honeypotIsClient
+            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
+            .Returns(
+                new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [ADDRESS] = new()
+                    {
+                        IsHoneypot = true,
+                        BuyTax = 5.0,
+                        SellTax = 99.0,
+                        SimulationSuccess = true,
+                    },
+                }
+            );
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver(),
+            honeypotIsClient: honeypotIsClient
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: 2, actual: result.Count);
+
+        ContractSecurityInfo goPlusInfo = Assert.Single(
+            result,
+            info => string.Equals(info.Source, "goplus", StringComparison.Ordinal)
+        );
+        Assert.False(goPlusInfo.IsHoneypot);
+
+        ContractSecurityInfo honeypotIsInfo = Assert.Single(
+            result,
+            info => string.Equals(info.Source, "honeypotis", StringComparison.Ordinal)
+        );
+        Assert.True(honeypotIsInfo.IsHoneypot);
+        Assert.Equal(expected: 5.0, actual: honeypotIsInfo.BuyTax);
+        Assert.Equal(expected: 99.0, actual: honeypotIsInfo.SellTax);
+        Assert.True(honeypotIsInfo.SimulationSuccess);
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_BothSourcesAgree_BothSurfacedWithMatchingVerdictAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+        const string JSON =
+            """{"code":1,"result":{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":{"is_open_source":"1","is_honeypot":"0","is_proxy":"0"}}}""";
+
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        IHoneypotIsClient honeypotIsClient = GetSubstitute<IHoneypotIsClient>();
+        honeypotIsClient
+            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
+            .Returns(
+                new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [ADDRESS] = new()
+                    {
+                        IsHoneypot = false,
+                        BuyTax = 0.0,
+                        SellTax = 0.0,
+                        SimulationSuccess = true,
+                    },
+                }
+            );
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver(),
+            honeypotIsClient: honeypotIsClient
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: 2, actual: result.Count);
+
+        ContractSecurityInfo goPlusInfo = Assert.Single(
+            result,
+            info => string.Equals(info.Source, "goplus", StringComparison.Ordinal)
+        );
+        ContractSecurityInfo honeypotIsInfo = Assert.Single(
+            result,
+            info => string.Equals(info.Source, "honeypotis", StringComparison.Ordinal)
+        );
+
+        Assert.False(goPlusInfo.IsHoneypot);
+        Assert.False(honeypotIsInfo.IsHoneypot);
+        Assert.Equal(expected: goPlusInfo.IsHoneypot, actual: honeypotIsInfo.IsHoneypot);
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_HoneypotIsReturnsNoData_OnlyGoPlusReturnedAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
+
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
+        using HttpClient httpClient = new(handler);
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver()
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Single(result);
+        Assert.Equal(expected: "goplus", actual: result[0].Source);
+    }
+
+    private static HoneypotIsTokenSecurityRow BuildHoneypotIsRow(string address, bool? isHoneypot)
+    {
+        return new HoneypotIsTokenSecurityRow(
+            Chain: "Ethereum",
+            Address: address,
+            IsHoneypot: isHoneypot,
+            BuyTax: null,
+            SellTax: null,
+            SimulationSuccess: true,
+            DateCreated: FixedNow - TimeSpan.FromHours(1),
+            DateUpdated: FixedNow - TimeSpan.FromHours(1)
+        );
     }
 
     private static string BuildProxyGoPlusJson(string address)
