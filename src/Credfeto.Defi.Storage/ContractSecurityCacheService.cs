@@ -68,7 +68,7 @@ public sealed class ContractSecurityCacheService
                 GoPlusDatabase.TokenSecurity_GetChildrenByParentAddressAsync(
                     connection: c,
                     chain: chain,
-                    parentAddress: parentAddress.ToLowerInvariant(),
+                    parentAddress: parentAddress,
                     cancellationToken: ct
                 ),
             cancellationToken: cancellationToken
@@ -91,7 +91,7 @@ public sealed class ContractSecurityCacheService
     {
         GoPlusTokenSecuritySyncRow row = new(
             Chain: info.Chain,
-            Address: info.Address.ToLowerInvariant(),
+            Address: info.Address,
             ParentAddress: info.ParentAddress,
             IsOpenSource: info.IsOpenSource,
             IsHoneypot: info.IsHoneypot,
@@ -150,7 +150,7 @@ public sealed class ContractSecurityCacheService
     {
         HoneypotIsTokenSecuritySyncRow row = new(
             Chain: info.Chain,
-            Address: info.Address.ToLowerInvariant(),
+            Address: info.Address,
             IsHoneypot: info.IsHoneypot,
             BuyTax: info.BuyTax,
             SellTax: info.SellTax,
@@ -170,6 +170,7 @@ public sealed class ContractSecurityCacheService
         {
             Chain = row.Chain,
             Address = row.Address,
+            Source = ContractSecuritySource.GoPlus,
             ParentAddress = row.ParentAddress,
             IsOpenSource = row.IsOpenSource,
             IsHoneypot = row.IsHoneypot,

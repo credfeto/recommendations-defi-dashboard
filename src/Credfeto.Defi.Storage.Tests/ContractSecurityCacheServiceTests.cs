@@ -165,6 +165,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
         {
             Chain = "Arbitrum",
             Address = "0xnullable0000000000000000000000000000001a",
+            Source = ContractSecuritySource.GoPlus,
         };
 
         await this._cache.SetAsync(info: info, cancellationToken: cancellationToken);

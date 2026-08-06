@@ -156,12 +156,14 @@ public sealed class ContractSecurityService
 
         foreach (string addr in staleAddresses)
         {
-            if (!goplusMap.TryGetValue(key: addr.ToLowerInvariant(), out GoPlusTokenResult? raw))
+            string loweredAddr = addr.ToLowerInvariant();
+
+            if (!goplusMap.TryGetValue(key: loweredAddr, out GoPlusTokenResult? raw))
             {
                 continue;
             }
 
-            ContractSecurityInfo info = RawToInfo(chain: chain, address: addr, parentAddress: null, raw: raw);
+            ContractSecurityInfo info = RawToInfo(chain: chain, address: loweredAddr, parentAddress: null, raw: raw);
             await this._cache.SetAsync(info: info, cancellationToken: cancellationToken);
             results.Add(info);
 
@@ -169,7 +171,7 @@ public sealed class ContractSecurityService
             {
                 await this.ResolveAndCacheProxyImplAsync(
                     chain: chain,
-                    proxyAddr: addr,
+                    proxyAddr: loweredAddr,
                     results: results,
                     cancellationToken: cancellationToken
                 );
@@ -201,12 +203,14 @@ public sealed class ContractSecurityService
             cancellationToken: cancellationToken
         );
 
-        if (implMap.TryGetValue(key: implAddr.ToLowerInvariant(), out GoPlusTokenResult? implRaw))
+        string loweredImplAddr = implAddr.ToLowerInvariant();
+
+        if (implMap.TryGetValue(key: loweredImplAddr, out GoPlusTokenResult? implRaw))
         {
             ContractSecurityInfo implInfo = RawToInfo(
                 chain: chain,
-                address: implAddr,
-                parentAddress: proxyAddr.ToLowerInvariant(),
+                address: loweredImplAddr,
+                parentAddress: proxyAddr,
                 raw: implRaw
             );
             await this._cache.SetAsync(info: implInfo, cancellationToken: cancellationToken);
@@ -240,12 +244,14 @@ public sealed class ContractSecurityService
 
         foreach (string addr in staleAddresses)
         {
-            if (!honeypotIsMap.TryGetValue(key: addr.ToLowerInvariant(), out HoneypotIsResult? raw))
+            string loweredAddr = addr.ToLowerInvariant();
+
+            if (!honeypotIsMap.TryGetValue(key: loweredAddr, out HoneypotIsResult? raw))
             {
                 continue;
             }
 
-            ContractSecurityInfo info = HoneypotRawToInfo(chain: chain, address: addr, raw: raw);
+            ContractSecurityInfo info = HoneypotRawToInfo(chain: chain, address: loweredAddr, raw: raw);
             await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
             results.Add(info);
         }
@@ -258,7 +264,7 @@ public sealed class ContractSecurityService
         return new ContractSecurityInfo
         {
             Chain = chain,
-            Address = address.ToLowerInvariant(),
+            Address = address,
             Source = ContractSecuritySource.HoneypotIs,
             IsHoneypot = raw.IsHoneypot,
             BuyTax = raw.BuyTax,
@@ -311,7 +317,8 @@ public sealed class ContractSecurityService
         return new ContractSecurityInfo
         {
             Chain = chain,
-            Address = address.ToLowerInvariant(),
+            Address = address,
+            Source = ContractSecuritySource.GoPlus,
             ParentAddress = parentAddress,
             IsOpenSource = ParseBool(raw.IsOpenSource),
             IsHoneypot = ParseBool(raw.IsHoneypot),
