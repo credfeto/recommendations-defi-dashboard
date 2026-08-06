@@ -208,7 +208,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
         );
 
         Assert.NotNull(result);
-        Assert.Equal(expected: "honeypotis", actual: result.Source);
+        Assert.Equal(expected: ContractSecuritySource.HoneypotIs, actual: result.Source);
         Assert.True(result.IsHoneypot);
         Assert.Equal(expected: 5.0, actual: result.BuyTax);
         Assert.Equal(expected: 99.0, actual: result.SellTax);
@@ -250,7 +250,7 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
         {
             Chain = "Ethereum",
             Address = "0xnullable0000000000000000000000000000001a",
-            Source = "honeypotis",
+            Source = ContractSecuritySource.HoneypotIs,
             IsHoneypot = false,
         };
 

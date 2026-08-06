@@ -21,7 +21,7 @@ public sealed record ContractSecurityInfo
     /// <summary>
     ///     Data source identifier ("goplus" or "honeypotis").
     /// </summary>
-    public string Source { get; init; } = "goplus";
+    public string Source { get; init; } = ContractSecuritySource.GoPlus;
 
     /// <summary>
     ///     When this row is a proxy implementation, points to the proxy contract address.

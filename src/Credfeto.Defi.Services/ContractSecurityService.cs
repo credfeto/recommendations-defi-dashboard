@@ -63,6 +63,22 @@ public sealed class ContractSecurityService
             return [];
         }
 
+        List<ContractSecurityInfo>[] combined = await Task.WhenAll(
+            this.GetGoPlusResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken),
+            this.GetHoneypotIsResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken)
+        );
+
+        combined[0].AddRange(combined[1]);
+
+        return combined[0];
+    }
+
+    private async Task<List<ContractSecurityInfo>> GetGoPlusResultsAsync(
+        string chain,
+        IReadOnlyList<string> addresses,
+        CancellationToken cancellationToken
+    )
+    {
         (List<ContractSecurityInfo> results, List<string> staleAddresses) = await this.SeparateCachedAsync(
             chain: chain,
             addresses: addresses,
@@ -78,13 +94,6 @@ public sealed class ContractSecurityService
                 cancellationToken: cancellationToken
             );
         }
-
-        await this.AppendHoneypotIsResultsAsync(
-            chain: chain,
-            addresses: addresses,
-            results: results,
-            cancellationToken: cancellationToken
-        );
 
         return results;
     }
@@ -202,13 +211,13 @@ public sealed class ContractSecurityService
         }
     }
 
-    private async ValueTask AppendHoneypotIsResultsAsync(
+    private async Task<List<ContractSecurityInfo>> GetHoneypotIsResultsAsync(
         string chain,
         IReadOnlyList<string> addresses,
-        List<ContractSecurityInfo> results,
         CancellationToken cancellationToken
     )
     {
+        List<ContractSecurityInfo> results = [];
         List<string> staleAddresses = [];
 
         foreach (string addr in addresses)
@@ -231,7 +240,7 @@ public sealed class ContractSecurityService
 
         if (staleAddresses.Count == 0)
         {
-            return;
+            return results;
         }
 
         IReadOnlyDictionary<string, HoneypotIsResult> honeypotIsMap =
@@ -252,6 +261,8 @@ public sealed class ContractSecurityService
             await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
             results.Add(info);
         }
+
+        return results;
     }
 
     private static ContractSecurityInfo HoneypotRawToInfo(string chain, string address, HoneypotIsResult raw)
@@ -260,7 +271,7 @@ public sealed class ContractSecurityService
         {
             Chain = chain,
             Address = address.ToLowerInvariant(),
-            Source = "honeypotis",
+            Source = ContractSecuritySource.HoneypotIs,
             IsHoneypot = raw.IsHoneypot,
             BuyTax = raw.BuyTax,
             SellTax = raw.SellTax,

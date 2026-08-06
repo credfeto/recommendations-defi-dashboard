@@ -506,13 +506,13 @@ public sealed class ContractSecurityServiceTests : TestBase
 
         ContractSecurityInfo goPlusInfo = Assert.Single(
             result,
-            info => string.Equals(info.Source, "goplus", StringComparison.Ordinal)
+            info => string.Equals(info.Source, ContractSecuritySource.GoPlus, StringComparison.Ordinal)
         );
         Assert.False(goPlusInfo.IsHoneypot);
 
         ContractSecurityInfo honeypotIsInfo = Assert.Single(
             result,
-            info => string.Equals(info.Source, "honeypotis", StringComparison.Ordinal)
+            info => string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
         );
         Assert.True(honeypotIsInfo.IsHoneypot);
         Assert.Equal(expected: 5.0, actual: honeypotIsInfo.BuyTax);
@@ -567,11 +567,11 @@ public sealed class ContractSecurityServiceTests : TestBase
 
         ContractSecurityInfo goPlusInfo = Assert.Single(
             result,
-            info => string.Equals(info.Source, "goplus", StringComparison.Ordinal)
+            info => string.Equals(info.Source, ContractSecuritySource.GoPlus, StringComparison.Ordinal)
         );
         ContractSecurityInfo honeypotIsInfo = Assert.Single(
             result,
-            info => string.Equals(info.Source, "honeypotis", StringComparison.Ordinal)
+            info => string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
         );
 
         Assert.False(goPlusInfo.IsHoneypot);
@@ -601,7 +601,7 @@ public sealed class ContractSecurityServiceTests : TestBase
         );
 
         Assert.Single(result);
-        Assert.Equal(expected: "goplus", actual: result[0].Source);
+        Assert.Equal(expected: ContractSecuritySource.GoPlus, actual: result[0].Source);
     }
 
     private static HoneypotIsTokenSecurityRow BuildHoneypotIsRow(string address, bool? isHoneypot)

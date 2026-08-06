@@ -190,7 +190,7 @@ public sealed class ContractSecurityCacheService
         {
             Chain = row.Chain,
             Address = row.Address,
-            Source = "honeypotis",
+            Source = ContractSecuritySource.HoneypotIs,
             IsHoneypot = row.IsHoneypot,
             BuyTax = row.BuyTax,
             SellTax = row.SellTax,
