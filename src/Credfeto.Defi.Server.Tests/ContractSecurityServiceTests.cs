@@ -449,8 +449,14 @@ public sealed class ContractSecurityServiceTests : TestBase
             .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task GetContractSecurityForAddressesAsync_HoneypotIsCacheMiss_FetchesAndMergesBothSourcesAsync()
+    [Theory]
+    [InlineData(true, 5.0, 99.0)]
+    [InlineData(false, 0.0, 0.0)]
+    public async Task GetContractSecurityForAddressesAsync_HoneypotIsCacheMiss_FetchesAndMergesBothSourcesAsync(
+        bool honeypotVerdict,
+        double buyTax,
+        double sellTax
+    )
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
         const string JSON =
@@ -472,9 +478,9 @@ public sealed class ContractSecurityServiceTests : TestBase
                 {
                     [ADDRESS] = new()
                     {
-                        IsHoneypot = true,
-                        BuyTax = 5.0,
-                        SellTax = 99.0,
+                        IsHoneypot = honeypotVerdict,
+                        BuyTax = buyTax,
+                        SellTax = sellTax,
                         SimulationSuccess = true,
                     },
                 }
@@ -504,69 +510,10 @@ public sealed class ContractSecurityServiceTests : TestBase
             result,
             info => string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
         );
-        Assert.True(honeypotIsInfo.IsHoneypot);
-        Assert.Equal(expected: 5.0, actual: honeypotIsInfo.BuyTax);
-        Assert.Equal(expected: 99.0, actual: honeypotIsInfo.SellTax);
+        Assert.Equal(expected: honeypotVerdict, actual: honeypotIsInfo.IsHoneypot);
+        Assert.Equal(expected: buyTax, actual: honeypotIsInfo.BuyTax);
+        Assert.Equal(expected: sellTax, actual: honeypotIsInfo.SellTax);
         Assert.True(honeypotIsInfo.SimulationSuccess);
-    }
-
-    [Fact]
-    public async Task GetContractSecurityForAddressesAsync_BothSourcesAgree_BothSurfacedWithMatchingVerdictAsync()
-    {
-        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        const string JSON =
-            """{"code":1,"result":{"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":{"is_open_source":"1","is_honeypot":"0","is_proxy":"0"}}}""";
-
-        using FakeHttpHandler handler = new(
-            new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
-            }
-        );
-        using HttpClient httpClient = new(handler);
-
-        IHoneypotIsClient honeypotIsClient = GetSubstitute<IHoneypotIsClient>();
-        honeypotIsClient
-            .FetchTokenSecurityAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
-            .Returns(
-                new Dictionary<string, HoneypotIsResult>(StringComparer.OrdinalIgnoreCase)
-                {
-                    [ADDRESS] = new()
-                    {
-                        IsHoneypot = false,
-                        BuyTax = 0.0,
-                        SellTax = 0.0,
-                        SimulationSuccess = true,
-                    },
-                }
-            );
-
-        ContractSecurityService service = this.CreateService(
-            goPlusClient: CreateGoPlusClient(httpClient),
-            proxyResolver: CreateNoOpProxyResolver(),
-            honeypotIsClient: honeypotIsClient
-        );
-
-        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
-            chain: "Ethereum",
-            addresses: [ADDRESS],
-            cancellationToken: this.CancellationToken()
-        );
-
-        Assert.Equal(expected: 2, actual: result.Count);
-
-        ContractSecurityInfo goPlusInfo = Assert.Single(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.GoPlus, StringComparison.Ordinal)
-        );
-        ContractSecurityInfo honeypotIsInfo = Assert.Single(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
-        );
-
-        Assert.False(goPlusInfo.IsHoneypot);
-        Assert.False(honeypotIsInfo.IsHoneypot);
-        Assert.Equal(expected: goPlusInfo.IsHoneypot, actual: honeypotIsInfo.IsHoneypot);
     }
 
     [Fact]

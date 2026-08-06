@@ -163,12 +163,7 @@ public sealed class HoneypotIsClientTests : TestBase
     public async Task FetchTokenSecurityAsync_MultipleAddresses_QueriesEachIndividuallyAsync()
     {
         const string JSON = """{"simulationSuccess":true,"honeypotResult":{"isHoneypot":false}}""";
-        using FakeHttpHandler handler = new(
-            firstStatusCode: HttpStatusCode.OK,
-            firstJson: JSON,
-            secondStatusCode: HttpStatusCode.OK,
-            secondJson: JSON
-        );
+        using FakeHttpHandler handler = new((HttpStatusCode.OK, JSON), (HttpStatusCode.OK, JSON));
         using HttpClient httpClient = new(handler);
 
         HoneypotIsClient client = CreateClient(httpClient);
@@ -187,12 +182,7 @@ public sealed class HoneypotIsClientTests : TestBase
     public async Task FetchTokenSecurityAsync_OneAddressFails_StillReturnsTheOtherAsync()
     {
         const string JSON = """{"simulationSuccess":true,"honeypotResult":{"isHoneypot":false}}""";
-        using FakeHttpHandler handler = new(
-            firstStatusCode: HttpStatusCode.InternalServerError,
-            firstJson: null,
-            secondStatusCode: HttpStatusCode.OK,
-            secondJson: JSON
-        );
+        using FakeHttpHandler handler = new((HttpStatusCode.InternalServerError, null), (HttpStatusCode.OK, JSON));
         using HttpClient httpClient = new(handler);
 
         HoneypotIsClient client = CreateClient(httpClient);
@@ -214,15 +204,7 @@ public sealed class HoneypotIsClientTests : TestBase
         public FakeHttpHandler(HttpStatusCode statusCode, string? json)
             : this([(statusCode, json)]) { }
 
-        public FakeHttpHandler(
-            HttpStatusCode firstStatusCode,
-            string? firstJson,
-            HttpStatusCode secondStatusCode,
-            string? secondJson
-        )
-            : this([(firstStatusCode, firstJson), (secondStatusCode, secondJson)]) { }
-
-        private FakeHttpHandler(IEnumerable<(HttpStatusCode StatusCode, string? Json)> responses)
+        public FakeHttpHandler(params (HttpStatusCode StatusCode, string? Json)[] responses)
         {
             this._responses = new(responses);
         }
