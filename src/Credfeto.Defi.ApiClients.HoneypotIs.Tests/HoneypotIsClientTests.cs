@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -195,6 +196,34 @@ public sealed class HoneypotIsClientTests : TestBase
 
         Assert.Single(result);
         Assert.Contains("0xdac17f958d2ee523a2206206994597c13d831ec7", result);
+    }
+
+    [Fact]
+    public async Task FetchTokenSecurityAsync_CancelledToken_PropagatesAndStopsRatherThanContinuingAsync()
+    {
+        const string JSON = """{"simulationSuccess":true,"honeypotResult":{"isHoneypot":false}}""";
+        using FakeHttpHandler handler = new((HttpStatusCode.OK, JSON), (HttpStatusCode.OK, JSON));
+        using HttpClient httpClient = new(handler);
+        using CancellationTokenSource cts = new();
+        await cts.CancelAsync();
+
+        HoneypotIsClient client = CreateClient(httpClient);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            client
+                .FetchTokenSecurityAsync(
+                    chain: "Ethereum",
+                    addresses:
+                    [
+                        "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                        "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                    ],
+                    cancellationToken: cts.Token
+                )
+                .AsTask()
+        );
+
+        Assert.True(handler.RequestCount < 2, "should not have attempted the second address after cancellation");
     }
 
     private sealed class FakeHttpHandler : HttpMessageHandler

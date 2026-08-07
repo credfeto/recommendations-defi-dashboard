@@ -95,6 +95,10 @@ public sealed class HoneypotIsClient : IHoneypotIsClient
                     SimulationSuccess = response.SimulationSuccess,
                 };
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 this._logger.FetchTokenSecurityFailed(chain: chain, address: lowered, exception: ex);
