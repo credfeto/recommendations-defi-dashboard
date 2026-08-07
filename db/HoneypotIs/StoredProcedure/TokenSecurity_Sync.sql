@@ -27,6 +27,7 @@ BEGIN
       [BuyTax],
       [SellTax],
       [SimulationSuccess],
+      [DataDate],
       [DateCreated],
       [DateUpdated]
     )
@@ -37,6 +38,7 @@ BEGIN
       Src.[BuyTax],
       Src.[SellTax],
       Src.[SimulationSuccess],
+      NULL,
       SYSDATETIMEOFFSET(),
       SYSDATETIMEOFFSET()
     );

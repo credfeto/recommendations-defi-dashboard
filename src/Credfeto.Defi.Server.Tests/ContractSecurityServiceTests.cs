@@ -511,8 +511,8 @@ public sealed class ContractSecurityServiceTests : TestBase
             info => string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
         );
         Assert.Equal(expected: honeypotVerdict, actual: honeypotIsInfo.IsHoneypot);
-        Assert.Equal(expected: buyTax, actual: honeypotIsInfo.BuyTax);
-        Assert.Equal(expected: sellTax, actual: honeypotIsInfo.SellTax);
+        Assert.Equal(expected: buyTax / 100.0, actual: honeypotIsInfo.BuyTax);
+        Assert.Equal(expected: sellTax / 100.0, actual: honeypotIsInfo.SellTax);
         Assert.True(honeypotIsInfo.SimulationSuccess);
     }
 
@@ -551,7 +551,8 @@ public sealed class ContractSecurityServiceTests : TestBase
             SellTax: null,
             SimulationSuccess: true,
             DateCreated: FixedNow - TimeSpan.FromHours(1),
-            DateUpdated: FixedNow - TimeSpan.FromHours(1)
+            DateUpdated: FixedNow - TimeSpan.FromHours(1),
+            DataDate: null
         );
     }
 

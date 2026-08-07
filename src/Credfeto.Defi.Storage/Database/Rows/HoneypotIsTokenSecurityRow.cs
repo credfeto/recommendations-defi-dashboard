@@ -12,5 +12,6 @@ public sealed record HoneypotIsTokenSecurityRow(
     double? SellTax,
     bool? SimulationSuccess,
     DateTimeOffset DateCreated,
-    DateTimeOffset DateUpdated
+    DateTimeOffset DateUpdated,
+    DateTimeOffset? DataDate
 );

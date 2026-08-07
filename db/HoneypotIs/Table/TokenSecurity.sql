@@ -8,5 +8,6 @@ CREATE TABLE [HoneypotIs].[TokenSecurity]
   [SimulationSuccess] BIT NULL,
   [DateCreated] DATETIMEOFFSET NOT NULL,
   [DateUpdated] DATETIMEOFFSET NOT NULL,
+  [DataDate] DATETIMEOFFSET NULL,
   CONSTRAINT [PK_HoneypotIs_TokenSecurity] PRIMARY KEY ([Chain], [Address])
 );

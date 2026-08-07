@@ -13,7 +13,8 @@ BEGIN
     [SellTax],
     [SimulationSuccess],
     [DateCreated],
-    [DateUpdated]
+    [DateUpdated],
+    [DataDate]
   FROM [HoneypotIs].[TokenSecurity]
   WHERE [Chain] = @Chain
     AND [Address] = @Address;

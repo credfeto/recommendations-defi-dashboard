@@ -198,7 +198,8 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
             SellTax: 99.0,
             SimulationSuccess: true,
             DateCreated: FixedNow - TimeSpan.FromHours(1),
-            DateUpdated: FixedNow - TimeSpan.FromHours(1)
+            DateUpdated: FixedNow - TimeSpan.FromHours(1),
+            DataDate: null
         );
         this._database.WithReturn<HoneypotIsTokenSecurityRow?>(row);
 
@@ -229,7 +230,8 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
             SellTax: null,
             SimulationSuccess: true,
             DateCreated: FixedNow - TimeSpan.FromHours(25),
-            DateUpdated: FixedNow - TimeSpan.FromHours(25)
+            DateUpdated: FixedNow - TimeSpan.FromHours(25),
+            DataDate: null
         );
         this._database.WithReturn<HoneypotIsTokenSecurityRow?>(row);
 

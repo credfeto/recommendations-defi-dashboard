@@ -267,10 +267,15 @@ public sealed class ContractSecurityService
             Address = address,
             Source = ContractSecuritySource.HoneypotIs,
             IsHoneypot = raw.IsHoneypot,
-            BuyTax = raw.BuyTax,
-            SellTax = raw.SellTax,
+            BuyTax = PercentToFraction(raw.BuyTax),
+            SellTax = PercentToFraction(raw.SellTax),
             SimulationSuccess = raw.SimulationSuccess,
         };
+    }
+
+    private static double? PercentToFraction(double? percent)
+    {
+        return percent / 100.0;
     }
 
     private static bool? ParseBool(string? val)

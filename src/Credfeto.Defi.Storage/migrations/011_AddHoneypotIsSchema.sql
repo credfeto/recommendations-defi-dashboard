@@ -20,6 +20,7 @@ IF OBJECT_ID(N'[HoneypotIs].[TokenSecurity]', N'U') IS NULL
       [SimulationSuccess] BIT NULL,
       [DateCreated] DATETIMEOFFSET NOT NULL,
       [DateUpdated] DATETIMEOFFSET NOT NULL,
+      [DataDate] DATETIMEOFFSET NULL,
       CONSTRAINT [PK_HoneypotIs_TokenSecurity] PRIMARY KEY ([Chain], [Address])
     );
   END;
@@ -75,6 +76,7 @@ BEGIN
       [BuyTax],
       [SellTax],
       [SimulationSuccess],
+      [DataDate],
       [DateCreated],
       [DateUpdated]
     )
@@ -85,6 +87,7 @@ BEGIN
       Src.[BuyTax],
       Src.[SellTax],
       Src.[SimulationSuccess],
+      NULL,
       SYSDATETIMEOFFSET(),
       SYSDATETIMEOFFSET()
     );
@@ -106,7 +109,8 @@ BEGIN
     [SellTax],
     [SimulationSuccess],
     [DateCreated],
-    [DateUpdated]
+    [DateUpdated],
+    [DataDate]
   FROM [HoneypotIs].[TokenSecurity]
   WHERE [Chain] = @Chain
     AND [Address] = @Address;
