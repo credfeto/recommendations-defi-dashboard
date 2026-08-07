@@ -12,6 +12,9 @@
     <Project Path="Credfeto.Defi.ApiClients.GoPlus.Interfaces/Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.GoPlus.Tests/Credfeto.Defi.ApiClients.GoPlus.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.GoPlus/Credfeto.Defi.ApiClients.GoPlus.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.HoneypotIs.Interfaces/Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.HoneypotIs.Tests/Credfeto.Defi.ApiClients.HoneypotIs.Tests.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.HoneypotIs/Credfeto.Defi.ApiClients.HoneypotIs.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle.Tests/Credfeto.Defi.ApiClients.Pendle.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />

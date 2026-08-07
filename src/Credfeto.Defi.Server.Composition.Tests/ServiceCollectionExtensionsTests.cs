@@ -2,6 +2,7 @@ using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
+using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Server.Tests.Common;
@@ -70,6 +71,12 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
     public void GoPlusClientIsRegistered()
     {
         this.RequireService<IGoPlusClient>();
+    }
+
+    [Fact]
+    public void HoneypotIsClientIsRegistered()
+    {
+        this.RequireService<IHoneypotIsClient>();
     }
 
     [Fact]

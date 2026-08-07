@@ -68,7 +68,7 @@ public sealed class ContractSecurityCacheService
                 GoPlusDatabase.TokenSecurity_GetChildrenByParentAddressAsync(
                     connection: c,
                     chain: chain,
-                    parentAddress: parentAddress.ToLowerInvariant(),
+                    parentAddress: parentAddress,
                     cancellationToken: ct
                 ),
             cancellationToken: cancellationToken
@@ -91,7 +91,7 @@ public sealed class ContractSecurityCacheService
     {
         GoPlusTokenSecuritySyncRow row = new(
             Chain: info.Chain,
-            Address: info.Address.ToLowerInvariant(),
+            Address: info.Address,
             ParentAddress: info.ParentAddress,
             IsOpenSource: info.IsOpenSource,
             IsHoneypot: info.IsHoneypot,
@@ -112,12 +112,65 @@ public sealed class ContractSecurityCacheService
         );
     }
 
+    /// <summary>
+    ///     Returns a cached Honeypot.is entry if it exists and is within the 24-hour TTL.
+    ///     Returns null if not found or expired.
+    /// </summary>
+    public async ValueTask<ContractSecurityInfo?> GetHoneypotIsAsync(
+        string chain,
+        string address,
+        CancellationToken cancellationToken
+    )
+    {
+        DateTimeOffset now = this._timeProvider.GetUtcNow();
+
+        HoneypotIsTokenSecurityRow? row = await this._database.ExecuteAsync(
+            action: (c, ct) =>
+                HoneypotIsDatabase.TokenSecurity_GetByChainAndAddressAsync(
+                    connection: c,
+                    chain: chain,
+                    address: address.ToLowerInvariant(),
+                    cancellationToken: ct
+                ),
+            cancellationToken: cancellationToken
+        );
+
+        if (row is null || now - row.DateUpdated >= SecurityTtl)
+        {
+            return null;
+        }
+
+        return MapToModel(row);
+    }
+
+    /// <summary>
+    ///     Persists a Honeypot.is <see cref="ContractSecurityInfo" /> entry to the cache.
+    /// </summary>
+    public ValueTask SetHoneypotIsAsync(ContractSecurityInfo info, CancellationToken cancellationToken)
+    {
+        HoneypotIsTokenSecuritySyncRow row = new(
+            Chain: info.Chain,
+            Address: info.Address,
+            IsHoneypot: info.IsHoneypot,
+            BuyTax: info.BuyTax,
+            SellTax: info.SellTax,
+            SimulationSuccess: info.SimulationSuccess
+        );
+
+        return this._database.ExecuteAsync(
+            action: (c, ct) =>
+                HoneypotIsDatabase.TokenSecurity_SyncAsync(connection: c, rows: [row], cancellationToken: ct),
+            cancellationToken: cancellationToken
+        );
+    }
+
     private static ContractSecurityInfo MapToModel(GoPlusTokenSecurityRow row)
     {
         return new ContractSecurityInfo
         {
             Chain = row.Chain,
             Address = row.Address,
+            Source = ContractSecuritySource.GoPlus,
             ParentAddress = row.ParentAddress,
             IsOpenSource = row.IsOpenSource,
             IsHoneypot = row.IsHoneypot,
@@ -129,6 +182,20 @@ public sealed class ContractSecurityCacheService
             HoneypotWithSameCreator = row.HoneypotWithSameCreator,
             TokenName = row.TokenName,
             TokenSymbol = row.TokenSymbol,
+        };
+    }
+
+    private static ContractSecurityInfo MapToModel(HoneypotIsTokenSecurityRow row)
+    {
+        return new ContractSecurityInfo
+        {
+            Chain = row.Chain,
+            Address = row.Address,
+            Source = ContractSecuritySource.HoneypotIs,
+            IsHoneypot = row.IsHoneypot,
+            BuyTax = row.BuyTax,
+            SellTax = row.SellTax,
+            SimulationSuccess = row.SimulationSuccess,
         };
     }
 }

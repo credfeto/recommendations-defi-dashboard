@@ -7,6 +7,8 @@ using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
+using Credfeto.Defi.ApiClients.HoneypotIs;
+using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Services;
@@ -30,6 +32,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IChainlinkStablecoinsClient, ChainlinkStablecoinsClient>()
             .AddSingleton<IPendleMarketsClient, PendleMarketsClient>()
             .AddSingleton<IGoPlusClient, GoPlusClient>()
+            .AddSingleton<IHoneypotIsClient, HoneypotIsClient>()
             .AddSingleton<ProxyResolverService>()
             .AddSingleton<ContractSecurityService>()
             .AddSingleton<PoolEnrichmentService>()

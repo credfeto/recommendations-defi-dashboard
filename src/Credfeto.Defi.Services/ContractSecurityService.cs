@@ -4,18 +4,20 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
+using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Storage;
 
 namespace Credfeto.Defi.Services;
 
 /// <summary>
-///     Fetches and caches GoPlus contract security information for pool token addresses.
+///     Fetches and caches contract security information from GoPlus and Honeypot.is for pool token addresses.
 /// </summary>
 public sealed class ContractSecurityService
 {
     private readonly ContractSecurityCacheService _cache;
     private readonly IGoPlusClient _goPlusClient;
+    private readonly IHoneypotIsClient _honeypotIsClient;
     private readonly ProxyResolverService _proxyResolver;
 
     /// <summary>
@@ -23,11 +25,13 @@ public sealed class ContractSecurityService
     /// </summary>
     public ContractSecurityService(
         IGoPlusClient goPlusClient,
+        IHoneypotIsClient honeypotIsClient,
         ContractSecurityCacheService cache,
         ProxyResolverService proxyResolver
     )
     {
         this._goPlusClient = goPlusClient;
+        this._honeypotIsClient = honeypotIsClient;
         this._cache = cache;
         this._proxyResolver = proxyResolver;
     }
@@ -40,9 +44,13 @@ public sealed class ContractSecurityService
     ///     2. Otherwise fetch from GoPlus, persist result.
     ///     3. If the contract is an upgradeable proxy, resolve its implementation
     ///        address via RPC, fetch + persist that too (with ParentAddress set).
+    ///     4. Independently, cross-check the requested addresses against Honeypot.is
+    ///        (24 h cache, same as GoPlus) and add its opinion as a separate,
+    ///        source-tagged row — agreement or disagreement with GoPlus is left for
+    ///        callers to interpret, both opinions are kept.
     ///
-    ///     Returns a flat list of <see cref="ContractSecurityInfo" /> covering all addresses and
-    ///     their implementations.
+    ///     Returns a flat list of <see cref="ContractSecurityInfo" /> covering all addresses,
+    ///     their implementations, and per-source opinions.
     /// </summary>
     public async ValueTask<IReadOnlyList<ContractSecurityInfo>> GetContractSecurityForAddressesAsync(
         string chain,
@@ -55,30 +63,61 @@ public sealed class ContractSecurityService
             return [];
         }
 
-        (List<ContractSecurityInfo> results, List<string> staleAddresses) = await this.SeparateCachedAsync(
-            chain: chain,
+        List<ContractSecurityInfo>[] combined = await Task.WhenAll(
+            this.GetGoPlusResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken),
+            this.GetHoneypotIsResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken)
+        );
+
+        combined[0].AddRange(combined[1]);
+
+        return combined[0];
+    }
+
+    private async Task<List<ContractSecurityInfo>> GetGoPlusResultsAsync(
+        string chain,
+        IReadOnlyList<string> addresses,
+        CancellationToken cancellationToken
+    )
+    {
+        (List<ContractSecurityInfo> results, List<string> staleAddresses) = await SplitCachedAsync(
             addresses: addresses,
+            getCached: (addr, ct) => this._cache.GetAsync(chain: chain, address: addr, cancellationToken: ct),
             cancellationToken: cancellationToken
         );
 
-        if (staleAddresses.Count == 0)
+        int cachedCount = results.Count;
+
+        for (int i = 0; i < cachedCount; ++i)
         {
-            return results;
+            ContractSecurityInfo cached = results[i];
+
+            if (cached.IsProxy is true)
+            {
+                IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
+                    chain: chain,
+                    parentAddress: cached.Address,
+                    cancellationToken: cancellationToken
+                );
+                results.AddRange(children);
+            }
         }
 
-        await this.FetchAndCacheStaleAsync(
-            chain: chain,
-            staleAddresses: staleAddresses,
-            results: results,
-            cancellationToken: cancellationToken
-        );
+        if (staleAddresses.Count != 0)
+        {
+            await this.FetchAndCacheStaleAsync(
+                chain: chain,
+                staleAddresses: staleAddresses,
+                results: results,
+                cancellationToken: cancellationToken
+            );
+        }
 
         return results;
     }
 
-    private async ValueTask<(List<ContractSecurityInfo> Results, List<string> StaleAddresses)> SeparateCachedAsync(
-        string chain,
+    private static async ValueTask<(List<ContractSecurityInfo> Results, List<string> StaleAddresses)> SplitCachedAsync(
         IReadOnlyList<string> addresses,
+        Func<string, CancellationToken, ValueTask<ContractSecurityInfo?>> getCached,
         CancellationToken cancellationToken
     )
     {
@@ -87,25 +126,11 @@ public sealed class ContractSecurityService
 
         foreach (string addr in addresses)
         {
-            ContractSecurityInfo? cached = await this._cache.GetAsync(
-                chain: chain,
-                address: addr,
-                cancellationToken: cancellationToken
-            );
+            ContractSecurityInfo? cached = await getCached(addr, cancellationToken);
 
             if (cached is not null)
             {
                 results.Add(cached);
-
-                if (cached.IsProxy is true)
-                {
-                    IReadOnlyList<ContractSecurityInfo> children = await this._cache.GetChildrenAsync(
-                        chain: chain,
-                        parentAddress: addr,
-                        cancellationToken: cancellationToken
-                    );
-                    results.AddRange(children);
-                }
             }
             else
             {
@@ -131,12 +156,14 @@ public sealed class ContractSecurityService
 
         foreach (string addr in staleAddresses)
         {
-            if (!goplusMap.TryGetValue(key: addr.ToLowerInvariant(), out GoPlusTokenResult? raw))
+            string loweredAddr = addr.ToLowerInvariant();
+
+            if (!goplusMap.TryGetValue(key: loweredAddr, out GoPlusTokenResult? raw))
             {
                 continue;
             }
 
-            ContractSecurityInfo info = RawToInfo(chain: chain, address: addr, parentAddress: null, raw: raw);
+            ContractSecurityInfo info = RawToInfo(chain: chain, address: loweredAddr, parentAddress: null, raw: raw);
             await this._cache.SetAsync(info: info, cancellationToken: cancellationToken);
             results.Add(info);
 
@@ -144,7 +171,7 @@ public sealed class ContractSecurityService
             {
                 await this.ResolveAndCacheProxyImplAsync(
                     chain: chain,
-                    proxyAddr: addr,
+                    proxyAddr: loweredAddr,
                     results: results,
                     cancellationToken: cancellationToken
                 );
@@ -176,17 +203,79 @@ public sealed class ContractSecurityService
             cancellationToken: cancellationToken
         );
 
-        if (implMap.TryGetValue(key: implAddr.ToLowerInvariant(), out GoPlusTokenResult? implRaw))
+        string loweredImplAddr = implAddr.ToLowerInvariant();
+
+        if (implMap.TryGetValue(key: loweredImplAddr, out GoPlusTokenResult? implRaw))
         {
             ContractSecurityInfo implInfo = RawToInfo(
                 chain: chain,
-                address: implAddr,
-                parentAddress: proxyAddr.ToLowerInvariant(),
+                address: loweredImplAddr,
+                parentAddress: proxyAddr,
                 raw: implRaw
             );
             await this._cache.SetAsync(info: implInfo, cancellationToken: cancellationToken);
             results.Add(implInfo);
         }
+    }
+
+    private async Task<List<ContractSecurityInfo>> GetHoneypotIsResultsAsync(
+        string chain,
+        IReadOnlyList<string> addresses,
+        CancellationToken cancellationToken
+    )
+    {
+        (List<ContractSecurityInfo> results, List<string> staleAddresses) = await SplitCachedAsync(
+            addresses: addresses,
+            getCached: (addr, ct) => this._cache.GetHoneypotIsAsync(chain: chain, address: addr, cancellationToken: ct),
+            cancellationToken: cancellationToken
+        );
+
+        if (staleAddresses.Count == 0)
+        {
+            return results;
+        }
+
+        IReadOnlyDictionary<string, HoneypotIsResult> honeypotIsMap =
+            await this._honeypotIsClient.FetchTokenSecurityAsync(
+                chain: chain,
+                addresses: staleAddresses,
+                cancellationToken: cancellationToken
+            );
+
+        foreach (string addr in staleAddresses)
+        {
+            string loweredAddr = addr.ToLowerInvariant();
+
+            if (!honeypotIsMap.TryGetValue(key: loweredAddr, out HoneypotIsResult? raw))
+            {
+                continue;
+            }
+
+            ContractSecurityInfo info = HoneypotRawToInfo(chain: chain, address: loweredAddr, raw: raw);
+            await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
+            results.Add(info);
+        }
+
+        return results;
+    }
+
+    private static ContractSecurityInfo HoneypotRawToInfo(string chain, string address, HoneypotIsResult raw)
+    {
+        return new ContractSecurityInfo
+        {
+            Chain = chain,
+            Address = address,
+            Source = ContractSecuritySource.HoneypotIs,
+            IsHoneypot = raw.IsHoneypot,
+            BuyTax = PercentToFraction(raw.BuyTax),
+            SellTax = PercentToFraction(raw.SellTax),
+            SimulationSuccess = raw.SimulationSuccess,
+        };
+    }
+
+    private static double? PercentToFraction(double? percent)
+    {
+        return percent / 100.0;
     }
 
     private static bool? ParseBool(string? val)
@@ -233,7 +322,8 @@ public sealed class ContractSecurityService
         return new ContractSecurityInfo
         {
             Chain = chain,
-            Address = address.ToLowerInvariant(),
+            Address = address,
+            Source = ContractSecuritySource.GoPlus,
             ParentAddress = parentAddress,
             IsOpenSource = ParseBool(raw.IsOpenSource),
             IsHoneypot = ParseBool(raw.IsHoneypot),

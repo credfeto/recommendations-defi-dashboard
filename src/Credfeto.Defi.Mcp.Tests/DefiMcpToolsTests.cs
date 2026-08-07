@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -7,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
+using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Mcp;
@@ -94,8 +94,11 @@ public sealed class DefiMcpToolsTests : TestBase
             logger: this.GetTypedLogger<ProxyResolverService>()
         );
 
+        IHoneypotIsClient honeypotIsClient = NoOpHoneypotIsClientFactory.Create();
+
         ContractSecurityService contractSecurityService = new(
             goPlusClient: goPlusClient,
+            honeypotIsClient: honeypotIsClient,
             cache: this._securityCache,
             proxyResolver: proxyResolver
         );

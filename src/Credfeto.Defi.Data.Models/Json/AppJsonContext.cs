@@ -46,6 +46,7 @@ namespace Credfeto.Defi.Data.Models.Json;
 [JsonSerializable(typeof(PendleTradingVolume))]
 [JsonSerializable(typeof(GoPlusResponse))]
 [JsonSerializable(typeof(GoPlusTokenResult))]
+[JsonSerializable(typeof(HoneypotIsResponse))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(IReadOnlyList<string>))]
 [JsonSerializable(typeof(ChainlinkPriceFeed))]

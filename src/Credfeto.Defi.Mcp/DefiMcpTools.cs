@@ -67,8 +67,11 @@ public sealed class DefiMcpTools
     }
 
     /// <summary>
-    ///     Checks GoPlus contract security info for one or more token addresses on a given chain.
-    ///     Returns honeypot status, tax info, proxy detection, and open-source status.
+    ///     Checks contract security info for one or more token addresses on a given chain,
+    ///     cross-checked against both GoPlus and Honeypot.is. Returns honeypot status, tax info,
+    ///     proxy detection, and open-source status as a separate source-tagged row per address
+    ///     for each data source that has an opinion - callers should expect up to two rows
+    ///     (one per source) for the same address and interpret agreement/disagreement themselves.
     /// </summary>
     [McpServerTool(Name = "check_contract_security", Title = "Check Contract Security")]
     public async Task<IReadOnlyList<ContractSecurityInfo>> CheckContractSecurityAsync(
@@ -78,7 +81,7 @@ public sealed class DefiMcpTools
     )
     {
         // Reject any address that is not a valid 0x-prefixed 40-hex-char Ethereum address
-        // to prevent malformed input reaching the GoPlus URL query string.
+        // to prevent malformed input reaching the upstream GoPlus/Honeypot.is API query strings.
         IReadOnlyList<string> validated = [.. addresses.Where(ContractAddressUtils.IsContractAddress).Take(10)];
 
         return await this._contractSecurityService.GetContractSecurityForAddressesAsync(

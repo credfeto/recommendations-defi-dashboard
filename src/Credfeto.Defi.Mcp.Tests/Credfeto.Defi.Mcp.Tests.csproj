@@ -36,6 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
+    <ProjectReference Include="..\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
     <ProjectReference Include="..\Credfeto.Defi.Server.Tests.Common\Credfeto.Defi.Server.Tests.Common.csproj" />

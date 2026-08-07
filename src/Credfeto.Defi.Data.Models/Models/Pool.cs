@@ -172,7 +172,8 @@ public sealed record Pool
     public AuditInfo? AuditInfo { get; init; }
 
     /// <summary>
-    ///     GoPlus contract security results for each on-chain address.
+    ///     Contract security results for each on-chain address, one source-tagged row per
+    ///     data source (GoPlus, Honeypot.is) that has an opinion on that address.
     /// </summary>
     public required ContractSecurityInfo[] ContractSecurity { get; init; } = [];
 

@@ -51,6 +51,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store CoinGecko coin list in structured CoinGecko schema (Coin, CoinPlatformAddress tables with TVP sync stored procedures) replacing ApiCache JSON blob (#386)
 - Store CoinGecko stablecoins in structured CoinGecko schema (Stablecoin table with TVP sync stored procedure) replacing ApiCache JSON blob (#385)
 - Store DefiLlama hacks in a structured DefiLlama.Hack table instead of an ApiCache JSON blob
+- Honeypot.is contract security data source - cross-checks GoPlus results per address on Ethereum, BSC, and Base via buy/sell simulation; results are cached independently for 24 hours and surfaced as source-tagged rows (`Source`, `SimulationSuccess` fields on ContractSecurityInfo) alongside GoPlus so agreement and disagreement between sources are both visible
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
@@ -68,6 +69,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Load appsettings-local.json (optional) in Program.cs so machine-local config overrides are picked up at startup
 - Read database config from DatabaseConfiguration section to align with the dbappsettings provisioning script used across all apps on this machine
 - Fixed CHANGELOG.md missing the required Deprecated section header under Unreleased, which caused the changelog lint to fail on any commit touching the file
+- Honeypot.is client no longer swallows cancellation - a cancelled fetch now propagates immediately instead of being logged as a per-address failure and continuing to the next address
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
