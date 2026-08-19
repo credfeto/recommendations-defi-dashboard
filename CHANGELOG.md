@@ -100,7 +100,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated Credfeto.Database.Interfaces, Credfeto.Database.SqlServer to 1.2.212.2281 (brings in Microsoft.Data.SqlClient 7.0.1 with runtime-only System.Configuration.ConfigurationManager reference)
 - Updated Credfeto.Database.Source.Generation to 1.2.212.2281
 - Updated Microsoft.AspNetCore.OpenApi, Microsoft.Extensions.Hosting.Abstractions, Microsoft.Extensions.Hosting.Systemd, Microsoft.Extensions.Http, Microsoft.Extensions.Logging.Abstractions, Microsoft.Extensions.Options to 10.0.9
-- SDK - Updated DotNet SDK to 10.0.302
 - Updated MSBuild.Sdk.SqlProj to 4.3.0
 - Fixed pre-commit baseline violations: added shellcheck suppression for intentional word-splitting in the `clean` script and added missing end-of-file newlines to two csproj files
 - Increased Credfeto.Defi.Server's test coverage to 100% for all authored code by splitting host-agnostic DI registration and endpoint handler logic into a new Credfeto.Defi.Server.Composition project with dedicated tests
@@ -108,6 +107,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store DefiLlama protocols in structured DefiLlama schema (Protocol, ProtocolAuditLink tables with TVP sync stored procedures) replacing ApiCache JSON blob (#384)
 - Increase unit test code coverage for Credfeto.Defi.Mcp to 100% line and branch coverage: added Credfeto.Defi.Mcp.Tests project (required for the repo's per-sister-assembly coverage tooling to measure Credfeto.Defi.Mcp.dll at all) with tests for McpSetup.AddMcpTools/MapMcpEndpoint and the existing DefiMcpTools test cases (#355)
 - Increase unit test code coverage for Credfeto.Defi.ApiClients.Pendle to 100% line and branch coverage: added Credfeto.Defi.ApiClients.Pendle.Tests project (required for the repo's per-sister-assembly coverage tooling to measure Credfeto.Defi.ApiClients.Pendle.dll at all) with tests for the pagination loop and per-chain failure handling in PendleMarketsClient (#359)
+- SDK - Updated DotNet SDK to 10.0.400
 
 ### Deprecated
 ### Removed
