@@ -36,14 +36,24 @@
   - any: ['src/Credfeto.Defi.ApiClients.GoPlus.Interfaces/**/*']
 "credfeto-defi-apiclients-goplus-tests":
   - any: ['src/Credfeto.Defi.ApiClients.GoPlus.Tests/**/*']
+"credfeto-defi-apiclients-honeypotis":
+  - any: ['src/Credfeto.Defi.ApiClients.HoneypotIs/**/*']
+"credfeto-defi-apiclients-honeypotis-interfaces":
+  - any: ['src/Credfeto.Defi.ApiClients.HoneypotIs.Interfaces/**/*']
+"credfeto-defi-apiclients-honeypotis-tests":
+  - any: ['src/Credfeto.Defi.ApiClients.HoneypotIs.Tests/**/*']
 "credfeto-defi-apiclients-pendle":
   - any: ['src/Credfeto.Defi.ApiClients.Pendle/**/*']
 "credfeto-defi-apiclients-pendle-interfaces":
   - any: ['src/Credfeto.Defi.ApiClients.Pendle.Interfaces/**/*']
+"credfeto-defi-apiclients-pendle-tests":
+  - any: ['src/Credfeto.Defi.ApiClients.Pendle.Tests/**/*']
 "credfeto-defi-data-models":
   - any: ['src/Credfeto.Defi.Data.Models/**/*']
 "credfeto-defi-mcp":
   - any: ['src/Credfeto.Defi.Mcp/**/*']
+"credfeto-defi-mcp-tests":
+  - any: ['src/Credfeto.Defi.Mcp.Tests/**/*']
 "credfeto-defi-server":
   - any: ['src/Credfeto.Defi.Server/**/*']
 "credfeto-defi-server-composition":

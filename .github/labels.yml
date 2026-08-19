@@ -92,6 +92,18 @@
   color: "0e8a16"
   description: "Changes in Credfeto.Defi.ApiClients.GoPlus.Tests project"
 
+- name: "credfeto-defi-apiclients-honeypotis"
+  color: "96f7d2"
+  description: "Changes in Credfeto.Defi.ApiClients.HoneypotIs project"
+
+- name: "credfeto-defi-apiclients-honeypotis-interfaces"
+  color: "96f7d2"
+  description: "Changes in Credfeto.Defi.ApiClients.HoneypotIs.Interfaces project"
+
+- name: "credfeto-defi-apiclients-honeypotis-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.ApiClients.HoneypotIs.Tests project"
+
 - name: "credfeto-defi-apiclients-pendle"
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.ApiClients.Pendle project"
@@ -100,6 +112,10 @@
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.ApiClients.Pendle.Interfaces project"
 
+- name: "credfeto-defi-apiclients-pendle-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.ApiClients.Pendle.Tests project"
+
 - name: "credfeto-defi-data-models"
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.Data.Models project"
@@ -107,6 +123,10 @@
 - name: "credfeto-defi-mcp"
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.Mcp project"
+
+- name: "credfeto-defi-mcp-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.Mcp.Tests project"
 
 - name: "credfeto-defi-server"
   color: "96f7d2"
