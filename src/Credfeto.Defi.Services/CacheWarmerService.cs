@@ -21,6 +21,18 @@ namespace Credfeto.Defi.Services;
 /// </summary>
 public sealed class CacheWarmerService : IHostedService
 {
+    /// <summary>
+    ///     Keys that write straight to a dedicated storage service rather than through
+    ///     <see cref="ApiCacheService" />, so nothing ever marks them fresh; they must always
+    ///     run rather than being skipped by the freshness check.
+    /// </summary>
+    private static readonly IReadOnlySet<string> AlwaysRefreshKeys = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "defillama_pools",
+        "pendle_pools",
+        "chainlink_price_feeds",
+    };
+
     private readonly ApiCacheService _apiCache;
     private readonly IChainlinkStablecoinsClient _chainlinkClient;
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
@@ -98,7 +110,7 @@ public sealed class CacheWarmerService : IHostedService
 
         foreach ((string key, Func<CancellationToken, Task> fetcher) in fetchers)
         {
-            bool isFresh = await this._apiCache.IsFreshAsync(key);
+            bool isFresh = !AlwaysRefreshKeys.Contains(key) && await this._apiCache.IsFreshAsync(key);
 
             if (!isFresh)
             {
