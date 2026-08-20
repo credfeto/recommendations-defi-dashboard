@@ -13,6 +13,7 @@ using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
+using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -24,12 +25,14 @@ namespace Credfeto.Defi.Server.Tests;
 public sealed class CacheWarmerServiceTests : TestBase
 {
     private readonly ApiCacheService _apiCache;
+    private readonly FakeDatabase _database;
     private readonly FakeTimeProvider _timeProvider;
 
     public CacheWarmerServiceTests()
     {
         this._timeProvider = new FakeTimeProvider();
-        this._apiCache = new ApiCacheService(database: new FakeDatabase(), timeProvider: this._timeProvider);
+        this._database = new FakeDatabase();
+        this._apiCache = new ApiCacheService(database: this._database, timeProvider: this._timeProvider);
     }
 
     private T CreateApiClient<T>(HttpMessageHandler handler)
@@ -91,7 +94,14 @@ public sealed class CacheWarmerServiceTests : TestBase
         return GetSubstitute<T>();
     }
 
-    private CacheWarmerService CreateWarmer(HttpMessageHandler handler)
+    private CacheWarmerService CreateWarmer(
+        HttpMessageHandler handler,
+        IDefiLlamaPoolStorage? poolStorage = null,
+        IPendleMarketStorageService? pendleStorage = null,
+        IChainlinkPriceFeedStorageService? chainlinkStorage = null,
+        IDefiLlamaHackStorageService? hackStorage = null,
+        IDefiLlamaProtocolStorageService? protocolStorage = null
+    )
     {
         return new CacheWarmerService(
             llamaPoolsClient: this.CreateApiClient<DefiLlamaPoolsClient>(handler),
@@ -101,11 +111,11 @@ public sealed class CacheWarmerServiceTests : TestBase
             coinGeckoClient: this.CreateApiClient<CoinGeckoStablecoinsClient>(handler),
             chainlinkClient: CreateChainlinkClient(),
             apiCache: this._apiCache,
-            poolStorage: GetSubstitute<IDefiLlamaPoolStorage>(),
-            protocolStorage: GetSubstitute<IDefiLlamaProtocolStorageService>(),
-            hackStorage: GetSubstitute<IDefiLlamaHackStorageService>(),
-            pendleStorage: GetSubstitute<IPendleMarketStorageService>(),
-            chainlinkStorage: new FakeChainlinkStorage(),
+            poolStorage: poolStorage ?? GetSubstitute<IDefiLlamaPoolStorage>(),
+            protocolStorage: protocolStorage ?? GetSubstitute<IDefiLlamaProtocolStorageService>(),
+            hackStorage: hackStorage ?? GetSubstitute<IDefiLlamaHackStorageService>(),
+            pendleStorage: pendleStorage ?? GetSubstitute<IPendleMarketStorageService>(),
+            chainlinkStorage: chainlinkStorage ?? new FakeChainlinkStorage(),
             coinGeckoStorage: new FakeCoinGeckoCoinStorage(),
             coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
@@ -115,20 +125,7 @@ public sealed class CacheWarmerServiceTests : TestBase
     [Fact]
     public async Task StartAsync_ReturnsCompletedTaskImmediatelyAsync()
     {
-        const string EMPTY_POOLS_JSON = """{"data":[]}""";
-        const string EMPTY_JSON = "[]";
-
-        using FreshResponseHttpHandler handler = new([
-            EMPTY_POOLS_JSON, // llama pools
-            EMPTY_JSON, // pendle chain 1
-            EMPTY_JSON, // pendle chain 2
-            EMPTY_JSON, // pendle chain 3
-            EMPTY_JSON, // pendle chain 4
-            EMPTY_JSON, // hacks
-            EMPTY_JSON, // protocols
-            EMPTY_JSON, // stablecoins
-            EMPTY_JSON, // coin list
-        ]);
+        using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
 
         CacheWarmerService warmer = this.CreateWarmer(handler);
 
@@ -142,37 +139,158 @@ public sealed class CacheWarmerServiceTests : TestBase
     }
 
     [Fact]
-    public async Task StartAsync_WhenAllCacheEntriesFresh_SkipsAllFetchersAsync()
+    public async Task StartAsync_OnEveryCall_AlwaysRefetchesStorageBackedEntriesAsync()
     {
-        // Pre-warm all cache entries
+        // Regression test for #406: WarmLlamaPoolsAsync, WarmPendlePoolsAsync and
+        // WarmChainlinkPriceFeedsAsync write straight to their own storage services rather than
+        // through ApiCacheService, so nothing ever marks their key fresh; they must always run
+        // on every StartAsync call rather than being skipped by a freshness check.
+        IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
+        IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
+        IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
+
+        using FreshResponseHttpHandler firstHandler = new(CreateAllFetcherResponses());
+
+        CacheWarmerService firstWarmer = this.CreateWarmer(
+            handler: firstHandler,
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage
+        );
+
+        await firstWarmer.StartAsync(this.CancellationToken());
+        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+
+        using FreshResponseHttpHandler secondHandler = new(CreateAllFetcherResponses());
+
+        CacheWarmerService secondWarmer = this.CreateWarmer(
+            handler: secondHandler,
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage
+        );
+
+        await secondWarmer.StartAsync(this.CancellationToken());
+        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+
+        await AssertStorageBackedFetchersRanAsync(
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage,
+            expectedCalls: 2
+        );
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenGatedCacheEntriesFresh_SkipsOnlyGatedFetchersAsync()
+    {
+        // The ApiCache-backed keys (hacks, protocols, stablecoins, coin list) should still be
+        // skipped once fresh; only the three storage-backed keys always refetch regardless of
+        // ApiCache freshness (#406).
+        ApiCacheRow freshRow = new("irrelevant-key", "[]", this._timeProvider.GetUtcNow() - TimeSpan.FromMinutes(10));
+
+        this._database.WithReturn<ApiCacheRow?>(freshRow) // defillama_hacks
+            .WithReturn<ApiCacheRow?>(freshRow) // defillama_protocols
+            .WithReturn<ApiCacheRow?>(freshRow) // coingecko_stablecoins
+            .WithReturn<ApiCacheRow?>(freshRow); // coingecko_coin_list
+
+        IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
+        IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
+        IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
+        IDefiLlamaHackStorageService hackStorage = GetSubstitute<IDefiLlamaHackStorageService>();
+        IDefiLlamaProtocolStorageService protocolStorage = GetSubstitute<IDefiLlamaProtocolStorageService>();
+
+        using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
+
+        CacheWarmerService warmer = this.CreateWarmer(
+            handler: handler,
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage,
+            hackStorage: hackStorage,
+            protocolStorage: protocolStorage
+        );
+
+        await warmer.StartAsync(this.CancellationToken());
+        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+
+        await AssertGatedFetchersSkippedAsync(hackStorage: hackStorage, protocolStorage: protocolStorage);
+        await AssertStorageBackedFetchersRanAsync(
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage,
+            expectedCalls: 1
+        );
+    }
+
+    private static async Task AssertGatedFetchersSkippedAsync(
+        IDefiLlamaHackStorageService hackStorage,
+        IDefiLlamaProtocolStorageService protocolStorage
+    )
+    {
+        await hackStorage
+            .DidNotReceive()
+            .StoreHacksAsync(
+                hacks: Arg.Any<IReadOnlyList<RawHack>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        await protocolStorage
+            .DidNotReceive()
+            .StoreProtocolsAsync(
+                protocols: Arg.Any<IReadOnlyList<RawProtocol>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+    }
+
+    private static async Task AssertStorageBackedFetchersRanAsync(
+        IDefiLlamaPoolStorage poolStorage,
+        IPendleMarketStorageService pendleStorage,
+        IChainlinkPriceFeedStorageService chainlinkStorage,
+        int expectedCalls
+    )
+    {
+        await poolStorage
+            .Received(expectedCalls)
+            .StorePoolsAsync(
+                pools: Arg.Any<IReadOnlyList<RawPool>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        await pendleStorage
+            .Received(expectedCalls)
+            .StoreMarketsAsync(
+                markets: Arg.Any<IReadOnlyList<PendleMarket>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        await chainlinkStorage
+            .Received(expectedCalls)
+            .StoreAsync(
+                feeds: Arg.Any<IReadOnlyList<ChainlinkPriceFeed>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+    }
+
+    private static string[] CreateAllFetcherResponses()
+    {
         const string EMPTY_JSON = "[]";
         const string EMPTY_POOLS_JSON = """{"data":[]}""";
 
-        using FreshResponseHttpHandler primeHandler = new([
-            EMPTY_POOLS_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-            EMPTY_JSON,
-        ]);
-
-        // Use a separate warmer to prime all cache entries
-        CacheWarmerService primeWarmer = this.CreateWarmer(primeHandler);
-
-        await primeWarmer.StartAsync(this.CancellationToken());
-        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
-
-        // Now start again - all entries should be fresh, so no fetching needed
-        using FreshResponseHttpHandler secondHandler = new([]);
-
-        CacheWarmerService warmer = this.CreateWarmer(secondHandler);
-
-        await warmer.StartAsync(this.CancellationToken());
-        await Task.Delay(TimeSpan.FromMilliseconds(200), this.CancellationToken());
+        return
+        [
+            EMPTY_POOLS_JSON, // llama pools
+            EMPTY_JSON, // pendle chain 1
+            EMPTY_JSON, // pendle chain 2
+            EMPTY_JSON, // pendle chain 3
+            EMPTY_JSON, // pendle chain 4
+            EMPTY_JSON, // hacks
+            EMPTY_JSON, // protocols
+            EMPTY_JSON, // stablecoins
+            EMPTY_JSON, // coin list
+        ];
     }
 
     [Fact]
