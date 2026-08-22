@@ -102,7 +102,9 @@ public sealed class CacheWarmerServiceTests : TestBase
         IPendleMarketStorageService? pendleStorage = null,
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IDefiLlamaHackStorageService? hackStorage = null,
-        IDefiLlamaProtocolStorageService? protocolStorage = null
+        IDefiLlamaProtocolStorageService? protocolStorage = null,
+        ICoinGeckoCoinStorageService? coinGeckoStorage = null,
+        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null
     )
     {
         return new CacheWarmerService(
@@ -118,8 +120,8 @@ public sealed class CacheWarmerServiceTests : TestBase
             hackStorage: hackStorage ?? GetSubstitute<IDefiLlamaHackStorageService>(),
             pendleStorage: pendleStorage ?? GetSubstitute<IPendleMarketStorageService>(),
             chainlinkStorage: chainlinkStorage ?? new FakeChainlinkStorage(),
-            coinGeckoStorage: new FakeCoinGeckoCoinStorage(),
-            coinGeckoStablecoinStorage: new FakeCoinGeckoStablecoinStorage(),
+            coinGeckoStorage: coinGeckoStorage ?? new FakeCoinGeckoCoinStorage(),
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage ?? new FakeCoinGeckoStablecoinStorage(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
     }
@@ -195,6 +197,9 @@ public sealed class CacheWarmerServiceTests : TestBase
         IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
         IDefiLlamaHackStorageService hackStorage = GetSubstitute<IDefiLlamaHackStorageService>();
         IDefiLlamaProtocolStorageService protocolStorage = GetSubstitute<IDefiLlamaProtocolStorageService>();
+        ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage =
+            GetSubstitute<ICoinGeckoStablecoinStorageService>();
+        ICoinGeckoCoinStorageService coinGeckoStorage = GetSubstitute<ICoinGeckoCoinStorageService>();
 
         using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
 
@@ -204,13 +209,20 @@ public sealed class CacheWarmerServiceTests : TestBase
             pendleStorage: pendleStorage,
             chainlinkStorage: chainlinkStorage,
             hackStorage: hackStorage,
-            protocolStorage: protocolStorage
+            protocolStorage: protocolStorage,
+            coinGeckoStorage: coinGeckoStorage,
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage
         );
 
         await warmer.StartAsync(this.CancellationToken());
         await Task.Delay(WarmupDelay, this.CancellationToken());
 
-        await AssertGatedFetchersSkippedAsync(hackStorage: hackStorage, protocolStorage: protocolStorage);
+        await AssertGatedFetchersSkippedAsync(
+            hackStorage: hackStorage,
+            protocolStorage: protocolStorage,
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
+            coinGeckoStorage: coinGeckoStorage
+        );
         await AssertStorageBackedFetchersRanAsync(
             poolStorage: poolStorage,
             pendleStorage: pendleStorage,
@@ -221,7 +233,9 @@ public sealed class CacheWarmerServiceTests : TestBase
 
     private static async Task AssertGatedFetchersSkippedAsync(
         IDefiLlamaHackStorageService hackStorage,
-        IDefiLlamaProtocolStorageService protocolStorage
+        IDefiLlamaProtocolStorageService protocolStorage,
+        ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage,
+        ICoinGeckoCoinStorageService coinGeckoStorage
     )
     {
         await hackStorage
@@ -235,6 +249,20 @@ public sealed class CacheWarmerServiceTests : TestBase
             .DidNotReceive()
             .StoreProtocolsAsync(
                 protocols: Arg.Any<IReadOnlyList<RawProtocol>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        await coinGeckoStablecoinStorage
+            .DidNotReceive()
+            .StoreAsync(
+                stablecoins: Arg.Any<IReadOnlyList<CoinGeckoStablecoin>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        await coinGeckoStorage
+            .DidNotReceive()
+            .StoreAsync(
+                coins: Arg.Any<IReadOnlyList<CoinGeckoCoinPlatforms>>(),
                 dataDate: Arg.Any<DateTimeOffset?>(),
                 cancellationToken: Arg.Any<CancellationToken>()
             );
