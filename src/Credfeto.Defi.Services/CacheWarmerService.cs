@@ -99,9 +99,7 @@ public sealed class CacheWarmerService : IHostedService
 
         foreach ((string key, Func<CancellationToken, Task> fetcher, bool bypassFreshnessGate) in fetchers)
         {
-            bool isFresh = !bypassFreshnessGate && await this._apiCache.IsFreshAsync(key);
-
-            if (!isFresh)
+            if (bypassFreshnessGate || !await this._apiCache.IsFreshAsync(key))
             {
                 Task warmingTask = WarmEntryAsync(
                     key: key,

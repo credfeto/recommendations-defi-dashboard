@@ -24,6 +24,8 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class CacheWarmerServiceTests : TestBase
 {
+    private static readonly TimeSpan WarmupDelay = TimeSpan.FromMilliseconds(500);
+
     private readonly ApiCacheService _apiCache;
     private readonly FakeDatabase _database;
     private readonly FakeTimeProvider _timeProvider;
@@ -135,7 +137,7 @@ public sealed class CacheWarmerServiceTests : TestBase
         await result;
 
         // Give the background warming task time to complete
-        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+        await Task.Delay(WarmupDelay, this.CancellationToken());
     }
 
     [Fact]
@@ -149,29 +151,23 @@ public sealed class CacheWarmerServiceTests : TestBase
         IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
         IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
 
-        using FreshResponseHttpHandler firstHandler = new(CreateAllFetcherResponses());
+        async Task RunWarmerAsync()
+        {
+            using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
 
-        CacheWarmerService firstWarmer = this.CreateWarmer(
-            handler: firstHandler,
-            poolStorage: poolStorage,
-            pendleStorage: pendleStorage,
-            chainlinkStorage: chainlinkStorage
-        );
+            CacheWarmerService warmer = this.CreateWarmer(
+                handler: handler,
+                poolStorage: poolStorage,
+                pendleStorage: pendleStorage,
+                chainlinkStorage: chainlinkStorage
+            );
 
-        await firstWarmer.StartAsync(this.CancellationToken());
-        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+            await warmer.StartAsync(this.CancellationToken());
+            await Task.Delay(WarmupDelay, this.CancellationToken());
+        }
 
-        using FreshResponseHttpHandler secondHandler = new(CreateAllFetcherResponses());
-
-        CacheWarmerService secondWarmer = this.CreateWarmer(
-            handler: secondHandler,
-            poolStorage: poolStorage,
-            pendleStorage: pendleStorage,
-            chainlinkStorage: chainlinkStorage
-        );
-
-        await secondWarmer.StartAsync(this.CancellationToken());
-        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+        await RunWarmerAsync();
+        await RunWarmerAsync();
 
         await AssertStorageBackedFetchersRanAsync(
             poolStorage: poolStorage,
@@ -212,7 +208,7 @@ public sealed class CacheWarmerServiceTests : TestBase
         );
 
         await warmer.StartAsync(this.CancellationToken());
-        await Task.Delay(TimeSpan.FromMilliseconds(500), this.CancellationToken());
+        await Task.Delay(WarmupDelay, this.CancellationToken());
 
         await AssertGatedFetchersSkippedAsync(hackStorage: hackStorage, protocolStorage: protocolStorage);
         await AssertStorageBackedFetchersRanAsync(
