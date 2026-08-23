@@ -193,16 +193,9 @@ public sealed class CacheWarmerService : IHostedService
         await this._chainlinkStorage.StoreAsync(feeds: data, dataDate: null, cancellationToken: cancellationToken);
     }
 
-    /// <summary>
-    ///     A cache-warming fetcher and its freshness-gating behaviour.
-    /// </summary>
-    /// <param name="Key">The cache key used for freshness checks and logging.</param>
-    /// <param name="Fetcher">The delegate that performs the fetch and store.</param>
-    /// <param name="BypassFreshnessGate">
-    ///     <see langword="true" /> when the fetcher writes straight to a dedicated storage
-    ///     service rather than through <see cref="ApiCacheService" />, so nothing ever marks it
-    ///     fresh and it must always run rather than being skipped by the freshness check.
-    /// </param>
+    // BypassFreshnessGate is true when the fetcher writes straight to a dedicated storage
+    // service rather than through ApiCacheService, so nothing ever marks it fresh and it must
+    // always run rather than being skipped by the freshness check.
     [DebuggerDisplay("{Key} bypass={BypassFreshnessGate}")]
     private readonly record struct FetcherRegistration(
         string Key,
