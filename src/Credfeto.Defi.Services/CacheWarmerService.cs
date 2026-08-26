@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
@@ -92,19 +93,17 @@ public sealed class CacheWarmerService : IHostedService
 
     private async Task WarmCacheAsync(CancellationToken cancellationToken)
     {
-        IReadOnlyList<(string Key, Func<CancellationToken, Task> Fetcher)> fetchers = this.BuildFetchers();
+        IReadOnlyList<FetcherRegistration> fetchers = this.BuildFetchers();
 
         List<Task> tasks = [];
 
-        foreach ((string key, Func<CancellationToken, Task> fetcher) in fetchers)
+        foreach (FetcherRegistration registration in fetchers)
         {
-            bool isFresh = await this._apiCache.IsFreshAsync(key);
-
-            if (!isFresh)
+            if (registration.BypassFreshnessGate || !await this._apiCache.IsFreshAsync(registration.Key))
             {
                 Task warmingTask = WarmEntryAsync(
-                    key: key,
-                    fetcher: fetcher,
+                    key: registration.Key,
+                    fetcher: registration.Fetcher,
                     logger: this._logger,
                     cancellationToken: cancellationToken
                 );
@@ -126,17 +125,17 @@ public sealed class CacheWarmerService : IHostedService
         logger.CacheWarmed(key);
     }
 
-    private IReadOnlyList<(string Key, Func<CancellationToken, Task> Fetcher)> BuildFetchers()
+    private IReadOnlyList<FetcherRegistration> BuildFetchers()
     {
         return
         [
-            ("defillama_pools", this.WarmLlamaPoolsAsync),
-            ("pendle_pools", this.WarmPendlePoolsAsync),
-            ("defillama_hacks", this.WarmHacksAsync),
-            ("defillama_protocols", this.WarmProtocolsAsync),
-            ("coingecko_stablecoins", this.WarmStablecoinsAsync),
-            ("coingecko_coin_list", this.WarmCoinListAsync),
-            ("chainlink_price_feeds", this.WarmChainlinkPriceFeedsAsync),
+            new("defillama_pools", this.WarmLlamaPoolsAsync, BypassFreshnessGate: true),
+            new("pendle_pools", this.WarmPendlePoolsAsync, BypassFreshnessGate: true),
+            new("defillama_hacks", this.WarmHacksAsync, BypassFreshnessGate: false),
+            new("defillama_protocols", this.WarmProtocolsAsync, BypassFreshnessGate: false),
+            new("coingecko_stablecoins", this.WarmStablecoinsAsync, BypassFreshnessGate: false),
+            new("coingecko_coin_list", this.WarmCoinListAsync, BypassFreshnessGate: false),
+            new("chainlink_price_feeds", this.WarmChainlinkPriceFeedsAsync, BypassFreshnessGate: true),
         ];
     }
 
@@ -193,4 +192,14 @@ public sealed class CacheWarmerService : IHostedService
         IReadOnlyList<ChainlinkPriceFeed> data = await this._chainlinkClient.FetchStablecoinsAsync(cancellationToken);
         await this._chainlinkStorage.StoreAsync(feeds: data, dataDate: null, cancellationToken: cancellationToken);
     }
+
+    // BypassFreshnessGate is true when the fetcher writes straight to a dedicated storage
+    // service rather than through ApiCacheService, so nothing ever marks it fresh and it must
+    // always run rather than being skipped by the freshness check.
+    [DebuggerDisplay("{Key} bypass={BypassFreshnessGate}")]
+    private readonly record struct FetcherRegistration(
+        string Key,
+        Func<CancellationToken, Task> Fetcher,
+        bool BypassFreshnessGate
+    );
 }
