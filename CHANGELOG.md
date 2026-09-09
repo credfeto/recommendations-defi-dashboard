@@ -107,7 +107,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store DefiLlama protocols in structured DefiLlama schema (Protocol, ProtocolAuditLink tables with TVP sync stored procedures) replacing ApiCache JSON blob (#384)
 - Increase unit test code coverage for Credfeto.Defi.Mcp to 100% line and branch coverage: added Credfeto.Defi.Mcp.Tests project (required for the repo's per-sister-assembly coverage tooling to measure Credfeto.Defi.Mcp.dll at all) with tests for McpSetup.AddMcpTools/MapMcpEndpoint and the existing DefiMcpTools test cases (#355)
 - Increase unit test code coverage for Credfeto.Defi.ApiClients.Pendle to 100% line and branch coverage: added Credfeto.Defi.ApiClients.Pendle.Tests project (required for the repo's per-sister-assembly coverage tooling to measure Credfeto.Defi.ApiClients.Pendle.dll at all) with tests for the pagination loop and per-chain failure handling in PendleMarketsClient (#359)
-- SDK - Updated DotNet SDK to 10.0.400
+- SDK - Updated DotNet SDK to 10.0.401
 
 ### Deprecated
 ### Removed
