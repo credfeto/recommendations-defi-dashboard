@@ -107,7 +107,14 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store DefiLlama protocols in structured DefiLlama schema (Protocol, ProtocolAuditLink tables with TVP sync stored procedures) replacing ApiCache JSON blob (#384)
 - Increase unit test code coverage for Credfeto.Defi.Mcp to 100% line and branch coverage: added Credfeto.Defi.Mcp.Tests project (required for the repo's per-sister-assembly coverage tooling to measure Credfeto.Defi.Mcp.dll at all) with tests for McpSetup.AddMcpTools/MapMcpEndpoint and the existing DefiMcpTools test cases (#355)
 - Increase unit test code coverage for Credfeto.Defi.ApiClients.Pendle to 100% line and branch coverage: added Credfeto.Defi.ApiClients.Pendle.Tests project (required for the repo's per-sister-assembly coverage tooling to measure Credfeto.Defi.ApiClients.Pendle.dll at all) with tests for the pagination loop and per-chain failure handling in PendleMarketsClient (#359)
-- SDK - Updated DotNet SDK to 10.0.400
+- SDK - Updated DotNet SDK to 10.0.401
+- Updated FunFair.Test.Common from 6.2.25.2243 to 6.4.6.2749
+- Updated FunFair.Test.Source.Generator from 6.2.25.2243 to 6.4.6.2749
+- Updated Microsoft.Extensions.TimeProvider.Testing from 10.6.0 to 10.10.0
+- Replaced xunit.v3.mtp-v2 (3.2.2) with xunit.v3.aot.mtp-v2 (4.0.1)
+- Replaced xunit.v3.extensibility.core (3.2.2) with xunit.v3.extensibility.core.aot (4.0.1)
+- Updated MSBuild.Sdk.SqlProj from 4.3.0 to 4.4.0
+- Normalised MSBuild path separators to '/'
 
 ### Deprecated
 ### Removed

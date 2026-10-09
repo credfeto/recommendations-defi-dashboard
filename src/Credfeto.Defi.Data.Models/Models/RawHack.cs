@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Raw hack entry from the DefiLlama hacks API.
-/// </summary>
 [DebuggerDisplay("{Name} ${Amount}")]
 public sealed record RawHack
 {

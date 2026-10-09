@@ -13,7 +13,15 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class ApiCacheServiceTests : TestBase
 {
-    private static readonly DateTimeOffset FixedNow = new(year: 2024, month: 6, day: 1, hour: 12, minute: 0, second: 0, offset: TimeSpan.Zero);
+    private static readonly DateTimeOffset FixedNow = new(
+        year: 2024,
+        month: 6,
+        day: 1,
+        hour: 12,
+        minute: 0,
+        second: 0,
+        offset: TimeSpan.Zero
+    );
 
     private readonly FakeDatabase _database;
     private readonly FakeTimeProvider _timeProvider;

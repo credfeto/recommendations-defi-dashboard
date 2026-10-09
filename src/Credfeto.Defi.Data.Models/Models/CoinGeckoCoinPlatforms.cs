@@ -4,9 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Coin list entry from CoinGecko, including on-chain contract addresses keyed by platform ID.
-/// </summary>
 [DebuggerDisplay("{Id} ({Symbol})")]
 public sealed record CoinGeckoCoinPlatforms
 {

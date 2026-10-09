@@ -70,7 +70,7 @@ public sealed class PoolFilterServiceExtendedTests : TestBase
     [InlineData("LSETH")]
     [InlineData("EETH")]
     [InlineData("WEETH")]
-    public void FilterPoolsByType_Eth_MatchesAllLstSymbols(string lstSymbol)
+    public static void FilterPoolsByType_Eth_MatchesAllLstSymbols(string lstSymbol)
     {
         IReadOnlyList<RawPool> pools = [MakePool(symbol: lstSymbol)];
         IReadOnlyList<RawPool> result = PoolFilterService.FilterPoolsByType(pools, "ETH");
@@ -99,7 +99,7 @@ public sealed class PoolFilterServiceExtendedTests : TestBase
     [InlineData("Stellar")]
     [InlineData("Ton")]
     [InlineData("Venom")]
-    public void ApplyBaseFilters_ExcludesAdditionalUnsupportedChains(string chain)
+    public static void ApplyBaseFilters_ExcludesAdditionalUnsupportedChains(string chain)
     {
         IReadOnlyList<RawPool> pools = [MakePool(chain: chain)];
         IReadOnlyList<RawPool> result = PoolFilterService.ApplyBaseFilters(pools);

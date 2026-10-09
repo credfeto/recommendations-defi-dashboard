@@ -8,9 +8,6 @@ using Credfeto.Defi.Storage;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Orchestrates fetching, caching, and enriching pool data from all sources.
-/// </summary>
 public sealed class PoolEnrichmentService
 {
     private readonly IChainlinkPriceFeedStorageService _chainlinkStorage;
@@ -22,9 +19,6 @@ public sealed class PoolEnrichmentService
     private readonly IDefiLlamaPoolStorage _poolStorage;
     private readonly IDefiLlamaProtocolStorageService _protocolStorage;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="PoolEnrichmentService" />.
-    /// </summary>
     public PoolEnrichmentService(
         IDefiLlamaHackStorageService hackStorage,
         IDefiLlamaProtocolStorageService protocolStorage,
@@ -46,9 +40,6 @@ public sealed class PoolEnrichmentService
         this._pendleStorage = pendleStorage;
     }
 
-    /// <summary>
-    ///     Returns all raw pools (DefiLlama + Pendle), using the cache where available.
-    /// </summary>
     public async ValueTask<IReadOnlyList<RawPool>> GetAllPoolsAsync(CancellationToken cancellationToken)
     {
         ValueTask<IReadOnlyList<RawPool>> llamaTask = this._poolStorage.GetAllPoolsAsync(cancellationToken);
@@ -63,9 +54,6 @@ public sealed class PoolEnrichmentService
         return all;
     }
 
-    /// <summary>
-    ///     Returns a slug-keyed hack map from the cache or live fetch.
-    /// </summary>
     public async ValueTask<IReadOnlyDictionary<string, List<HackInfo>>> GetHackMapAsync(
         CancellationToken cancellationToken
     )
@@ -75,9 +63,6 @@ public sealed class PoolEnrichmentService
         return HacksService.BuildHackMap(hacks);
     }
 
-    /// <summary>
-    ///     Returns a slug-keyed protocol audit map from structured storage.
-    /// </summary>
     public async ValueTask<IReadOnlyDictionary<string, AuditInfo>> GetProtocolAuditMapAsync(
         CancellationToken cancellationToken
     )
@@ -87,10 +72,6 @@ public sealed class PoolEnrichmentService
         return ProtocolsService.BuildProtocolAuditMap(protocols);
     }
 
-    /// <summary>
-    ///     Fetches stablecoins, Chainlink feeds, and the CoinGecko coin list in parallel, then builds the
-    ///     merged price map and address map from them. Chainlink takes precedence over CoinGecko for price.
-    /// </summary>
     private async ValueTask<(
         IReadOnlyDictionary<string, decimal> PriceMap,
         IReadOnlyDictionary<string, string> AddressMap
@@ -122,11 +103,6 @@ public sealed class PoolEnrichmentService
         return (priceMap, addressMap);
     }
 
-    /// <summary>
-    ///     Enriches filtered pools with hacks, depeg alerts, audit info, contract security,
-    ///     access info, contract addresses, and URLs.
-    ///     Excludes pools with depeg alerts.
-    /// </summary>
     public async ValueTask<IReadOnlyList<Pool>> EnrichPoolsAsync(
         IReadOnlyList<RawPool> filteredPools,
         CancellationToken cancellationToken
@@ -178,6 +154,7 @@ public sealed class PoolEnrichmentService
             addressMap: addressMap
         );
 
+        // Pools exposed to a depegged stablecoin are excluded from recommendations entirely.
         if (depegAlerts.Count > 0)
         {
             return null;

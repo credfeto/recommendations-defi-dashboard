@@ -14,9 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Defi.ApiClients.GoPlus;
 
-/// <summary>
-///     Fetches contract security information from the GoPlus Labs API.
-/// </summary>
 public sealed class GoPlusClient : IGoPlusClient
 {
     private const string GOPLUS_BASE = "https://api.gopluslabs.io/api/v1/token_security";
@@ -34,19 +31,12 @@ public sealed class GoPlusClient : IGoPlusClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<GoPlusClient> _logger;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="GoPlusClient" />.
-    /// </summary>
-    public GoPlusClient(IHttpClientFactory httpClientFactory, ILogger<GoPlusClient> logger)    {
+    public GoPlusClient(IHttpClientFactory httpClientFactory, ILogger<GoPlusClient> logger)
+    {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
     }
 
-    /// <summary>
-    ///     Fetches security information for one or more contract addresses on a given chain.
-    ///     Returns a map of lowercased address to raw result.
-    ///     Returns an empty map if the chain is unsupported or the request fails.
-    /// </summary>
     public async ValueTask<IReadOnlyDictionary<string, GoPlusTokenResult>> FetchTokenSecurityAsync(
         string chain,
         IReadOnlyList<string> addresses,

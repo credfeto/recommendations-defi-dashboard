@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Security analysis result for a single token from GoPlus.
-/// </summary>
 [DebuggerDisplay("{TokenSymbol} isProxy={IsProxy} isHoneypot={IsHoneypot}")]
 public sealed record GoPlusTokenResult
 {

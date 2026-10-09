@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Stablecoin market entry from the CoinGecko markets API.
-/// </summary>
 [DebuggerDisplay("{Symbol} price={CurrentPrice}")]
 public sealed record CoinGeckoStablecoin
 {

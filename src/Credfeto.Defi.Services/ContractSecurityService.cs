@@ -10,9 +10,6 @@ using Credfeto.Defi.Storage;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Fetches and caches contract security information from GoPlus and Honeypot.is for pool token addresses.
-/// </summary>
 public sealed class ContractSecurityService
 {
     private readonly ContractSecurityCacheService _cache;
@@ -20,9 +17,6 @@ public sealed class ContractSecurityService
     private readonly IHoneypotIsClient _honeypotIsClient;
     private readonly ProxyResolverService _proxyResolver;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="ContractSecurityService" />.
-    /// </summary>
     public ContractSecurityService(
         IGoPlusClient goPlusClient,
         IHoneypotIsClient honeypotIsClient,
@@ -36,22 +30,6 @@ public sealed class ContractSecurityService
         this._proxyResolver = proxyResolver;
     }
 
-    /// <summary>
-    ///     Returns security info for each address, plus proxy implementation rows.
-    ///
-    ///     For each address:
-    ///     1. Return DB row if checked within the last 24 h.
-    ///     2. Otherwise fetch from GoPlus, persist result.
-    ///     3. If the contract is an upgradeable proxy, resolve its implementation
-    ///        address via RPC, fetch + persist that too (with ParentAddress set).
-    ///     4. Independently, cross-check the requested addresses against Honeypot.is
-    ///        (24 h cache, same as GoPlus) and add its opinion as a separate,
-    ///        source-tagged row — agreement or disagreement with GoPlus is left for
-    ///        callers to interpret, both opinions are kept.
-    ///
-    ///     Returns a flat list of <see cref="ContractSecurityInfo" /> covering all addresses,
-    ///     their implementations, and per-source opinions.
-    /// </summary>
     public async ValueTask<IReadOnlyList<ContractSecurityInfo>> GetContractSecurityForAddressesAsync(
         string chain,
         IReadOnlyList<string> addresses,
@@ -68,6 +46,7 @@ public sealed class ContractSecurityService
             this.GetHoneypotIsResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken)
         );
 
+        // Both sources' rows are kept side by side: interpreting agreement or disagreement is left to callers.
         combined[0].AddRange(combined[1]);
 
         return combined[0];

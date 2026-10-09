@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Raw pool data as returned by the DefiLlama yields API before enrichment.
-/// </summary>
 [DebuggerDisplay("{Project}/{Symbol} ({Chain})")]
 public sealed record RawPool
 {

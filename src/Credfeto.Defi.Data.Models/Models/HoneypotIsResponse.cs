@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Raw per-address response from the Honeypot.is simulation API.
-/// </summary>
 [DebuggerDisplay("isHoneypot={HoneypotResult?.IsHoneypot} simulationSuccess={SimulationSuccess}")]
 public sealed record HoneypotIsResponse
 {

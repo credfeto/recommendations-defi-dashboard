@@ -6,14 +6,8 @@ using Credfeto.Defi.Services.Utils;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Builds and queries a slug-keyed map of protocol audit information.
-/// </summary>
 public static class ProtocolsService
 {
-    /// <summary>
-    ///     Builds a map from protocol slug to audit information.
-    /// </summary>
     public static IReadOnlyDictionary<string, AuditInfo> BuildProtocolAuditMap(IReadOnlyList<RawProtocol> protocols)
     {
         Dictionary<string, AuditInfo> map = new(StringComparer.OrdinalIgnoreCase);
@@ -51,9 +45,6 @@ public static class ProtocolsService
         return map;
     }
 
-    /// <summary>
-    ///     Returns audit info for a given project slug, or null if not found.
-    /// </summary>
     public static AuditInfo? MatchAuditInfo(string projectSlug, IReadOnlyDictionary<string, AuditInfo> protocolMap)
     {
         if (protocolMap.TryGetValue(key: projectSlug, out AuditInfo? info))

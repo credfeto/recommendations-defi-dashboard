@@ -13,9 +13,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Defi.ApiClients.DefiLlama;
 
-/// <summary>
-///     Fetches yield pool data from the DefiLlama API.
-/// </summary>
 public sealed class DefiLlamaPoolsClient : IDefiLlamaPoolsClient
 {
     private const string LLAMA_POOLS_URL = "https://yields.llama.fi/pools";
@@ -23,18 +20,12 @@ public sealed class DefiLlamaPoolsClient : IDefiLlamaPoolsClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<DefiLlamaPoolsClient> _logger;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="DefiLlamaPoolsClient" />.
-    /// </summary>
-    public DefiLlamaPoolsClient(IHttpClientFactory httpClientFactory, ILogger<DefiLlamaPoolsClient> logger)    {
+    public DefiLlamaPoolsClient(IHttpClientFactory httpClientFactory, ILogger<DefiLlamaPoolsClient> logger)
+    {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
     }
 
-    /// <summary>
-    ///     Fetches all yield pools from DefiLlama.
-    ///     Pendle pools are excluded — the Pendle API is the authoritative source for those.
-    /// </summary>
     public async ValueTask<IReadOnlyList<RawPool>> FetchPoolsAsync(CancellationToken cancellationToken)
     {
         try
@@ -46,6 +37,8 @@ public sealed class DefiLlamaPoolsClient : IDefiLlamaPoolsClient
                 cancellationToken: cancellationToken
             );
 
+            // Pendle pools are excluded: the Pendle API is the authoritative source for those,
+            // so including them here would duplicate every Pendle pool.
             return response?.Data is null
                 ? []
                 :

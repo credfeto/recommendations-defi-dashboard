@@ -69,7 +69,7 @@ public sealed class PoolFilterServiceTests : TestBase
     [InlineData("Avalanche")]
     [InlineData("Tron")]
     [InlineData("Sui")]
-    public void ApplyBaseFilters_ExcludesUnsupportedChains(string chain)
+    public static void ApplyBaseFilters_ExcludesUnsupportedChains(string chain)
     {
         IReadOnlyList<RawPool> pools = [MakePool(chain: chain)];
         IReadOnlyList<RawPool> result = PoolFilterService.ApplyBaseFilters(pools);

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
-using FunFair.Test.Common.Mocks;
+using FunFair.Test.Infrastructure.Mocks;
 using Xunit;
 
 namespace Credfeto.Defi.Storage.Tests;

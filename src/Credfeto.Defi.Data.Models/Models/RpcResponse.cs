@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     JSON-RPC 2.0 response payload.
-/// </summary>
 [DebuggerDisplay("Result={Result}")]
 public sealed record RpcResponse
 {

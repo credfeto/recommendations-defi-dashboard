@@ -65,25 +65,25 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.65.765" />
-    <PackageReference Include="Credfeto.Services.Startup" Version="1.1.145.1592" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.9" />
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-    <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.65.765" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Credfeto.Services.Startup" Version="1.1.145.1592" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.9" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Serilog" Version="4.3.1" IncludeAssets="compile;runtime;build;buildTransitive" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" IncludeAssets="compile;runtime" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Storage/Credfeto.Defi.Storage.csproj" />
     <TrimmerRootAssembly Include="Credfeto.Defi.Storage" />
-    <ProjectReference Include="..\Credfeto.Defi.Mcp\Credfeto.Defi.Mcp.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Server.Composition\Credfeto.Defi.Server.Composition.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Mcp/Credfeto.Defi.Mcp.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Server.Composition/Credfeto.Defi.Server.Composition.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Services/Credfeto.Defi.Services.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />

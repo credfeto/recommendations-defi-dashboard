@@ -23,10 +23,6 @@ public sealed class ContractSecurityCacheService
         this._timeProvider = timeProvider;
     }
 
-    /// <summary>
-    ///     Returns a cached entry if it exists and is within the 24-hour TTL.
-    ///     Returns null if not found or expired.
-    /// </summary>
     public async ValueTask<ContractSecurityInfo?> GetAsync(
         string chain,
         string address,
@@ -54,9 +50,6 @@ public sealed class ContractSecurityCacheService
         return MapToModel(row);
     }
 
-    /// <summary>
-    ///     Returns all cached child rows (proxy implementations) for the given parent proxy address.
-    /// </summary>
     public async ValueTask<IReadOnlyList<ContractSecurityInfo>> GetChildrenAsync(
         string chain,
         string parentAddress,
@@ -84,9 +77,6 @@ public sealed class ContractSecurityCacheService
         return result;
     }
 
-    /// <summary>
-    ///     Persists a <see cref="ContractSecurityInfo" /> entry to the cache.
-    /// </summary>
     public ValueTask SetAsync(ContractSecurityInfo info, CancellationToken cancellationToken)
     {
         GoPlusTokenSecuritySyncRow row = new(
@@ -112,10 +102,6 @@ public sealed class ContractSecurityCacheService
         );
     }
 
-    /// <summary>
-    ///     Returns a cached Honeypot.is entry if it exists and is within the 24-hour TTL.
-    ///     Returns null if not found or expired.
-    /// </summary>
     public async ValueTask<ContractSecurityInfo?> GetHoneypotIsAsync(
         string chain,
         string address,
@@ -143,9 +129,6 @@ public sealed class ContractSecurityCacheService
         return MapToModel(row);
     }
 
-    /// <summary>
-    ///     Persists a Honeypot.is <see cref="ContractSecurityInfo" /> entry to the cache.
-    /// </summary>
     public ValueTask SetHoneypotIsAsync(ContractSecurityInfo info, CancellationToken cancellationToken)
     {
         HoneypotIsTokenSecuritySyncRow row = new(

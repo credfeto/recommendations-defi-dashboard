@@ -4,9 +4,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Returns the available pool type metadata records.
-/// </summary>
 public static class PoolTypeService
 {
     private static readonly PoolTypeMetadata[] PoolTypes =
@@ -43,17 +40,11 @@ public static class PoolTypeService
         },
     ];
 
-    /// <summary>
-    ///     Returns all available pool type metadata records.
-    /// </summary>
     public static PoolTypeMetadata[] GetAllPoolTypes()
     {
         return PoolTypes;
     }
 
-    /// <summary>
-    ///     Returns true if the given pool type ID is valid (case-insensitive).
-    /// </summary>
     public static bool IsValidPoolType(string poolTypeId)
     {
         return PoolTypes.Any(pt =>

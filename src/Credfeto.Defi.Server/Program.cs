@@ -13,14 +13,8 @@ using Serilog.Core;
 
 namespace Credfeto.Defi.Server;
 
-/// <summary>
-///     Application entry point.
-/// </summary>
 internal static class Program
 {
-    /// <summary>
-    ///     Main entry point.
-    /// </summary>
     public static async Task<int> Main(string[] args)
     {
         return HealthCheckClient.IsHealthCheck(args: args, out string? checkUrl)

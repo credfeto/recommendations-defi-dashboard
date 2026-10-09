@@ -5,9 +5,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Generates direct pool URLs for DefiLlama and Pendle pools.
-/// </summary>
 public static class PoolUrlService
 {
     private static readonly IReadOnlyDictionary<string, int> PendleChainIds = new Dictionary<string, int>(
@@ -20,11 +17,6 @@ public static class PoolUrlService
         ["bsc"] = 56,
     };
 
-    /// <summary>
-    ///     Returns a direct URL to the pool page, or null if a URL cannot be determined.
-    ///     - DefiLlama pools: defillama.com/yields?pool={uuid}
-    ///     - Pendle pools:    app.pendle.finance/trade/markets/{chainId}/{address}/pt
-    /// </summary>
     public static Uri? GetPoolUrl(RawPool pool)
     {
         if (string.Equals(a: pool.Project, b: "pendle", comparisonType: StringComparison.OrdinalIgnoreCase))

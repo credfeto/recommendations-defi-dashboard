@@ -26,7 +26,10 @@ public sealed class FakeDatabase : IDatabase
         return this;
     }
 
-    public ValueTask<T> ExecuteAsync<T>(Func<DbConnection, CancellationToken, ValueTask<T>> action, CancellationToken cancellationToken)
+    public ValueTask<T> ExecuteAsync<T>(
+        Func<DbConnection, CancellationToken, ValueTask<T>> action,
+        CancellationToken cancellationToken
+    )
     {
         Type type = typeof(T);
 
@@ -40,7 +43,10 @@ public sealed class FakeDatabase : IDatabase
         return ValueTask.FromResult(default(T)!);
     }
 
-    public ValueTask ExecuteAsync(Func<DbConnection, CancellationToken, ValueTask> action, CancellationToken cancellationToken)
+    public ValueTask ExecuteAsync(
+        Func<DbConnection, CancellationToken, ValueTask> action,
+        CancellationToken cancellationToken
+    )
     {
         return ValueTask.CompletedTask;
     }

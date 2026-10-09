@@ -23,7 +23,7 @@ public sealed class PoolAccessServiceExtendedTests : TestBase
     [InlineData("quickswap")]
     [InlineData("orca")]
     [InlineData("raydium")]
-    public void DerivePoolAccessInfo_AdditionalSwapExitProjects_CanSwapToExit(string project)
+    public static void DerivePoolAccessInfo_AdditionalSwapExitProjects_CanSwapToExit(string project)
     {
         PoolAccessInfo info = PoolAccessService.DerivePoolAccessInfo(project: project, poolMeta: null);
 
