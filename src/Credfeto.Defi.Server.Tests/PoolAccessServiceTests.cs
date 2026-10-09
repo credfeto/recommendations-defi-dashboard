@@ -23,7 +23,7 @@ public sealed class PoolAccessServiceTests : TestBase
     [InlineData("whitelist only")]
     [InlineData("qualified purchasers")]
     [InlineData("permissioned pool")]
-    public void DerivePoolAccessInfo_KycMeta_ReturnsKycRequired(string meta)
+    public static void DerivePoolAccessInfo_KycMeta_ReturnsKycRequired(string meta)
     {
         PoolAccessInfo info = PoolAccessService.DerivePoolAccessInfo(project: "someprotocol", poolMeta: meta);
 
@@ -37,7 +37,7 @@ public sealed class PoolAccessServiceTests : TestBase
     [InlineData("centrifuge")]
     [InlineData("credix")]
     [InlineData("goldfinch")]
-    public void DerivePoolAccessInfo_KycProject_ReturnsKycRequired(string project)
+    public static void DerivePoolAccessInfo_KycProject_ReturnsKycRequired(string project)
     {
         PoolAccessInfo info = PoolAccessService.DerivePoolAccessInfo(project: project, poolMeta: null);
 
@@ -49,7 +49,7 @@ public sealed class PoolAccessServiceTests : TestBase
     [InlineData("curve")]
     [InlineData("balancer")]
     [InlineData("pendle")]
-    public void DerivePoolAccessInfo_SwapExitProject_ReturnsCanSwapToExit(string project)
+    public static void DerivePoolAccessInfo_SwapExitProject_ReturnsCanSwapToExit(string project)
     {
         PoolAccessInfo info = PoolAccessService.DerivePoolAccessInfo(project: project, poolMeta: null);
 

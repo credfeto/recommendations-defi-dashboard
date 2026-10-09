@@ -6,14 +6,8 @@ using Credfeto.Defi.Services.Utils;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Builds and queries a slug-keyed map of protocol hacks.
-/// </summary>
 public static class HacksService
 {
-    /// <summary>
-    ///     Builds a map from protocol slug to hack list from raw DefiLlama hack data.
-    /// </summary>
     public static IReadOnlyDictionary<string, List<HackInfo>> BuildHackMap(IReadOnlyList<RawHack> hacks)
     {
         Dictionary<string, List<HackInfo>> map = new(StringComparer.OrdinalIgnoreCase);
@@ -49,9 +43,6 @@ public static class HacksService
         return map;
     }
 
-    /// <summary>
-    ///     Returns deduplicated hacks matching the given project slug.
-    /// </summary>
     public static IReadOnlyList<HackInfo> MatchHacks(
         string projectSlug,
         IReadOnlyDictionary<string, List<HackInfo>> hackMap

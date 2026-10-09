@@ -4,10 +4,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Data.Models.Json;
 
-/// <summary>
-///     AOT-compatible JSON serialisation context.
-///     Covers all models used in HTTP responses and external API response parsing.
-/// </summary>
 [JsonSerializable(typeof(Pool))]
 [JsonSerializable(typeof(Pool[]))]
 [JsonSerializable(typeof(IReadOnlyList<Pool>))]

@@ -6,9 +6,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Builds stablecoin price maps and detects depeg risk for pool tokens.
-/// </summary>
 public static partial class DepegService
 {
     private const decimal USD_PEG = 1.0m;
@@ -18,10 +15,6 @@ public static partial class DepegService
     [GeneratedRegex(pattern: "[-/+\\s]+", options: RegexOptions.ExplicitCapture, matchTimeoutMilliseconds: 500)]
     private static partial Regex TokenSplitRegex { get; }
 
-    /// <summary>
-    ///     Builds a normalised symbol → current price map from CoinGecko stablecoin data.
-    ///     Symbols are lowercased for case-insensitive matching.
-    /// </summary>
     public static IReadOnlyDictionary<string, decimal> BuildStablecoinPriceMap(IReadOnlyList<CoinGeckoStablecoin> coins)
     {
         Dictionary<string, decimal> map = new(StringComparer.OrdinalIgnoreCase);
@@ -37,14 +30,10 @@ public static partial class DepegService
         return map;
     }
 
-    /// <summary>
-    ///     Builds a unified normalised symbol → price map from CoinGecko and Chainlink data.
-    ///     Chainlink prices take precedence for deduplication (canonical on-chain source).
-    ///     Symbols are lowercased for case-insensitive matching.
-    /// </summary>
     public static IReadOnlyDictionary<string, decimal> BuildMergedStablecoinPriceMap(
         IReadOnlyList<CoinGeckoStablecoin> coinGeckoCoins,
-        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds)
+        IReadOnlyList<ChainlinkPriceFeed> chainlinkFeeds
+    )
     {
         Dictionary<string, decimal> map = new(StringComparer.OrdinalIgnoreCase);
 
@@ -64,10 +53,6 @@ public static partial class DepegService
         return map;
     }
 
-    /// <summary>
-    ///     Builds a contract address → stablecoin symbol map from the full CoinGecko coin list.
-    ///     Only stablecoin IDs present in the price data are indexed.
-    /// </summary>
     public static IReadOnlyDictionary<string, string> BuildStablecoinAddressMap(
         IReadOnlyList<CoinGeckoStablecoin> stablecoins,
         IReadOnlyList<CoinGeckoCoinPlatforms> coinList
@@ -111,11 +96,6 @@ public static partial class DepegService
         return addressMap;
     }
 
-    /// <summary>
-    ///     Parses a pool symbol string into individual token symbols.
-    ///     Handles separators: -, /, +, space.
-    ///     e.g. "USR-USDC" → ["USR", "USDC"], "crvUSD" → ["crvUSD"]
-    /// </summary>
     public static string[] ParsePoolSymbols(string poolSymbol)
     {
         return
@@ -127,16 +107,6 @@ public static partial class DepegService
         ];
     }
 
-    /// <summary>
-    ///     Checks a pool for stablecoin depeg risk using two sources:
-    ///     1. Pool symbol tokens looked up in the symbol → price map.
-    ///     2. Underlying token contract addresses looked up in the address → symbol map,
-    ///        then prices resolved via the symbol → price map.
-    /// </summary>
-    /// <summary>
-    ///     Overload accepting a <see cref="ReadOnlySpan{T}" /> of underlying token addresses.
-    ///     Delegates to the array overload after converting.
-    /// </summary>
     public static IReadOnlyList<DepegAlert> CheckDepeg(
         string poolSymbol,
         IReadOnlyDictionary<string, decimal> priceMap,
@@ -154,12 +124,6 @@ public static partial class DepegService
         );
     }
 
-    /// <summary>
-    ///     Checks a pool for stablecoin depeg risk using two sources:
-    ///     1. Pool symbol tokens looked up in the symbol → price map.
-    ///     2. Underlying token contract addresses looked up in the address → symbol map,
-    ///        then prices resolved via the symbol → price map.
-    /// </summary>
     public static IReadOnlyList<DepegAlert> CheckDepeg(
         string poolSymbol,
         IReadOnlyDictionary<string, decimal> priceMap,

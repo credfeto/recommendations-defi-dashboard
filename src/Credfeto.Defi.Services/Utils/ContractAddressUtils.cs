@@ -6,9 +6,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Services.Utils;
 
-/// <summary>
-///     Utilities for extracting on-chain contract addresses from pool data.
-/// </summary>
 public static partial class ContractAddressUtils
 {
     [GeneratedRegex(
@@ -18,22 +15,11 @@ public static partial class ContractAddressUtils
     )]
     private static partial Regex EthAddressRegex { get; }
 
-    /// <summary>
-    ///     Returns true if the given string looks like an Ethereum-style hex address.
-    /// </summary>
     public static bool IsContractAddress(string value)
     {
         return EthAddressRegex.IsMatch(value);
     }
 
-    /// <summary>
-    ///     Builds the deduplicated list of on-chain contract addresses for a pool.
-    ///
-    ///     Sources (in priority order):
-    ///     1. UnderlyingTokens -- the underlying asset contract addresses
-    ///     2. RewardTokens -- reward token contract addresses
-    ///     3. PoolId -- used directly when it is a 0x address (e.g. Pendle market contracts)
-    /// </summary>
     public static string[] BuildContractAddresses(RawPool pool)
     {
         HashSet<string> addresses = new(StringComparer.OrdinalIgnoreCase);

@@ -13,9 +13,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Defi.ApiClients.CoinGecko;
 
-/// <summary>
-///     Fetches stablecoin price data and the full coin list from CoinGecko.
-/// </summary>
 public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
 {
     private const string BASE_URL = "https://api.coingecko.com/api/v3";
@@ -24,17 +21,12 @@ public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<CoinGeckoStablecoinsClient> _logger;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="CoinGeckoStablecoinsClient" />.
-    /// </summary>
-    public CoinGeckoStablecoinsClient(IHttpClientFactory httpClientFactory, ILogger<CoinGeckoStablecoinsClient> logger)    {
+    public CoinGeckoStablecoinsClient(IHttpClientFactory httpClientFactory, ILogger<CoinGeckoStablecoinsClient> logger)
+    {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
     }
 
-    /// <summary>
-    ///     Fetches all stablecoins by paginating through the CoinGecko markets endpoint.
-    /// </summary>
     public async ValueTask<IReadOnlyList<CoinGeckoStablecoin>> FetchStablecoinsAsync(
         CancellationToken cancellationToken
     )
@@ -85,10 +77,6 @@ public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
         return all;
     }
 
-    /// <summary>
-    ///     Fetches the full CoinGecko coin list with on-chain contract addresses.
-    ///     Used to build an address-to-symbol map for underlying-token depeg checking.
-    /// </summary>
     public async ValueTask<IReadOnlyList<CoinGeckoCoinPlatforms>> FetchCoinListAsync(
         CancellationToken cancellationToken
     )

@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     A single market entry from the Pendle API.
-/// </summary>
 [DebuggerDisplay("{SimpleSymbol} chainId={ChainId} isActive={IsActive}")]
 public sealed record PendleMarket
 {

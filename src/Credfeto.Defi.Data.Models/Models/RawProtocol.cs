@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Raw protocol entry from the DefiLlama protocols API.
-/// </summary>
 [DebuggerDisplay("{Slug}")]
 public sealed record RawProtocol
 {

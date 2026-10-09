@@ -23,12 +23,6 @@ public sealed class ApiCacheService
         this._timeProvider = timeProvider;
     }
 
-    /// <summary>
-    ///     Returns cached data if fresh (&lt;1 h).
-    ///     Otherwise calls <paramref name="fetcher" /> to get fresh data and updates the cache.
-    ///     If the fetch fails and stale data exists (&lt;2 h), the stale data is returned.
-    ///     If the fetch fails and data is older than 2 h (or absent), the exception propagates.
-    /// </summary>
     public async ValueTask<T> GetOrFetchAsync<T>(
         string key,
         Func<CancellationToken, ValueTask<T>> fetcher,
@@ -85,9 +79,6 @@ public sealed class ApiCacheService
         }
     }
 
-    /// <summary>
-    ///     Returns whether the entry for <paramref name="key" /> is fresh (less than 1 hour old).
-    /// </summary>
     public async ValueTask<bool> IsFreshAsync(string key)
     {
         DateTimeOffset now = this._timeProvider.GetUtcNow();

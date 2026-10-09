@@ -14,11 +14,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Background service that warms the API cache on startup.
-///     Each entry is fetched independently; errors are logged and skipped
-///     so a failure in one API does not block the others.
-/// </summary>
 public sealed class CacheWarmerService : IHostedService
 {
     private readonly ApiCacheService _apiCache;
@@ -37,9 +32,6 @@ public sealed class CacheWarmerService : IHostedService
     private readonly IDefiLlamaProtocolsClient _protocolsClient;
     private readonly IDefiLlamaProtocolStorageService _protocolStorage;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="CacheWarmerService" />.
-    /// </summary>
     public CacheWarmerService(
         IDefiLlamaPoolsClient llamaPoolsClient,
         IPendleMarketsClient pendleClient,
@@ -75,7 +67,6 @@ public sealed class CacheWarmerService : IHostedService
         this._logger = logger;
     }
 
-    /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
         // Fire and forget — warming is best-effort and must not block startup
@@ -84,7 +75,6 @@ public sealed class CacheWarmerService : IHostedService
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;

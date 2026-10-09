@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Top-level response from the DefiLlama yields API.
-/// </summary>
 [DebuggerDisplay("Count={Data?.Length}")]
 public sealed record DefiLlamaPoolsResponse
 {

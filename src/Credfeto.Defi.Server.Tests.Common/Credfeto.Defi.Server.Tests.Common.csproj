@@ -38,23 +38,23 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)UnitTests.props" Condition="Exists('$(SolutionDir)UnitTests.props')" />
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko.Interfaces\Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko\Credfeto.Defi.ApiClients.CoinGecko.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama.Interfaces\Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama\Credfeto.Defi.ApiClients.DefiLlama.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus.Interfaces\Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus\Credfeto.Defi.ApiClients.GoPlus.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle.Interfaces\Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle\Credfeto.Defi.ApiClients.Pendle.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Services\Credfeto.Defi.Services.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.CoinGecko/Credfeto.Defi.ApiClients.CoinGecko.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.DefiLlama.Interfaces/Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.DefiLlama/Credfeto.Defi.ApiClients.DefiLlama.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.GoPlus.Interfaces/Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.GoPlus/Credfeto.Defi.ApiClients.GoPlus.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.HoneypotIs.Interfaces/Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Services/Credfeto.Defi.Services.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Storage/Credfeto.Defi.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FunFair.Test.Common" Version="6.2.25.2243" />
-    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0" />
-    <PackageReference Include="xunit.v3.extensibility.core" Version="3.2.2" />
+    <PackageReference Include="FunFair.Test.Common" Version="6.4.6.2749" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="xunit.v3.extensibility.core.aot" Version="4.0.1" IncludeAssets="compile;runtime" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />
