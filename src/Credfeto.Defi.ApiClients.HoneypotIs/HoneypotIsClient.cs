@@ -89,6 +89,7 @@ public sealed class HoneypotIsClient : IHoneypotIsClient
             }
             catch (Exception ex)
             {
+                // Omit an address whose simulation fails rather than failing the whole call.
                 this._logger.FetchTokenSecurityFailed(chain: chain, address: lowered, exception: ex);
             }
         }

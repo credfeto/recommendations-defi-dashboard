@@ -10,6 +10,7 @@ public static partial class SlugUtils
     [GeneratedRegex(pattern: "(^-|-$)", options: RegexOptions.ExplicitCapture, matchTimeoutMilliseconds: 500)]
     private static partial Regex LeadingTrailingDashRegex { get; }
 
+    // Strips version suffixes so "aave-v3" base-matches "aave".
     [GeneratedRegex(pattern: "-v\\d+.*$", options: RegexOptions.ExplicitCapture, matchTimeoutMilliseconds: 500)]
     private static partial Regex VersionSuffixRegex { get; }
 

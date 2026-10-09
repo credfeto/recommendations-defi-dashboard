@@ -154,6 +154,7 @@ public sealed class PoolEnrichmentService
             addressMap: addressMap
         );
 
+        // Pools exposed to a depegged stablecoin are excluded from recommendations entirely.
         if (depegAlerts.Count > 0)
         {
             return null;

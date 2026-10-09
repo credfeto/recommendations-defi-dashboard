@@ -46,6 +46,7 @@ public sealed class ContractSecurityService
             this.GetHoneypotIsResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken)
         );
 
+        // Both sources' rows are kept side by side: interpreting agreement or disagreement is left to callers.
         combined[0].AddRange(combined[1]);
 
         return combined[0];
