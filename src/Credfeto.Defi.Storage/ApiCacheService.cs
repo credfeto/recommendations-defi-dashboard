@@ -66,6 +66,8 @@ public sealed class ApiCacheService
 
             return freshData;
         }
+        // Fetch failed: serve cached data younger than StaleTtl rather than fail;
+        // older or absent data lets the exception propagate.
         catch when (row is not null && now - row.FetchedAt < StaleTtl)
         {
             T? stale = JsonSerializer.Deserialize(json: row.Data, jsonTypeInfo: typeInfo);

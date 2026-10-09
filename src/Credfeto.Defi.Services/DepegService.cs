@@ -45,6 +45,7 @@ public static partial class DepegService
             }
         }
 
+        // Chainlink is the canonical on-chain source, so this loop must run after CoinGecko and overwrite its prices.
         foreach (ChainlinkPriceFeed feed in chainlinkFeeds)
         {
             map[feed.Symbol.ToLowerInvariant()] = feed.CurrentPrice;

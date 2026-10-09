@@ -37,6 +37,8 @@ public sealed class DefiLlamaPoolsClient : IDefiLlamaPoolsClient
                 cancellationToken: cancellationToken
             );
 
+            // Pendle pools are excluded: the Pendle API is the authoritative source for those,
+            // so including them here would duplicate every Pendle pool.
             return response?.Data is null
                 ? []
                 :
