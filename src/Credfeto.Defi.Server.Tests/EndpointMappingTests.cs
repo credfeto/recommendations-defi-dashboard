@@ -63,7 +63,8 @@ public sealed class EndpointMappingTests : TestBase
 
     private static RouteEndpoint GetEndpoint(WebApplication app, string pattern)
     {
-        return ((IEndpointRouteBuilder)app).DataSources.SelectMany(dataSource => dataSource.Endpoints)
+        return ((IEndpointRouteBuilder)app)
+            .DataSources.SelectMany(dataSource => dataSource.Endpoints)
             .OfType<RouteEndpoint>()
             .Single(endpoint => StringComparer.Ordinal.Equals(endpoint.RoutePattern.RawText, pattern));
     }

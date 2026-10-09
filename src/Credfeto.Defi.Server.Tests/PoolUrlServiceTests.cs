@@ -84,7 +84,7 @@ public sealed class PoolUrlServiceTests : TestBase
     [InlineData("Arbitrum", 42161)]
     [InlineData("Base", 8453)]
     [InlineData("BSC", 56)]
-    public void GetPoolUrl_PendlePool_IncludesChainId(string chain, int chainId)
+    public static void GetPoolUrl_PendlePool_IncludesChainId(string chain, int chainId)
     {
         RawPool pool = new()
         {

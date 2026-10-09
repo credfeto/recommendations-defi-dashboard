@@ -13,9 +13,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Credfeto.Defi.ApiClients.Pendle;
 
-/// <summary>
-///     Fetches raw Pendle market data.
-/// </summary>
 public sealed class PendleMarketsClient : IPendleMarketsClient
 {
     private const string PENDLE_API_BASE = "https://api-v2.pendle.finance/core/v1";
@@ -26,18 +23,12 @@ public sealed class PendleMarketsClient : IPendleMarketsClient
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<PendleMarketsClient> _logger;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="PendleMarketsClient" />.
-    /// </summary>
     public PendleMarketsClient(IHttpClientFactory httpClientFactory, ILogger<PendleMarketsClient> logger)
     {
         this._httpClientFactory = httpClientFactory;
         this._logger = logger;
     }
 
-    /// <summary>
-    ///     Fetches all markets from Pendle across all supported chains.
-    /// </summary>
     public async ValueTask<IReadOnlyList<PendleMarket>> FetchMarketsAsync(CancellationToken cancellationToken)
     {
         List<PendleMarket> all = [];

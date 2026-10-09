@@ -61,7 +61,7 @@ public sealed class PoolTypeServiceTests : TestBase
     [InlineData("high_yield")]
     [InlineData("low_tvl")]
     [InlineData("blue_chip")]
-    public void IsValidPoolType_ValidId_ReturnsTrue(string poolTypeId)
+    public static void IsValidPoolType_ValidId_ReturnsTrue(string poolTypeId)
     {
         bool result = PoolTypeService.IsValidPoolType(poolTypeId);
         Assert.True(result, userMessage: $"Expected '{poolTypeId}' to be a valid pool type");
@@ -71,7 +71,7 @@ public sealed class PoolTypeServiceTests : TestBase
     [InlineData("INVALID")]
     [InlineData("UNKNOWN")]
     [InlineData("BTC")]
-    public void IsValidPoolType_UnknownId_ReturnsFalse(string poolTypeId)
+    public static void IsValidPoolType_UnknownId_ReturnsFalse(string poolTypeId)
     {
         bool result = PoolTypeService.IsValidPoolType(poolTypeId);
         Assert.False(result, userMessage: $"Expected '{poolTypeId}' to be an invalid pool type");

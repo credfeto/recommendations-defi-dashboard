@@ -3,9 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace Credfeto.Defi.Data.Models.Models;
 
-/// <summary>
-///     Raw predictions object from DefiLlama API.
-/// </summary>
 [DebuggerDisplay("PredictedClass={PredictedClass}")]
 public sealed record RawPredictions
 {

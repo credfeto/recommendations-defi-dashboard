@@ -10,38 +10,24 @@ using ModelContextProtocol.Server;
 
 namespace Credfeto.Defi.Mcp;
 
-/// <summary>
-///     MCP tool implementations for the DeFi Dashboard.
-/// </summary>
 [McpServerToolType]
 public sealed class DefiMcpTools
 {
     private readonly ContractSecurityService _contractSecurityService;
     private readonly PoolEnrichmentService _enrichmentService;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="DefiMcpTools" />.
-    /// </summary>
     public DefiMcpTools(PoolEnrichmentService enrichmentService, ContractSecurityService contractSecurityService)
     {
         this._enrichmentService = enrichmentService;
         this._contractSecurityService = contractSecurityService;
     }
 
-    /// <summary>
-    ///     Returns the available DeFi pool categories that can be queried.
-    /// </summary>
     [McpServerTool(Name = "get_pool_types", Title = "Get Pool Types")]
     public static PoolTypeMetadata[] GetPoolTypes()
     {
         return PoolTypeService.GetAllPoolTypes();
     }
 
-    /// <summary>
-    ///     Fetches enriched DeFi pool recommendations for a given category.
-    ///     Returns pools with APY, TVL, hack history, depeg alerts, audit info, contract security,
-    ///     contract addresses, KYC requirements, and liquidity/exit info.
-    /// </summary>
     [McpServerTool(Name = "get_pools", Title = "Get Pools")]
     public async Task<IReadOnlyList<Pool>> GetPoolsAsync(
         string poolType,
@@ -66,13 +52,6 @@ public sealed class DefiMcpTools
         );
     }
 
-    /// <summary>
-    ///     Checks contract security info for one or more token addresses on a given chain,
-    ///     cross-checked against both GoPlus and Honeypot.is. Returns honeypot status, tax info,
-    ///     proxy detection, and open-source status as a separate source-tagged row per address
-    ///     for each data source that has an opinion - callers should expect up to two rows
-    ///     (one per source) for the same address and interpret agreement/disagreement themselves.
-    /// </summary>
     [McpServerTool(Name = "check_contract_security", Title = "Check Contract Security")]
     public async Task<IReadOnlyList<ContractSecurityInfo>> CheckContractSecurityAsync(
         string chain,

@@ -5,9 +5,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Derives pool access and liquidity restriction information from pool metadata.
-/// </summary>
 public static partial class PoolAccessService
 {
     [GeneratedRegex(
@@ -126,9 +123,6 @@ public static partial class PoolAccessService
         "goldfinch",
     };
 
-    /// <summary>
-    ///     Derives pool access info from the project identifier and pool metadata string.
-    /// </summary>
     public static PoolAccessInfo DerivePoolAccessInfo(string project, string? poolMeta)
     {
         bool kycFromMeta = HasKycMeta(poolMeta);

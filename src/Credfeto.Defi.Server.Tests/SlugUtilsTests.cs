@@ -12,7 +12,7 @@ public sealed class SlugUtilsTests : TestBase
     [InlineData("Uniswap V3", "uniswap-v3")]
     [InlineData("  leading space  ", "leading-space")]
     [InlineData("special!chars#here", "special-chars-here")]
-    public void ToSlug_NormalisesCorrectly(string input, string expected)
+    public static void ToSlug_NormalisesCorrectly(string input, string expected)
     {
         string result = SlugUtils.ToSlug(input);
         Assert.Equal(expected: expected, actual: result);
@@ -24,7 +24,7 @@ public sealed class SlugUtilsTests : TestBase
     [InlineData("uniswap-v3", "uniswap")]
     [InlineData("aave", "aave")]
     [InlineData("curve-v1-stable", "curve")]
-    public void BaseSlug_StripsVersionSuffix(string input, string expected)
+    public static void BaseSlug_StripsVersionSuffix(string input, string expected)
     {
         string result = SlugUtils.BaseSlug(input);
         Assert.Equal(expected: expected, actual: result);

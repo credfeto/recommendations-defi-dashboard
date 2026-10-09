@@ -36,20 +36,20 @@
     <WarningsAsErrors />
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Chainlink.Interfaces\Credfeto.Defi.ApiClients.Chainlink.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.CoinGecko.Interfaces\Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.DefiLlama.Interfaces\Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.GoPlus.Interfaces\Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces\Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.ApiClients.Pendle.Interfaces\Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Data.Models\Credfeto.Defi.Data.Models.csproj" />
-    <ProjectReference Include="..\Credfeto.Defi.Storage\Credfeto.Defi.Storage.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.Chainlink.Interfaces/Credfeto.Defi.ApiClients.Chainlink.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.CoinGecko.Interfaces/Credfeto.Defi.ApiClients.CoinGecko.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.DefiLlama.Interfaces/Credfeto.Defi.ApiClients.DefiLlama.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.GoPlus.Interfaces/Credfeto.Defi.ApiClients.GoPlus.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.HoneypotIs.Interfaces/Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.Storage/Credfeto.Defi.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.9" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.9" IncludeAssets="compile;runtime" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AsyncFixer" Version="2.1.0" PrivateAssets="All" ExcludeAssets="runtime" />

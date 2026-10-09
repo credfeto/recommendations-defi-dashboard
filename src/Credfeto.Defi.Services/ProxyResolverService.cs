@@ -12,28 +12,12 @@ using Microsoft.Extensions.Options;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Resolves the implementation address of upgradeable proxy contracts via raw JSON-RPC calls.
-/// </summary>
 public sealed class ProxyResolverService
 {
-    /// <summary>
-    ///     EIP-1967 implementation slot (keccak256("eip1967.proxy.implementation") - 1).
-    ///     Most modern upgradeable proxies (OpenZeppelin TransparentUpgradeableProxy, UUPS) store
-    ///     the implementation address here.
-    /// </summary>
     private const string SLOT_EIP1967 = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
 
-    /// <summary>
-    ///     EIP-1967 beacon slot (keccak256("eip1967.proxy.beacon") - 1).
-    ///     Beacon proxies store the beacon address here; the beacon holds the impl.
-    /// </summary>
     private const string SLOT_EIP1967_BEACON = "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50";
 
-    /// <summary>
-    ///     OpenZeppelin legacy slot (keccak256("org.zeppelinos.proxy.implementation")).
-    ///     Used by older OZ proxy contracts before EIP-1967.
-    /// </summary>
     private const string SLOT_OZ_LEGACY = "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3";
 
     private const string ZERO_RESULT = "0x" + "0000000000000000000000000000000000000000000000000000000000000000";
@@ -44,9 +28,6 @@ public sealed class ProxyResolverService
     private readonly ILogger<ProxyResolverService> _logger;
     private readonly RpcConfig _rpcConfig;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="ProxyResolverService" />.
-    /// </summary>
     public ProxyResolverService(
         IOptions<RpcConfig> rpcConfig,
         IHttpClientFactory httpClientFactory,
@@ -58,12 +39,6 @@ public sealed class ProxyResolverService
         this._logger = logger;
     }
 
-    /// <summary>
-    ///     Attempts to resolve the implementation address of an upgradeable proxy.
-    ///     Tries slots in order: EIP-1967 → EIP-1967 beacon → OZ legacy.
-    ///     Returns the implementation address (lowercase) or null if no RPC is configured
-    ///     for the chain, or no known proxy slot contains a non-zero address.
-    /// </summary>
     public async ValueTask<string?> ResolveProxyImplementationAsync(
         string chain,
         string proxyAddress,

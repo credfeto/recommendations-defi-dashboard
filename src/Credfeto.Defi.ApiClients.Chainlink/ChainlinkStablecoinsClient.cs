@@ -17,9 +17,6 @@ using Microsoft.Extensions.Options;
 
 namespace Credfeto.Defi.ApiClients.Chainlink;
 
-/// <summary>
-///     Fetches stablecoin USD prices from Chainlink on-chain AggregatorV3Interface price feeds.
-/// </summary>
 public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
 {
     private const string LATEST_ROUND_DATA_SELECTOR = "0x50d25bcd";
@@ -46,9 +43,6 @@ public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
     private readonly ILogger<ChainlinkStablecoinsClient> _logger;
     private readonly RpcConfig _rpcConfig;
 
-    /// <summary>
-    ///     Initialises a new instance of <see cref="ChainlinkStablecoinsClient" />.
-    /// </summary>
     public ChainlinkStablecoinsClient(
         IOptions<RpcConfig> rpcConfig,
         IHttpClientFactory httpClientFactory,
@@ -60,7 +54,6 @@ public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
         this._logger = logger;
     }
 
-    /// <inheritdoc />
     public async ValueTask<IReadOnlyList<ChainlinkPriceFeed>> FetchStablecoinsAsync(CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(this._rpcConfig.Ethereum))

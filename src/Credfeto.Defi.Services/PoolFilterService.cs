@@ -5,9 +5,6 @@ using Credfeto.Defi.Data.Models.Models;
 
 namespace Credfeto.Defi.Services;
 
-/// <summary>
-///     Applies pool type category filters and base quality filters.
-/// </summary>
 public static class PoolFilterService
 {
     private const double MIN_TVL = 1_000_000;
@@ -41,10 +38,6 @@ public static class PoolFilterService
         "WEETH",
     ];
 
-    /// <summary>
-    ///     Applies base quality filters: IL risk, TVL, APY range, chain exclusions.
-    ///     Returns pools sorted by APY descending, then TVL descending.
-    /// </summary>
     public static IReadOnlyList<RawPool> ApplyBaseFilters(IReadOnlyList<RawPool> pools)
     {
         List<RawPool> result = [];
@@ -86,9 +79,6 @@ public static class PoolFilterService
         return result;
     }
 
-    /// <summary>
-    ///     Filters pools by pool type category and applies base filters.
-    /// </summary>
     public static IReadOnlyList<RawPool> FilterPoolsByType(IReadOnlyList<RawPool> allPools, string poolType)
     {
         return ApplyBaseFilters([.. allPools.Where(pool => MatchesCategory(pool: pool, poolType: poolType))]);
