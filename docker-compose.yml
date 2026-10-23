@@ -1,7 +1,7 @@
 ---
 services:
   defi:
-    image: docker-registry.markridgwell.com/credfeto/defi:latest
+    image: ghcr.io/credfeto/defi:latest
     container_name: defi
     ports:
       - '443:8081'
