@@ -114,8 +114,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Replaced xunit.v3.extensibility.core (3.2.2) with xunit.v3.extensibility.core.aot (4.0.1)
 - Updated MSBuild.Sdk.SqlProj from 4.3.0 to 4.4.0
 - Normalised MSBuild path separators to '/'
-- SDK - Updated DotNet SDK to 10.0.402
 - Removed redundant EnableMicrosoftExtensionsConfigurationBinderSourceGenerator property from Credfeto.Defi.Server; EnableConfigurationBindingGenerator already enables the configuration binding source generator
+- SDK - Updated DotNet SDK to 10.0.403
 
 ### Deprecated
 ### Removed
