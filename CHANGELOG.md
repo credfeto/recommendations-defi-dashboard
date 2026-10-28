@@ -72,6 +72,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Honeypot.is client no longer swallows cancellation - a cancelled fetch now propagates immediately instead of being logged as a per-address failure and continuing to the next address
 - Cache warmer freshness gate no longer incorrectly skips re-fetches for storage-backed data sources (defillama_pools, pendle_pools, chainlink_price_feeds)
 - ProxyResolverService now resolves EIP-1967 beacon proxies to their implementation by calling implementation() on the beacon, instead of returning the beacon address
+- Dockerfile HEALTHCHECK now points at /usr/src/app/Credfeto.Defi.Server instead of /app
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
