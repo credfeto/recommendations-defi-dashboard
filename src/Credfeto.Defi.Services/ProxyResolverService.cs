@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.Data.Models.Config;
@@ -23,6 +24,11 @@ public sealed class ProxyResolverService
 
     // keccak256("org.zeppelinos.proxy.implementation"): used by older OpenZeppelin proxies that predate EIP-1967.
     private const string SLOT_OZ_LEGACY = "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3";
+
+    // bytes4(keccak256("implementation()")): the IBeacon getter for the current implementation.
+    private const string SELECTOR_IMPLEMENTATION = "0x5c60da1b";
+
+    private const string BLOCK_LATEST = "latest";
 
     private const string ZERO_RESULT = "0x" + "0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -60,25 +66,52 @@ public sealed class ProxyResolverService
 
         foreach (string slot in ProxySlots)
         {
-            string? value = await this.GetStorageAtAsync(
+            string? impl = await this.ResolveSlotAsync(
                 rpcUrl: rpcUrl,
-                address: proxyAddress,
+                proxyAddress: proxyAddress,
                 slot: slot,
                 cancellationToken: cancellationToken
             );
 
-            if (value is not null)
+            if (impl is not null)
             {
-                string? impl = ExtractAddress(value);
-
-                if (impl is not null)
-                {
-                    return impl;
-                }
+                return impl;
             }
         }
 
         return null;
+    }
+
+    private async ValueTask<string?> ResolveSlotAsync(
+        string rpcUrl,
+        string proxyAddress,
+        string slot,
+        CancellationToken cancellationToken
+    )
+    {
+        string? value = await this.GetStorageAtAsync(
+            rpcUrl: rpcUrl,
+            address: proxyAddress,
+            slot: slot,
+            cancellationToken: cancellationToken
+        );
+
+        string? address = value is null ? null : ExtractAddress(value);
+
+        if (
+            address is null
+            || !string.Equals(a: slot, b: SLOT_EIP1967_BEACON, comparisonType: StringComparison.Ordinal)
+        )
+        {
+            return address;
+        }
+
+        // The beacon slot holds the beacon contract rather than the implementation, so it must never be returned as-is.
+        return await this.GetBeaconImplementationAsync(
+            rpcUrl: rpcUrl,
+            beaconAddress: address,
+            cancellationToken: cancellationToken
+        );
     }
 
     private string? GetRpcUrl(string chain)
@@ -115,34 +148,20 @@ public sealed class ProxyResolverService
     {
         try
         {
-            using HttpClient client = this._httpClientFactory.CreateClient(nameof(ProxyResolverService));
-
             RpcRequest request = new()
             {
                 Jsonrpc = "2.0",
                 Method = "eth_getStorageAt",
-                Params = [address, slot, "latest"],
+                Params = [address, slot, BLOCK_LATEST],
                 Id = 1,
             };
 
-            using HttpResponseMessage response = await client.PostAsJsonAsync(
-                requestUri: rpcUrl,
-                value: request,
-                jsonTypeInfo: AppJsonContext.Default.RpcRequest,
+            return await this.SendRpcAsync(
+                rpcUrl: rpcUrl,
+                request: request,
+                requestTypeInfo: AppJsonContext.Default.RpcRequest,
                 cancellationToken: cancellationToken
             );
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return null;
-            }
-
-            RpcResponse? rpcResponse = await response.Content.ReadFromJsonAsync(
-                jsonTypeInfo: AppJsonContext.Default.RpcResponse,
-                cancellationToken: cancellationToken
-            );
-
-            return rpcResponse?.Result;
         }
         catch (Exception ex)
         {
@@ -150,6 +169,68 @@ public sealed class ProxyResolverService
 
             return null;
         }
+    }
+
+    private async ValueTask<string?> GetBeaconImplementationAsync(
+        string rpcUrl,
+        string beaconAddress,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            RpcEthCallRequest request = new()
+            {
+                Jsonrpc = "2.0",
+                Method = "eth_call",
+                Params = [new EthCallTransaction { To = beaconAddress, Data = SELECTOR_IMPLEMENTATION }, BLOCK_LATEST],
+                Id = 1,
+            };
+
+            string? value = await this.SendRpcAsync(
+                rpcUrl: rpcUrl,
+                request: request,
+                requestTypeInfo: AppJsonContext.Default.RpcEthCallRequest,
+                cancellationToken: cancellationToken
+            );
+
+            return value is null ? null : ExtractAddress(value);
+        }
+        catch (Exception ex)
+        {
+            this._logger.BeaconImplementationCallFailed(beacon: beaconAddress, exception: ex);
+
+            return null;
+        }
+    }
+
+    private async ValueTask<string?> SendRpcAsync<TRequest>(
+        string rpcUrl,
+        TRequest request,
+        JsonTypeInfo<TRequest> requestTypeInfo,
+        CancellationToken cancellationToken
+    )
+    {
+        using HttpClient client = this._httpClientFactory.CreateClient(nameof(ProxyResolverService));
+
+        using HttpResponseMessage response = await client.PostAsJsonAsync(
+            requestUri: rpcUrl,
+            value: request,
+            jsonTypeInfo: requestTypeInfo,
+            cancellationToken: cancellationToken
+        );
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        RpcResponse? rpcResponse = await response.Content.ReadFromJsonAsync(
+            jsonTypeInfo: AppJsonContext.Default.RpcResponse,
+            cancellationToken: cancellationToken
+        );
+
+        return rpcResponse?.Result;
     }
 
     private static string? ExtractAddress(string storageValue)
