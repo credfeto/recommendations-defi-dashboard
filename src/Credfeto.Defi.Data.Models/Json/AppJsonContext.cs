@@ -50,6 +50,8 @@ namespace Credfeto.Defi.Data.Models.Json;
 [JsonSerializable(typeof(IReadOnlyList<ChainlinkPriceFeed>))]
 [JsonSerializable(typeof(RpcRequest))]
 [JsonSerializable(typeof(RpcResponse))]
+[JsonSerializable(typeof(RpcEthCallRequest))]
+[JsonSerializable(typeof(EthCallTransaction))]
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull

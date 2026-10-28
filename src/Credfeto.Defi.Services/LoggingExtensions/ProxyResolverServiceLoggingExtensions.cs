@@ -16,4 +16,7 @@ internal static partial class ProxyResolverServiceLoggingExtensions
         string slot,
         Exception exception
     );
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = "Failed to call implementation() on beacon {Beacon}")]
+    public static partial void BeaconImplementationCallFailed(this ILogger logger, string beacon, Exception exception);
 }
