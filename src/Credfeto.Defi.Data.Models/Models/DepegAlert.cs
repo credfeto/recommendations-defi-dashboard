@@ -14,4 +14,8 @@ public sealed record DepegAlert
     public required decimal Deviation { get; init; }
 
     public required string Severity { get; init; }
+
+    public string? PegType { get; init; }
+
+    public string? DataSource { get; init; }
 }
