@@ -7,6 +7,7 @@ using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
+using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services.LoggingExtensions;
 using Credfeto.Defi.Storage;
@@ -26,6 +27,7 @@ public sealed class CacheWarmerService : IHostedService
     private readonly IDefiLlamaHackStorageService _hackStorage;
     private readonly IDefiLlamaHacksClient _hacksClient;
     private readonly IDefiLlamaPoolsClient _llamaPoolsClient;
+    private readonly IDefiLlamaStablecoinsClient _llamaStablecoinsClient;
     private readonly ILogger<CacheWarmerService> _logger;
     private readonly IPendleMarketsClient _pendleClient;
     private readonly IPendleMarketStorageService _pendleStorage;
@@ -48,9 +50,11 @@ public sealed class CacheWarmerService : IHostedService
         IChainlinkPriceFeedStorageService chainlinkStorage,
         ICoinGeckoCoinStorageService coinGeckoStorage,
         ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage,
+        IDefiLlamaStablecoinsClient llamaStablecoinsClient,
         ILogger<CacheWarmerService> logger
     )
     {
+        this._llamaStablecoinsClient = llamaStablecoinsClient;
         this._llamaPoolsClient = llamaPoolsClient;
         this._pendleClient = pendleClient;
         this._hacksClient = hacksClient;
@@ -126,7 +130,18 @@ public sealed class CacheWarmerService : IHostedService
             new("coingecko_stablecoins", this.WarmStablecoinsAsync, BypassFreshnessGate: false),
             new("coingecko_coin_list", this.WarmCoinListAsync, BypassFreshnessGate: false),
             new("chainlink_price_feeds", this.WarmChainlinkPriceFeedsAsync, BypassFreshnessGate: true),
+            new(ApiCacheKeys.DEFILLAMA_STABLECOINS, this.WarmDefiLlamaStablecoinsAsync, BypassFreshnessGate: false),
         ];
+    }
+
+    private async Task WarmDefiLlamaStablecoinsAsync(CancellationToken cancellationToken)
+    {
+        _ = await this._apiCache.GetOrFetchAsync(
+            key: ApiCacheKeys.DEFILLAMA_STABLECOINS,
+            fetcher: this._llamaStablecoinsClient.FetchStablecoinsAsync,
+            typeInfo: AppJsonContext.Default.IReadOnlyListDefiLlamaStablecoin,
+            cancellationToken: cancellationToken
+        );
     }
 
     private async Task WarmLlamaPoolsAsync(CancellationToken cancellationToken)

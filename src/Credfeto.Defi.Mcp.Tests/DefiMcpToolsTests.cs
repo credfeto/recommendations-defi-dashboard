@@ -24,6 +24,7 @@ namespace Credfeto.Defi.Mcp.Tests;
 
 public sealed class DefiMcpToolsTests : TestBase
 {
+    private readonly ApiCacheService _apiCache;
     private readonly ContractSecurityCacheService _securityCache;
     private readonly FakeTimeProvider _timeProvider;
 
@@ -32,6 +33,7 @@ public sealed class DefiMcpToolsTests : TestBase
         this._timeProvider = new FakeTimeProvider();
         FakeDatabase database = new();
         this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
+        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
     }
 
     private static IHttpClientFactory CreateMockedFactory(HttpClient httpClient)
@@ -111,7 +113,9 @@ public sealed class DefiMcpToolsTests : TestBase
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
             contractSecurityService: contractSecurityService,
             poolStorage: poolStorage,
-            pendleStorage: pendleStorage
+            pendleStorage: pendleStorage,
+            defiLlamaStablecoinsClient: new FakeDefiLlamaStablecoinsClient(),
+            apiCache: this._apiCache
         );
 
         return new DefiMcpTools(enrichmentService: enrichmentService, contractSecurityService: contractSecurityService);
