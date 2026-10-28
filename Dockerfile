@@ -15,4 +15,4 @@ ENTRYPOINT [ "/usr/src/app/Credfeto.Defi.Server" ]
 
 # Perform a healthcheck.  note that ECS ignores this, so this is for local development
 HEALTHCHECK --interval=5s --timeout=2s --retries=3 --start-period=15s \
-  CMD ["/app/Credfeto.Defi.Server", "--health-check", "http://127.0.0.1:8080/ping"]
+  CMD ["/usr/src/app/Credfeto.Defi.Server", "--health-check", "http://127.0.0.1:8080/ping"]
