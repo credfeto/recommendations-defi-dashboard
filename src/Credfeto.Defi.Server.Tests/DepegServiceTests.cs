@@ -52,7 +52,8 @@ public sealed class DepegServiceTests : TestBase
             poolSymbol: "USDC-USDT",
             priceMap: priceMap,
             underlyingTokens: null,
-            addressMap: null
+            addressMap: null,
+            metadataMap: null
         );
 
         Assert.Empty(alerts);
@@ -67,7 +68,8 @@ public sealed class DepegServiceTests : TestBase
             poolSymbol: "USDC",
             priceMap: priceMap,
             underlyingTokens: null,
-            addressMap: null
+            addressMap: null,
+            metadataMap: null
         );
 
         Assert.Empty(alerts);
@@ -82,7 +84,8 @@ public sealed class DepegServiceTests : TestBase
             poolSymbol: "USDC",
             priceMap: priceMap,
             underlyingTokens: null,
-            addressMap: null
+            addressMap: null,
+            metadataMap: null
         );
 
         Assert.Single(alerts);
@@ -98,7 +101,8 @@ public sealed class DepegServiceTests : TestBase
             poolSymbol: "USDT",
             priceMap: priceMap,
             underlyingTokens: null,
-            addressMap: null
+            addressMap: null,
+            metadataMap: null
         );
 
         Assert.Single(alerts);

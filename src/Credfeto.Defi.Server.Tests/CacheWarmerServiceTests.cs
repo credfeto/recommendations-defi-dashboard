@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
 using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.DefiLlama;
+using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Server.Tests.Common;
@@ -104,7 +105,8 @@ public sealed class CacheWarmerServiceTests : TestBase
         IDefiLlamaHackStorageService? hackStorage = null,
         IDefiLlamaProtocolStorageService? protocolStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
-        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null
+        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null,
+        IDefiLlamaStablecoinsClient? llamaStablecoinsClient = null
     )
     {
         return new CacheWarmerService(
@@ -122,6 +124,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             chainlinkStorage: chainlinkStorage ?? new FakeChainlinkStorage(),
             coinGeckoStorage: coinGeckoStorage ?? new FakeCoinGeckoCoinStorage(),
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage ?? new FakeCoinGeckoStablecoinStorage(),
+            llamaStablecoinsClient: llamaStablecoinsClient ?? new FakeDefiLlamaStablecoinsClient(),
             logger: this.GetTypedLogger<CacheWarmerService>()
         );
     }
@@ -182,15 +185,18 @@ public sealed class CacheWarmerServiceTests : TestBase
     [Fact]
     public async Task StartAsync_WhenGatedCacheEntriesFresh_SkipsOnlyGatedFetchersAsync()
     {
-        // The ApiCache-backed keys (hacks, protocols, stablecoins, coin list) should still be
-        // skipped once fresh; only the three storage-backed keys always refetch regardless of
-        // ApiCache freshness (#406).
+        // The ApiCache-backed keys (hacks, protocols, stablecoins, coin list, DefiLlama
+        // stablecoins) should still be skipped once fresh; only the three storage-backed keys
+        // always refetch regardless of ApiCache freshness (#406).
         ApiCacheRow freshRow = new("irrelevant-key", "[]", this._timeProvider.GetUtcNow() - TimeSpan.FromMinutes(10));
 
         this._database.WithReturn<ApiCacheRow?>(freshRow) // defillama_hacks
             .WithReturn<ApiCacheRow?>(freshRow) // defillama_protocols
             .WithReturn<ApiCacheRow?>(freshRow) // coingecko_stablecoins
-            .WithReturn<ApiCacheRow?>(freshRow); // coingecko_coin_list
+            .WithReturn<ApiCacheRow?>(freshRow) // coingecko_coin_list
+            .WithReturn<ApiCacheRow?>(freshRow); // defillama_stablecoins
+
+        IDefiLlamaStablecoinsClient llamaStablecoinsClient = GetSubstitute<IDefiLlamaStablecoinsClient>();
 
         IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
         IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
@@ -211,12 +217,14 @@ public sealed class CacheWarmerServiceTests : TestBase
             hackStorage: hackStorage,
             protocolStorage: protocolStorage,
             coinGeckoStorage: coinGeckoStorage,
-            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage
+            coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
+            llamaStablecoinsClient: llamaStablecoinsClient
         );
 
         await warmer.StartAsync(this.CancellationToken());
         await Task.Delay(WarmupDelay, this.CancellationToken());
 
+        await llamaStablecoinsClient.DidNotReceive().FetchStablecoinsAsync(Arg.Any<CancellationToken>());
         await AssertGatedFetchersSkippedAsync(
             hackStorage: hackStorage,
             protocolStorage: protocolStorage,
