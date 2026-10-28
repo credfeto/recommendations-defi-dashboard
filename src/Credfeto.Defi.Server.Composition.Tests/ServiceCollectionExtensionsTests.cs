@@ -50,6 +50,12 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
     }
 
     [Fact]
+    public void DefiLlamaStablecoinsClientIsRegistered()
+    {
+        this.RequireService<IDefiLlamaStablecoinsClient>();
+    }
+
+    [Fact]
     public void CoinGeckoStablecoinsClientIsRegistered()
     {
         this.RequireService<ICoinGeckoStablecoinsClient>();

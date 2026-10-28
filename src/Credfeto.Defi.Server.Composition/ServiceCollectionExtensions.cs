@@ -28,6 +28,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IDefiLlamaPoolsClient, DefiLlamaPoolsClient>()
             .AddSingleton<IDefiLlamaHacksClient, DefiLlamaHacksClient>()
             .AddSingleton<IDefiLlamaProtocolsClient, DefiLlamaProtocolsClient>()
+            .AddSingleton<IDefiLlamaStablecoinsClient, DefiLlamaStablecoinsClient>()
             .AddSingleton<ICoinGeckoStablecoinsClient, CoinGeckoStablecoinsClient>()
             .AddSingleton<IChainlinkStablecoinsClient, ChainlinkStablecoinsClient>()
             .AddSingleton<IPendleMarketsClient, PendleMarketsClient>()
