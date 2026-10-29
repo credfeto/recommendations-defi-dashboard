@@ -1,4 +1,5 @@
 using System.Net.Http;
+using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
@@ -15,12 +16,15 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
 {
     private readonly FakeTimeProvider _timeProvider = new();
 
+    private readonly ApiCacheService _apiCache;
+
     private readonly ContractSecurityCacheService _securityCache;
 
     public PoolEnrichmentServiceTestFactory()
     {
         FakeDatabase database = new();
         this._securityCache = new ContractSecurityCacheService(database: database, timeProvider: this._timeProvider);
+        this._apiCache = new ApiCacheService(database: database, timeProvider: this._timeProvider);
     }
 
     public PoolEnrichmentService CreateEnrichmentService(
@@ -31,9 +35,12 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         IChainlinkPriceFeedStorageService? chainlinkStorage = null,
         IPendleMarketStorageService? pendleStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
-        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null
+        ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null,
+        IDefiLlamaStablecoinsClient? defiLlamaStablecoinsClient = null
     )
     {
+        defiLlamaStablecoinsClient ??= new FakeDefiLlamaStablecoinsClient();
+
         IHttpClientFactory factory = GetSubstitute<IHttpClientFactory>();
         factory.CreateClient(Arg.Any<string>()).Returns(_ => new HttpClient(httpHandler));
 
@@ -71,7 +78,9 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage,
             contractSecurityService: contractSecurity,
             poolStorage: poolStorage,
-            pendleStorage: pendleStorage
+            pendleStorage: pendleStorage,
+            defiLlamaStablecoinsClient: defiLlamaStablecoinsClient,
+            apiCache: this._apiCache
         );
     }
 }
