@@ -72,10 +72,14 @@ src/
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `Cache__DbDirectory` | `/app/data` | SQLite cache directory |
+| `DATABASECONFIGURATION__CONNECTIONSTRING` | _(placeholder in `appsettings.json`)_ | SQL Server connection string; required |
+| `RPC__ETHEREUM` | `https://eth.drpc.org` | Ethereum RPC endpoint |
+| `RPC__ARBITRUM` | `https://arbitrum.drpc.org` | Arbitrum RPC endpoint |
+| `RPC__BASE` | `https://base.drpc.org` | Base RPC endpoint |
+| `RPC__BSC` | `https://bsc.drpc.org` | BSC RPC endpoint |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | ASP.NET Core environment |
-| `Rpc__Ethereum` | _(empty)_ | Ethereum RPC endpoint |
-| `Rpc__Arbitrum` | _(empty)_ | Arbitrum RPC endpoint |
+
+.NET configuration keys are case-insensitive, so `DATABASECONFIGURATION__CONNECTIONSTRING` binds to `DatabaseConfiguration:ConnectionString`; names are uppercase to satisfy `dotenv-linter`.
 
 Note: HTTP/HTTPS ports (8080/8081) and the cert path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded and not configurable via environment variables.
 
@@ -99,7 +103,10 @@ See [Testing Guide](./TESTING.md) for coverage and patterns.
 
 ## Docker
 
+`docker-compose.yml` loads the `defi` service's settings from a `.env` file at the repository root. `.env` is git-ignored and must never be committed; create it from the template and replace the placeholder values first:
+
 ```sh
+cp .env.example .env
 docker build -t defi:local .
 docker compose up -d
 ```

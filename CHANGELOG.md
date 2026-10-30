@@ -74,6 +74,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Cache warmer freshness gate no longer incorrectly skips re-fetches for storage-backed data sources (defillama_pools, pendle_pools, chainlink_price_feeds)
 - ProxyResolverService now resolves EIP-1967 beacon proxies to their implementation by calling implementation() on the beacon, instead of returning the beacon address
 - Dockerfile HEALTHCHECK now points at /usr/src/app/Credfeto.Defi.Server instead of /app
+- Docker Compose `defi` service now loads its settings from a `.env` file (create it from the new `.env.example` template); README and DEVELOPMENT docs describe the copy step and list the correct environment variables
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
