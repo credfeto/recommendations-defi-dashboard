@@ -37,17 +37,20 @@ CERT_PATH=/tmp/server.pfx dotnet run --project Credfeto.Defi.Server
 
 ### Docker
 
+`docker-compose.yml` loads the container's settings from a `.env` file, which is never committed. Create it from the template and replace the placeholder values before starting the stack:
+
 ```sh
+cp .env.example .env
 docker compose up -d
 ```
 
-The container generates a self-signed `server.pfx` at `$CERT_PATH` on first start and listens on port 443 over HTTPS + HTTP/3. Mount a real cert to override:
+The container listens on port 443 over HTTPS + HTTP/3 when a certificate exists at `/usr/src/app/server.pfx` (the path is fixed, not configurable). Mount a real cert there:
 
 ```sh
 docker run -p 443:8081 -p 443:8081/udp \
-  -e CERT_PATH=/certs/server.pfx \
-  -v /path/to/certs:/certs \
-  credfeto/defi:latest
+  --env-file .env \
+  -v /path/to/server.pfx:/usr/src/app/server.pfx:ro \
+  ghcr.io/credfeto/defi:latest
 ```
 
 ## API
@@ -85,9 +88,16 @@ docs/                            Architecture, API reference, development guide
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `CERT_PATH` | `/app/data/server.pfx` | Path to TLS PFX certificate; HTTPS disabled if file absent |
-| `Cache__DbDirectory` | `/app/data` | Directory for the SQLite cache database |
+| `DATABASECONFIGURATION__CONNECTIONSTRING` | _(placeholder in `appsettings.json`)_ | SQL Server connection string; required |
+| `RPC__ETHEREUM` | `https://eth.drpc.org` | Ethereum RPC endpoint |
+| `RPC__ARBITRUM` | `https://arbitrum.drpc.org` | Arbitrum RPC endpoint |
+| `RPC__BASE` | `https://base.drpc.org` | Base RPC endpoint |
+| `RPC__BSC` | `https://bsc.drpc.org` | BSC RPC endpoint |
 | `ASPNETCORE_ENVIRONMENT` | `Production` | ASP.NET Core environment name |
+
+.NET configuration keys are case-insensitive, so `DATABASECONFIGURATION__CONNECTIONSTRING` binds to `DatabaseConfiguration:ConnectionString`; names are uppercase to satisfy `dotenv-linter`.
+
+For Docker, set these in `.env` (see [`.env.example`](./.env.example)). The HTTP/HTTPS ports (8080/8081) and the certificate path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded.
 
 ## Documentation
 

@@ -3,6 +3,7 @@ services:
   defi:
     image: ghcr.io/credfeto/defi:latest
     container_name: defi
+    env_file: .env
     ports:
       - '443:8081'
       - '443:8081/udp'
