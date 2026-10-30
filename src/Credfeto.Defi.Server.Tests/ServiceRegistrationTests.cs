@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
 using Xunit;
 
@@ -39,5 +41,15 @@ public sealed class ServiceRegistrationTests : TestBase
         ApiCacheService cache = app.Services.GetRequiredService<ApiCacheService>();
 
         Assert.NotNull(cache);
+    }
+
+    [Fact]
+    public void AddDefiServices_BindsCoinGeckoOptionsFromConfiguration()
+    {
+        using WebApplication app = TestAppFactory.BuildApp();
+
+        IOptions<CoinGeckoOptions> options = app.Services.GetRequiredService<IOptions<CoinGeckoOptions>>();
+
+        Assert.Equal(expected: TestAppFactory.TEST_COINGECKO_API_KEY, actual: options.Value.ApiKey);
     }
 }
