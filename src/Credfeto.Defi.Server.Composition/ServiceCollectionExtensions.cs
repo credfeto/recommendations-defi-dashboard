@@ -13,19 +13,28 @@ using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
 using Credfeto.Defi.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Credfeto.Defi.Server.Composition;
 
 public static class ServiceCollectionExtensions
 {
-    // Callers must also call AddStorage() and bind RpcConfig: the services registered here
-    // depend on both but neither is registered by this method.
+    // Callers must also call AddStorage() and bind RpcConfig and CoinGeckoOptions: the services
+    // registered here depend on them but none is registered by this method.
     public static IServiceCollection AddDefiBusinessServices(this IServiceCollection services)
     {
         return services
             .AddSingleton<TimeProvider>(TimeProvider.System)
             .AddHttpClient()
-            .AddSingleton<IDefiLlamaPoolsClient, DefiLlamaPoolsClient>()
+            .AddHttpClient(nameof(CoinGeckoStablecoinsClient))
+            .ConfigureHttpClient(
+                static (serviceProvider, client) =>
+                    CoinGeckoHttpClientConfiguration.Configure(
+                        client: client,
+                        options: serviceProvider.GetRequiredService<IOptions<CoinGeckoOptions>>().Value
+                    )
+            )
+            .Services.AddSingleton<IDefiLlamaPoolsClient, DefiLlamaPoolsClient>()
             .AddSingleton<IDefiLlamaHacksClient, DefiLlamaHacksClient>()
             .AddSingleton<IDefiLlamaProtocolsClient, DefiLlamaProtocolsClient>()
             .AddSingleton<IDefiLlamaStablecoinsClient, DefiLlamaStablecoinsClient>()

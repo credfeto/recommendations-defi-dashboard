@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
@@ -17,6 +19,7 @@ public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
 {
     private const string BASE_URL = "https://api.coingecko.com/api/v3";
     private const int PER_PAGE = 250;
+    private const int MAX_LOGGED_BODY_LENGTH = 512;
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<CoinGeckoStablecoinsClient> _logger;
@@ -48,9 +51,11 @@ public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
                     page
                 );
 
-                CoinGeckoStablecoin[]? results = await client.GetFromJsonAsync(
-                    requestUri: url,
+                CoinGeckoStablecoin[]? results = await GetJsonAsync(
+                    client: client,
+                    url: url,
                     jsonTypeInfo: AppJsonContext.Default.CoinGeckoStablecoinArray,
+                    onUnsuccessful: this._logger.FetchStablecoinsUnsuccessful,
                     cancellationToken: cancellationToken
                 );
 
@@ -85,9 +90,11 @@ public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
         {
             using HttpClient client = this._httpClientFactory.CreateClient(nameof(CoinGeckoStablecoinsClient));
             string url = $"{BASE_URL}/coins/list?include_platform=true";
-            CoinGeckoCoinPlatforms[]? result = await client.GetFromJsonAsync(
-                requestUri: url,
+            CoinGeckoCoinPlatforms[]? result = await GetJsonAsync(
+                client: client,
+                url: url,
                 jsonTypeInfo: AppJsonContext.Default.CoinGeckoCoinPlatformsArray,
+                onUnsuccessful: this._logger.FetchCoinListUnsuccessful,
                 cancellationToken: cancellationToken
             );
 
@@ -99,5 +106,38 @@ public sealed class CoinGeckoStablecoinsClient : ICoinGeckoStablecoinsClient
 
             return [];
         }
+    }
+
+    private static async ValueTask<TResult?> GetJsonAsync<TResult>(
+        HttpClient client,
+        string url,
+        JsonTypeInfo<TResult> jsonTypeInfo,
+        Action<HttpStatusCode, string> onUnsuccessful,
+        CancellationToken cancellationToken
+    )
+        where TResult : class
+    {
+        using HttpResponseMessage response = await client.GetAsync(
+            requestUri: new Uri(url),
+            cancellationToken: cancellationToken
+        );
+
+        if (!response.IsSuccessStatusCode)
+        {
+            string body = await response.Content.ReadAsStringAsync(cancellationToken);
+            onUnsuccessful(response.StatusCode, Truncate(body));
+
+            return null;
+        }
+
+        return await response.Content.ReadFromJsonAsync(
+            jsonTypeInfo: jsonTypeInfo,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    private static string Truncate(string body)
+    {
+        return body.Length <= MAX_LOGGED_BODY_LENGTH ? body : body[..MAX_LOGGED_BODY_LENGTH];
     }
 }
