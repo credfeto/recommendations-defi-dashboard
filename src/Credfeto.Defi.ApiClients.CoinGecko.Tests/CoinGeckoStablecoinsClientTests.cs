@@ -325,6 +325,32 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
         Assert.Empty(coins);
     }
 
+    [Fact]
+    public async Task FetchStablecoinsAsync_HandlerThrows_ReturnsEmptyListAsync()
+    {
+        using ThrowingHttpHandler handler = new();
+        using HttpClient httpClient = new(handler);
+
+        CoinGeckoStablecoinsClient client = CreateClient(httpClient);
+
+        IReadOnlyList<CoinGeckoStablecoin> stablecoins = await client.FetchStablecoinsAsync(this.CancellationToken());
+
+        Assert.Empty(stablecoins);
+    }
+
+    [Fact]
+    public async Task FetchCoinListAsync_HandlerThrows_ReturnsEmptyListAsync()
+    {
+        using ThrowingHttpHandler handler = new();
+        using HttpClient httpClient = new(handler);
+
+        CoinGeckoStablecoinsClient client = CreateClient(httpClient);
+
+        IReadOnlyList<CoinGeckoCoinPlatforms> coins = await client.FetchCoinListAsync(this.CancellationToken());
+
+        Assert.Empty(coins);
+    }
+
     private static ILogger<CoinGeckoStablecoinsClient> CreateEnabledLogger()
     {
         ILogger<CoinGeckoStablecoinsClient> logger = GetSubstitute<ILogger<CoinGeckoStablecoinsClient>>();
@@ -416,6 +442,17 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
             }
 
             base.Dispose(disposing);
+        }
+    }
+
+    private sealed class ThrowingHttpHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken
+        )
+        {
+            throw new HttpRequestException("Simulated network failure");
         }
     }
 }
