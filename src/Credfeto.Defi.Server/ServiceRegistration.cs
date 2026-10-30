@@ -1,3 +1,4 @@
+using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Json;
 using Credfeto.Defi.Mcp;
@@ -19,6 +20,8 @@ internal static class ServiceRegistration
         );
 
         _ = builder.Services.AddOptions<RpcConfig>().BindConfiguration("Rpc");
+
+        _ = builder.Services.AddOptions<CoinGeckoOptions>().BindConfiguration("CoinGecko");
 
         _ = builder
             .Services.AddStorage()
