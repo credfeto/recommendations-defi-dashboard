@@ -9,7 +9,7 @@ public sealed record HackInfo
 
     public required long Date { get; init; }
 
-    public required decimal AmountUsd { get; init; }
+    public required decimal? AmountUsd { get; init; }
 
     public required string Classification { get; init; }
 

@@ -19,7 +19,7 @@ public sealed record RawHack
     public string? Technique { get; init; }
 
     [JsonPropertyName("amount")]
-    public decimal Amount { get; init; }
+    public decimal? Amount { get; init; }
 
     [JsonPropertyName("source")]
     public string Source { get; init; } = string.Empty;
