@@ -4,7 +4,7 @@ CREATE TABLE [DefiLlama].[Hack]
   [HackDate] DATETIMEOFFSET NOT NULL,
   [Classification] NVARCHAR(100) NULL,
   [Technique] NVARCHAR(200) NULL,
-  [Amount] DECIMAL(28, 8) NOT NULL,
+  [Amount] DECIMAL(28, 8) NULL,
   [Source] NVARCHAR(500) NOT NULL,
   [ParentProtocolId] NVARCHAR(200) NULL,
   [DateCreated] DATETIMEOFFSET NOT NULL,

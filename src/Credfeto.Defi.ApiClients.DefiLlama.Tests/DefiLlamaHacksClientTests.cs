@@ -46,6 +46,30 @@ public sealed class DefiLlamaHacksClientTests : TestBase
     }
 
     [Fact]
+    public async Task FetchHacksAsync_NullAmount_ReturnsHackWithNullAmountAsync()
+    {
+        const string JSON =
+            """[{"name":"Unknown Loss","date":1700000000,"amount":null,"classification":"Exploit","technique":"Rug Pull","source":"https://example.com"},{"name":"Protocol X","date":1700000100,"amount":1000000,"classification":"Exploit","technique":"Flash Loan","source":"https://example.com"}]""";
+        using FakeHttpHandler handler = new(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JSON, Encoding.UTF8, mediaType: "application/json"),
+            }
+        );
+        using HttpClient httpClient = new(handler);
+
+        DefiLlamaHacksClient client = CreateClient(httpClient);
+
+        IReadOnlyList<RawHack> hacks = await client.FetchHacksAsync(this.CancellationToken());
+
+        Assert.Equal(expected: 2, actual: hacks.Count);
+        Assert.Equal(expected: "Unknown Loss", actual: hacks[0].Name);
+        Assert.Null(hacks[0].Amount);
+        Assert.Equal(expected: "Protocol X", actual: hacks[1].Name);
+        Assert.Equal(expected: 1_000_000m, actual: hacks[1].Amount);
+    }
+
+    [Fact]
     public async Task FetchHacksAsync_NullResponse_ReturnsEmptyListAsync()
     {
         const string JSON = "null";

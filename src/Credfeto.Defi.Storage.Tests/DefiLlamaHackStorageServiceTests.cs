@@ -97,6 +97,54 @@ public sealed class DefiLlamaHackStorageServiceTests : TestBase
     }
 
     [Fact]
+    public async Task GetAllHacksAsync_HackWithNullAmount_ReturnsNullAmountAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        DefiLlamaHackRow row = new(
+            Name: "Unknown Loss",
+            HackDate: FixedNow,
+            Classification: "Exploit",
+            Technique: "Rug Pull",
+            Amount: null,
+            Source: "defillama",
+            ParentProtocolId: null,
+            DateCreated: FixedNow,
+            DateUpdated: FixedNow,
+            DataDate: null
+        );
+
+        this._database.WithReturn<IReadOnlyList<DefiLlamaHackRow>>([row]);
+
+        IReadOnlyList<RawHack> result = await this._storage.GetAllHacksAsync(cancellationToken);
+
+        Assert.Single(result);
+        Assert.Equal(expected: "Unknown Loss", actual: result[0].Name);
+        Assert.Null(result[0].Amount);
+    }
+
+    [Fact]
+    public async Task StoreHacksAsync_HackWithNullAmount_CompletesWithoutThrowingAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        IReadOnlyList<RawHack> hacks =
+        [
+            new RawHack
+            {
+                Date = 1672531200,
+                Name = "Unknown Loss",
+                Classification = "Exploit",
+                Technique = "Rug Pull",
+                Amount = null,
+                Source = "defillama",
+            },
+        ];
+
+        await this._storage.StoreHacksAsync(hacks: hacks, dataDate: FixedNow, cancellationToken: cancellationToken);
+    }
+
+    [Fact]
     public async Task StoreHacksAsync_HacksWithAndWithoutParentProtocolId_CompletesWithoutThrowingAsync()
     {
         CancellationToken cancellationToken = this.CancellationToken();

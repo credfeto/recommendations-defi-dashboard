@@ -113,6 +113,33 @@ public sealed class HacksServiceExtendedTests : TestBase
     }
 
     [Fact]
+    public void BuildHackMap_HackWithNullAmount_ExposesNullAmountUsd()
+    {
+        RawHack[] hacks =
+        [
+            new RawHack
+            {
+                Name = "Euler",
+                Date = 1000000,
+                Amount = null,
+                Classification = "Exploit",
+                Technique = "Rug Pull",
+                Source = "https://example.com",
+                ParentProtocolId = null,
+            },
+        ];
+
+        IReadOnlyDictionary<string, List<HackInfo>> map = HacksService.BuildHackMap(hacks);
+
+        Assert.True(
+            map.TryGetValue(key: "euler", out List<HackInfo>? entries),
+            userMessage: "Should index by name slug 'euler'"
+        );
+        Assert.NotEmpty(entries);
+        Assert.All(collection: entries, action: hack => Assert.Null(hack.AmountUsd));
+    }
+
+    [Fact]
     public void MatchHacks_PrefixMatch_ReturnsHacks()
     {
         // "compound" in the map, query "compound-v3" (starts with "compound-")

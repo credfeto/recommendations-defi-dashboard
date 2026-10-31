@@ -9,7 +9,7 @@ public sealed record DefiLlamaHackRow(
     DateTimeOffset HackDate,
     string? Classification,
     string? Technique,
-    decimal Amount,
+    decimal? Amount,
     string Source,
     string? ParentProtocolId,
     DateTimeOffset DateCreated,

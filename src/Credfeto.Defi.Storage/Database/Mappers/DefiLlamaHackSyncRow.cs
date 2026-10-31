@@ -15,7 +15,7 @@ internal sealed record DefiLlamaHackSyncRow(
     DateTimeOffset HackDate,
     string? Classification,
     string? Technique,
-    decimal Amount,
+    decimal? Amount,
     string Source,
     string? ParentProtocolId
 );

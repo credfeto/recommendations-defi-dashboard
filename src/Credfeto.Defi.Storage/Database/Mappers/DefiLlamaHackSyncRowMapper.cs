@@ -33,7 +33,7 @@ internal sealed class DefiLlamaHackSyncRowMapper : IMapper<IReadOnlyList<DefiLla
                 row.HackDate,
                 row.Classification is null ? DBNull.Value : row.Classification,
                 row.Technique is null ? DBNull.Value : row.Technique,
-                row.Amount,
+                row.Amount is null ? DBNull.Value : row.Amount.Value,
                 row.Source,
                 row.ParentProtocolId is null ? DBNull.Value : row.ParentProtocolId
             );
