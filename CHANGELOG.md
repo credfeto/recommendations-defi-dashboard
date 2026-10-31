@@ -76,6 +76,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Dockerfile HEALTHCHECK now points at /usr/src/app/Credfeto.Defi.Server instead of /app
 - Docker Compose `defi` service now loads its settings from a `.env` file (create it from the new `.env.example` template); README and DEVELOPMENT docs describe the copy step and list the correct environment variables
 - CoinGecko requests failing with 403 Forbidden - requests now send an explicit User-Agent and an optional API key (`CoinGecko:ApiKey` in appsettings.json, sent as `x-cg-demo-api-key`); failed CoinGecko responses now log the status code and a truncated response body (#432)
+- Handle DefiLlama hacks with null amount (nullable Amount/AmountUsd end to end) - #433
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
