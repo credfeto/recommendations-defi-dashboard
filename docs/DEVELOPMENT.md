@@ -83,6 +83,20 @@ src/
 
 Note: HTTP/HTTPS ports (8080/8081) and the cert path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded and not configurable via environment variables.
 
+## CoinGecko API Key
+
+CoinGecko requests always send an explicit `User-Agent`. CoinGecko can reject anonymous requests with `403 Forbidden`, so you can also supply a free [Demo plan](https://www.coingecko.com/en/api/pricing) API key under `CoinGecko:ApiKey` in `appsettings.json` (or `appsettings.Development.json` for local runs):
+
+```json
+{
+  "CoinGecko": {
+    "ApiKey": "your-demo-key"
+  }
+}
+```
+
+The setting is empty by default, and no key header is sent. When it is set, the key is sent in the `x-cg-demo-api-key` header against the public `https://api.coingecko.com/api/v3` endpoint. When a request fails, the status code and the first 512 characters of the response body are logged as a warning.
+
 ## Adding a New Pool Type
 
 See [Pool Types Guide](./POOL_TYPES_GUIDE.md).

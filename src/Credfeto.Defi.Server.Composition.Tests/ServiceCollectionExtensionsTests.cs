@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.Chainlink.Interfaces;
+using Credfeto.Defi.ApiClients.CoinGecko;
 using Credfeto.Defi.ApiClients.CoinGecko.Interfaces;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
@@ -27,8 +31,57 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
             .AddOptions<DatabaseConfiguration>()
             .Configure(opts => opts.ConnectionString = TestConnectionStrings.FakeSqlServer)
             .Services.AddOptions<RpcConfig>()
+            .Services.AddOptions<CoinGeckoOptions>()
             .Services.AddStorage()
             .AddDefiBusinessServices();
+    }
+
+    [Fact]
+    public async Task CoinGeckoHttpClientWithApiKeySendsUserAgentAndDemoApiKeyAsync()
+    {
+        await using ServiceProvider serviceProvider = BuildCoinGeckoServiceProvider("demo-key");
+        using HttpClient client = CreateCoinGeckoHttpClient(serviceProvider);
+
+        Assert.NotEmpty(client.DefaultRequestHeaders.UserAgent);
+        Assert.True(
+            client.DefaultRequestHeaders.TryGetValues(
+                name: CoinGeckoHttpClientConfiguration.DEMO_PLAN_HEADER,
+                values: out IEnumerable<string>? values
+            ),
+            userMessage: "Demo API key header should be present"
+        );
+        Assert.Equal(expected: "demo-key", actual: Assert.Single(values));
+    }
+
+    [Fact]
+    public async Task CoinGeckoHttpClientWithoutApiKeySendsUserAgentOnlyAsync()
+    {
+        await using ServiceProvider serviceProvider = BuildCoinGeckoServiceProvider(string.Empty);
+        using HttpClient client = CreateCoinGeckoHttpClient(serviceProvider);
+
+        Assert.NotEmpty(client.DefaultRequestHeaders.UserAgent);
+        Assert.False(
+            client.DefaultRequestHeaders.Contains(CoinGeckoHttpClientConfiguration.DEMO_PLAN_HEADER),
+            userMessage: "Demo API key header should be absent"
+        );
+    }
+
+    private static ServiceProvider BuildCoinGeckoServiceProvider(string apiKey)
+    {
+        ServiceCollection services = new();
+        _ = services
+            .AddOptions<CoinGeckoOptions>()
+            .Configure(opts => opts.ApiKey = apiKey)
+            .Services.AddDefiBusinessServices();
+
+        return services.BuildServiceProvider();
+    }
+
+    private static HttpClient CreateCoinGeckoHttpClient(ServiceProvider serviceProvider)
+    {
+        return serviceProvider
+            .GetRequiredService<IHttpClientFactory>()
+            .CreateClient(nameof(CoinGeckoStablecoinsClient));
     }
 
     [Fact]

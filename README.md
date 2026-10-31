@@ -99,6 +99,10 @@ docs/                            Architecture, API reference, development guide
 
 For Docker, set these in `.env` (see [`.env.example`](./.env.example)). The HTTP/HTTPS ports (8080/8081) and the certificate path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded.
 
+### CoinGecko API key
+
+CoinGecko can answer anonymous requests with `403 Forbidden`. To avoid that, set an optional free Demo plan key as `CoinGecko:ApiKey` in `appsettings.json`. It is sent in the `x-cg-demo-api-key` header. It is empty by default. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#coingecko-api-key).
+
 ## Documentation
 
 - [Architecture](./docs/ARCHITECTURE.md)
