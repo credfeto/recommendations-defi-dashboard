@@ -125,6 +125,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Normalised MSBuild path separators to '/'
 - Removed redundant EnableMicrosoftExtensionsConfigurationBinderSourceGenerator property from Credfeto.Defi.Server; EnableConfigurationBindingGenerator already enables the configuration binding source generator
 - SDK - Updated DotNet SDK to 10.0.403
+- TBD - to be finalized after review
 
 ### Deprecated
 ### Removed
