@@ -48,6 +48,12 @@
   - any: ['src/Credfeto.Defi.ApiClients.Pendle.Interfaces/**/*']
 "credfeto-defi-apiclients-pendle-tests":
   - any: ['src/Credfeto.Defi.ApiClients.Pendle.Tests/**/*']
+"credfeto-defi-apiclients-webacy":
+  - any: ['src/Credfeto.Defi.ApiClients.Webacy/**/*']
+"credfeto-defi-apiclients-webacy-interfaces":
+  - any: ['src/Credfeto.Defi.ApiClients.Webacy.Interfaces/**/*']
+"credfeto-defi-apiclients-webacy-tests":
+  - any: ['src/Credfeto.Defi.ApiClients.Webacy.Tests/**/*']
 "credfeto-defi-data-models":
   - any: ['src/Credfeto.Defi.Data.Models/**/*']
 "credfeto-defi-mcp":
@@ -66,6 +72,8 @@
   - any: ['src/Credfeto.Defi.Server.Tests.Common/**/*']
 "credfeto-defi-services":
   - any: ['src/Credfeto.Defi.Services/**/*']
+"credfeto-defi-services-tests":
+  - any: ['src/Credfeto.Defi.Services.Tests/**/*']
 "credfeto-defi-storage":
   - any: ['src/Credfeto.Defi.Storage/**/*']
 "credfeto-defi-storage-database":

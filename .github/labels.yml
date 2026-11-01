@@ -116,6 +116,18 @@
   color: "0e8a16"
   description: "Changes in Credfeto.Defi.ApiClients.Pendle.Tests project"
 
+- name: "credfeto-defi-apiclients-webacy"
+  color: "96f7d2"
+  description: "Changes in Credfeto.Defi.ApiClients.Webacy project"
+
+- name: "credfeto-defi-apiclients-webacy-interfaces"
+  color: "96f7d2"
+  description: "Changes in Credfeto.Defi.ApiClients.Webacy.Interfaces project"
+
+- name: "credfeto-defi-apiclients-webacy-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.ApiClients.Webacy.Tests project"
+
 - name: "credfeto-defi-data-models"
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.Data.Models project"
@@ -151,6 +163,10 @@
 - name: "credfeto-defi-services"
   color: "96f7d2"
   description: "Changes in Credfeto.Defi.Services project"
+
+- name: "credfeto-defi-services-tests"
+  color: "0e8a16"
+  description: "Changes in Credfeto.Defi.Services.Tests project"
 
 - name: "credfeto-defi-storage"
   color: "96f7d2"
