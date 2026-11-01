@@ -51,6 +51,8 @@
     <ProjectReference Include="../Credfeto.Defi.ApiClients.HoneypotIs.Interfaces/Credfeto.Defi.ApiClients.HoneypotIs.Interfaces.csproj" />
     <ProjectReference Include="../Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
     <ProjectReference Include="../Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.Webacy/Credfeto.Defi.ApiClients.Webacy.csproj" />
+    <ProjectReference Include="../Credfeto.Defi.ApiClients.Webacy.Interfaces/Credfeto.Defi.ApiClients.Webacy.Interfaces.csproj" />
     <ProjectReference Include="../Credfeto.Defi.Data.Models/Credfeto.Defi.Data.Models.csproj" />
     <ProjectReference Include="../Credfeto.Defi.Services/Credfeto.Defi.Services.csproj" />
   </ItemGroup>

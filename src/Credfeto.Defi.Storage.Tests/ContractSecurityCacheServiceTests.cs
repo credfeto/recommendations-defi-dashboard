@@ -259,4 +259,97 @@ public sealed class ContractSecurityCacheServiceTests : TestBase
 
         await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
     }
+
+    [Fact]
+    public async Task GetWebacyAsync_CacheMiss_ReturnsNullAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        ContractSecurityInfo? result = await this._cache.GetWebacyAsync(
+            chain: "Ethereum",
+            address: "0xdeadbeef0000000000000000000000000000dead",
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetWebacyAsync_FreshEntry_ReturnsMappedInfoAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        WebacyTokenRiskRow row = new(
+            Chain: "Ethereum",
+            Address: "0xabc123def456abc123def456abc123def456abc1",
+            RiskScore: 42.5,
+            RiskLevel: "Medium",
+            IssueCount: 3,
+            HighRiskIssueCount: 1,
+            MediumRiskIssueCount: 2,
+            DateCreated: FixedNow - TimeSpan.FromHours(1),
+            DateUpdated: FixedNow - TimeSpan.FromHours(1),
+            DataDate: null
+        );
+        this._database.WithReturn<WebacyTokenRiskRow?>(row);
+
+        ContractSecurityInfo? result = await this._cache.GetWebacyAsync(
+            chain: row.Chain,
+            address: row.Address,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.NotNull(result);
+        Assert.Equal(expected: ContractSecuritySource.Webacy, actual: result.Source);
+        Assert.Equal(expected: 42.5, actual: result.RiskScore);
+        Assert.Equal(expected: "Medium", actual: result.RiskLevel);
+        Assert.Equal(expected: 3, actual: result.IssueCount);
+        Assert.Equal(expected: 1, actual: result.HighRiskIssueCount);
+        Assert.Equal(expected: 2, actual: result.MediumRiskIssueCount);
+    }
+
+    [Fact]
+    public async Task GetWebacyAsync_ExpiredEntry_ReturnsNullAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        WebacyTokenRiskRow row = new(
+            Chain: "Ethereum",
+            Address: "0xabc123def456abc123def456abc123def456abc1",
+            RiskScore: 10.0,
+            RiskLevel: "Low",
+            IssueCount: 0,
+            HighRiskIssueCount: 0,
+            MediumRiskIssueCount: 0,
+            DateCreated: FixedNow - TimeSpan.FromHours(25),
+            DateUpdated: FixedNow - TimeSpan.FromHours(25),
+            DataDate: null
+        );
+        this._database.WithReturn<WebacyTokenRiskRow?>(row);
+
+        ContractSecurityInfo? result = await this._cache.GetWebacyAsync(
+            chain: row.Chain,
+            address: row.Address,
+            cancellationToken: cancellationToken
+        );
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SetWebacyAsync_CallsSyncAsync()
+    {
+        CancellationToken cancellationToken = this.CancellationToken();
+
+        ContractSecurityInfo info = new()
+        {
+            Chain = "Ethereum",
+            Address = "0xnullable0000000000000000000000000000001a",
+            Source = ContractSecuritySource.Webacy,
+            RiskScore = 75.0,
+            RiskLevel = "High",
+        };
+
+        await this._cache.SetWebacyAsync(info: info, cancellationToken: cancellationToken);
+    }
 }

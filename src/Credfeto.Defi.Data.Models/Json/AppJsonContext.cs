@@ -43,6 +43,7 @@ namespace Credfeto.Defi.Data.Models.Json;
 [JsonSerializable(typeof(GoPlusResponse))]
 [JsonSerializable(typeof(GoPlusTokenResult))]
 [JsonSerializable(typeof(HoneypotIsResponse))]
+[JsonSerializable(typeof(WebacyAddressResponse))]
 [JsonSerializable(typeof(string[]))]
 [JsonSerializable(typeof(IReadOnlyList<string>))]
 [JsonSerializable(typeof(ChainlinkPriceFeed))]

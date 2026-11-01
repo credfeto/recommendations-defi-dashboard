@@ -2,6 +2,7 @@ using System.Net.Http;
 using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
+using Credfeto.Defi.ApiClients.Webacy.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
@@ -62,10 +63,12 @@ public sealed class PoolEnrichmentServiceTestFactory : TestBase
         );
 
         IHoneypotIsClient honeypotIsClient = NoOpHoneypotIsClientFactory.Create();
+        IWebacyRiskClient webacyRiskClient = NoOpWebacyRiskClientFactory.Create();
 
         ContractSecurityService contractSecurity = new(
             goPlusClient: goPlusClient,
             honeypotIsClient: honeypotIsClient,
+            webacyRiskClient: webacyRiskClient,
             cache: this._securityCache,
             proxyResolver: proxyResolver
         );

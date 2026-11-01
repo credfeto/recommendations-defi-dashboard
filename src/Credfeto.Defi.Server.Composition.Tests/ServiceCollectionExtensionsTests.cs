@@ -8,6 +8,8 @@ using Credfeto.Defi.ApiClients.DefiLlama.Interfaces;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
+using Credfeto.Defi.ApiClients.Webacy;
+using Credfeto.Defi.ApiClients.Webacy.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Server.Tests.Common;
 using Credfeto.Defi.Services;
@@ -32,6 +34,7 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
             .Configure(opts => opts.ConnectionString = TestConnectionStrings.FakeSqlServer)
             .Services.AddOptions<RpcConfig>()
             .Services.AddOptions<CoinGeckoOptions>()
+            .Services.AddOptions<WebacyOptions>()
             .Services.AddStorage()
             .AddDefiBusinessServices();
     }
@@ -82,6 +85,50 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
         return serviceProvider
             .GetRequiredService<IHttpClientFactory>()
             .CreateClient(nameof(CoinGeckoStablecoinsClient));
+    }
+
+    [Fact]
+    public async Task WebacyHttpClientWithApiKeySendsApiKeyHeaderAsync()
+    {
+        await using ServiceProvider serviceProvider = BuildWebacyServiceProvider("webacy-key");
+        using HttpClient client = CreateWebacyHttpClient(serviceProvider);
+
+        Assert.True(
+            client.DefaultRequestHeaders.TryGetValues(
+                name: WebacyHttpClientConfiguration.API_KEY_HEADER,
+                values: out IEnumerable<string>? values
+            ),
+            userMessage: "Webacy API key header should be present"
+        );
+        Assert.Equal(expected: "webacy-key", actual: Assert.Single(values));
+    }
+
+    [Fact]
+    public async Task WebacyHttpClientWithoutApiKeyOmitsApiKeyHeaderAsync()
+    {
+        await using ServiceProvider serviceProvider = BuildWebacyServiceProvider(string.Empty);
+        using HttpClient client = CreateWebacyHttpClient(serviceProvider);
+
+        Assert.False(
+            client.DefaultRequestHeaders.Contains(WebacyHttpClientConfiguration.API_KEY_HEADER),
+            userMessage: "Webacy API key header should be absent"
+        );
+    }
+
+    private static ServiceProvider BuildWebacyServiceProvider(string apiKey)
+    {
+        ServiceCollection services = new();
+        _ = services
+            .AddOptions<WebacyOptions>()
+            .Configure(opts => opts.ApiKey = apiKey)
+            .Services.AddDefiBusinessServices();
+
+        return services.BuildServiceProvider();
+    }
+
+    private static HttpClient CreateWebacyHttpClient(ServiceProvider serviceProvider)
+    {
+        return serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(WebacyRiskClient));
     }
 
     [Fact]
@@ -136,6 +183,12 @@ public sealed class ServiceCollectionExtensionsTests : DependencyInjectionTestsB
     public void HoneypotIsClientIsRegistered()
     {
         this.RequireService<IHoneypotIsClient>();
+    }
+
+    [Fact]
+    public void WebacyRiskClientIsRegistered()
+    {
+        this.RequireService<IWebacyRiskClient>();
     }
 
     [Fact]
