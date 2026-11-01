@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus.Interfaces;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
+using Credfeto.Defi.ApiClients.Webacy.Interfaces;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Storage;
 
@@ -16,16 +17,19 @@ public sealed class ContractSecurityService
     private readonly IGoPlusClient _goPlusClient;
     private readonly IHoneypotIsClient _honeypotIsClient;
     private readonly ProxyResolverService _proxyResolver;
+    private readonly IWebacyRiskClient _webacyRiskClient;
 
     public ContractSecurityService(
         IGoPlusClient goPlusClient,
         IHoneypotIsClient honeypotIsClient,
+        IWebacyRiskClient webacyRiskClient,
         ContractSecurityCacheService cache,
         ProxyResolverService proxyResolver
     )
     {
         this._goPlusClient = goPlusClient;
         this._honeypotIsClient = honeypotIsClient;
+        this._webacyRiskClient = webacyRiskClient;
         this._cache = cache;
         this._proxyResolver = proxyResolver;
     }
@@ -43,11 +47,34 @@ public sealed class ContractSecurityService
 
         List<ContractSecurityInfo>[] combined = await Task.WhenAll(
             this.GetGoPlusResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken),
-            this.GetHoneypotIsResultsAsync(chain: chain, addresses: addresses, cancellationToken: cancellationToken)
+            GetSingleSourceResultsAsync<HoneypotIsResult>(
+                addresses: addresses,
+                getCached: (addr, ct) =>
+                    this._cache.GetHoneypotIsAsync(chain: chain, address: addr, cancellationToken: ct),
+                fetch: (stale, ct) =>
+                    this._honeypotIsClient.FetchTokenSecurityAsync(
+                        chain: chain,
+                        addresses: stale,
+                        cancellationToken: ct
+                    ),
+                toInfo: (addr, raw) => HoneypotRawToInfo(chain: chain, address: addr, raw: raw),
+                setCached: this._cache.SetHoneypotIsAsync,
+                cancellationToken: cancellationToken
+            ),
+            GetSingleSourceResultsAsync<WebacyResult>(
+                addresses: addresses,
+                getCached: (addr, ct) => this._cache.GetWebacyAsync(chain: chain, address: addr, cancellationToken: ct),
+                fetch: (stale, ct) =>
+                    this._webacyRiskClient.FetchTokenRiskAsync(chain: chain, addresses: stale, cancellationToken: ct),
+                toInfo: (addr, raw) => WebacyRawToInfo(chain: chain, address: addr, raw: raw),
+                setCached: this._cache.SetWebacyAsync,
+                cancellationToken: cancellationToken
+            )
         );
 
-        // Both sources' rows are kept side by side: interpreting agreement or disagreement is left to callers.
+        // Every source's rows are kept side by side: interpreting agreement or disagreement is left to callers.
         combined[0].AddRange(combined[1]);
+        combined[0].AddRange(combined[2]);
 
         return combined[0];
     }
@@ -197,15 +224,20 @@ public sealed class ContractSecurityService
         }
     }
 
-    private async Task<List<ContractSecurityInfo>> GetHoneypotIsResultsAsync(
-        string chain,
+    // Shared path for sources with no proxy follow-up: serve cached rows, fetch the rest once, cache and return them.
+    private static async Task<List<ContractSecurityInfo>> GetSingleSourceResultsAsync<TRaw>(
         IReadOnlyList<string> addresses,
+        Func<string, CancellationToken, ValueTask<ContractSecurityInfo?>> getCached,
+        Func<IReadOnlyList<string>, CancellationToken, ValueTask<IReadOnlyDictionary<string, TRaw>>> fetch,
+        Func<string, TRaw, ContractSecurityInfo> toInfo,
+        Func<ContractSecurityInfo, CancellationToken, ValueTask> setCached,
         CancellationToken cancellationToken
     )
+        where TRaw : class
     {
         (List<ContractSecurityInfo> results, List<string> staleAddresses) = await SplitCachedAsync(
             addresses: addresses,
-            getCached: (addr, ct) => this._cache.GetHoneypotIsAsync(chain: chain, address: addr, cancellationToken: ct),
+            getCached: getCached,
             cancellationToken: cancellationToken
         );
 
@@ -214,24 +246,19 @@ public sealed class ContractSecurityService
             return results;
         }
 
-        IReadOnlyDictionary<string, HoneypotIsResult> honeypotIsMap =
-            await this._honeypotIsClient.FetchTokenSecurityAsync(
-                chain: chain,
-                addresses: staleAddresses,
-                cancellationToken: cancellationToken
-            );
+        IReadOnlyDictionary<string, TRaw> fetched = await fetch(staleAddresses, cancellationToken);
 
         foreach (string addr in staleAddresses)
         {
             string loweredAddr = addr.ToLowerInvariant();
 
-            if (!honeypotIsMap.TryGetValue(key: loweredAddr, out HoneypotIsResult? raw))
+            if (!fetched.TryGetValue(key: loweredAddr, out TRaw? raw))
             {
                 continue;
             }
 
-            ContractSecurityInfo info = HoneypotRawToInfo(chain: chain, address: loweredAddr, raw: raw);
-            await this._cache.SetHoneypotIsAsync(info: info, cancellationToken: cancellationToken);
+            ContractSecurityInfo info = toInfo(loweredAddr, raw);
+            await setCached(info, cancellationToken);
             results.Add(info);
         }
 
@@ -249,6 +276,21 @@ public sealed class ContractSecurityService
             BuyTax = PercentToFraction(raw.BuyTax),
             SellTax = PercentToFraction(raw.SellTax),
             SimulationSuccess = raw.SimulationSuccess,
+        };
+    }
+
+    private static ContractSecurityInfo WebacyRawToInfo(string chain, string address, WebacyResult raw)
+    {
+        return new ContractSecurityInfo
+        {
+            Chain = chain,
+            Address = address,
+            Source = ContractSecuritySource.Webacy,
+            RiskScore = raw.RiskScore,
+            RiskLevel = raw.RiskLevel,
+            IssueCount = raw.IssueCount,
+            HighRiskIssueCount = raw.HighRiskIssueCount,
+            MediumRiskIssueCount = raw.MediumRiskIssueCount,
         };
     }
 

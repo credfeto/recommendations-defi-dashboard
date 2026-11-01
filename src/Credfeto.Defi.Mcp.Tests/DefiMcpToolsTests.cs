@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.DefiLlama;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
+using Credfeto.Defi.ApiClients.Webacy.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Mcp;
@@ -97,10 +98,12 @@ public sealed class DefiMcpToolsTests : TestBase
         );
 
         IHoneypotIsClient honeypotIsClient = NoOpHoneypotIsClientFactory.Create();
+        IWebacyRiskClient webacyRiskClient = NoOpWebacyRiskClientFactory.Create();
 
         ContractSecurityService contractSecurityService = new(
             goPlusClient: goPlusClient,
             honeypotIsClient: honeypotIsClient,
+            webacyRiskClient: webacyRiskClient,
             cache: this._securityCache,
             proxyResolver: proxyResolver
         );

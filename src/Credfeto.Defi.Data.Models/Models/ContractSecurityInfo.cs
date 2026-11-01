@@ -34,4 +34,14 @@ public sealed record ContractSecurityInfo
     public string? TokenSymbol { get; init; }
 
     public bool? SimulationSuccess { get; init; }
+
+    public double? RiskScore { get; init; }
+
+    public string? RiskLevel { get; init; }
+
+    public int? IssueCount { get; init; }
+
+    public int? HighRiskIssueCount { get; init; }
+
+    public int? MediumRiskIssueCount { get; init; }
 }

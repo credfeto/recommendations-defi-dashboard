@@ -147,6 +147,51 @@ public sealed class ContractSecurityCacheService
         );
     }
 
+    public async ValueTask<ContractSecurityInfo?> GetWebacyAsync(
+        string chain,
+        string address,
+        CancellationToken cancellationToken
+    )
+    {
+        DateTimeOffset now = this._timeProvider.GetUtcNow();
+
+        WebacyTokenRiskRow? row = await this._database.ExecuteAsync(
+            action: (c, ct) =>
+                WebacyDatabase.TokenRisk_GetByChainAndAddressAsync(
+                    connection: c,
+                    chain: chain,
+                    address: address.ToLowerInvariant(),
+                    cancellationToken: ct
+                ),
+            cancellationToken: cancellationToken
+        );
+
+        if (row is null || now - row.DateUpdated >= SecurityTtl)
+        {
+            return null;
+        }
+
+        return MapToModel(row);
+    }
+
+    public ValueTask SetWebacyAsync(ContractSecurityInfo info, CancellationToken cancellationToken)
+    {
+        WebacyTokenRiskSyncRow row = new(
+            Chain: info.Chain,
+            Address: info.Address,
+            RiskScore: info.RiskScore,
+            RiskLevel: info.RiskLevel,
+            IssueCount: info.IssueCount,
+            HighRiskIssueCount: info.HighRiskIssueCount,
+            MediumRiskIssueCount: info.MediumRiskIssueCount
+        );
+
+        return this._database.ExecuteAsync(
+            action: (c, ct) => WebacyDatabase.TokenRisk_SyncAsync(connection: c, rows: [row], cancellationToken: ct),
+            cancellationToken: cancellationToken
+        );
+    }
+
     private static ContractSecurityInfo MapToModel(GoPlusTokenSecurityRow row)
     {
         return new ContractSecurityInfo
@@ -179,6 +224,21 @@ public sealed class ContractSecurityCacheService
             BuyTax = row.BuyTax,
             SellTax = row.SellTax,
             SimulationSuccess = row.SimulationSuccess,
+        };
+    }
+
+    private static ContractSecurityInfo MapToModel(WebacyTokenRiskRow row)
+    {
+        return new ContractSecurityInfo
+        {
+            Chain = row.Chain,
+            Address = row.Address,
+            Source = ContractSecuritySource.Webacy,
+            RiskScore = row.RiskScore,
+            RiskLevel = row.RiskLevel,
+            IssueCount = row.IssueCount,
+            HighRiskIssueCount = row.HighRiskIssueCount,
+            MediumRiskIssueCount = row.MediumRiskIssueCount,
         };
     }
 }

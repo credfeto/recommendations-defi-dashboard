@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Credfeto.Defi.ApiClients.CoinGecko;
+using Credfeto.Defi.ApiClients.Webacy;
 using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using FunFair.Test.Common;
@@ -51,5 +52,15 @@ public sealed class ServiceRegistrationTests : TestBase
         IOptions<CoinGeckoOptions> options = app.Services.GetRequiredService<IOptions<CoinGeckoOptions>>();
 
         Assert.Equal(expected: TestAppFactory.TEST_COINGECKO_API_KEY, actual: options.Value.ApiKey);
+    }
+
+    [Fact]
+    public void AddDefiServices_BindsWebacyOptionsFromConfiguration()
+    {
+        using WebApplication app = TestAppFactory.BuildApp();
+
+        IOptions<WebacyOptions> options = app.Services.GetRequiredService<IOptions<WebacyOptions>>();
+
+        Assert.Equal(expected: TestAppFactory.TEST_WEBACY_API_KEY, actual: options.Value.ApiKey);
     }
 }

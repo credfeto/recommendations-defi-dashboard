@@ -18,6 +18,9 @@
     <Project Path="Credfeto.Defi.ApiClients.Pendle.Interfaces/Credfeto.Defi.ApiClients.Pendle.Interfaces.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle.Tests/Credfeto.Defi.ApiClients.Pendle.Tests.csproj" />
     <Project Path="Credfeto.Defi.ApiClients.Pendle/Credfeto.Defi.ApiClients.Pendle.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Webacy.Interfaces/Credfeto.Defi.ApiClients.Webacy.Interfaces.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Webacy.Tests/Credfeto.Defi.ApiClients.Webacy.Tests.csproj" />
+    <Project Path="Credfeto.Defi.ApiClients.Webacy/Credfeto.Defi.ApiClients.Webacy.csproj" />
   </Folder>
   <Folder Name="/Config/">
     <File Path="../docker-compose.yml" />
@@ -39,6 +42,7 @@
     <Project Path="Credfeto.Defi.Server/Credfeto.Defi.Server.csproj" />
   </Folder>
   <Folder Name="/Services/">
+    <Project Path="Credfeto.Defi.Services.Tests/Credfeto.Defi.Services.Tests.csproj" />
     <Project Path="Credfeto.Defi.Services/Credfeto.Defi.Services.csproj" />
   </Folder>
   <Folder Name="/Storage/">
