@@ -53,6 +53,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Store DefiLlama hacks in a structured DefiLlama.Hack table instead of an ApiCache JSON blob
 - Honeypot.is contract security data source - cross-checks GoPlus results per address on Ethereum, BSC, and Base via buy/sell simulation; results are cached independently for 24 hours and surfaced as source-tagged rows (`Source`, `SimulationSuccess` fields on ContractSecurityInfo) alongside GoPlus so agreement and disagreement between sources are both visible
 - DefiLlama Stablecoins data source (stablecoins.llama.fi) for depeg monitoring. The depeg price map now merges Chainlink, then DefiLlama, then CoinGecko prices, so the most authoritative price wins for each stablecoin. Depeg alerts include optional peg type and data source fields so the origin of each alert is visible, and the cache warmer refreshes DefiLlama stablecoins (#253)
+- Webacy risk data source for contract security (#251): a Webacy risk API client (API key authentication, rate limited) maps token behavioural risk to Low, Medium or High and is merged with GoPlus and Honeypot.is results, so all three sources are visible per contract; Webacy results are stored in a new database schema (migration 013) and cached
 
 ### Fixed
 - Docker container "cannot find module @shared" runtime error: pure TypeScript type declarations live in `packages/shared/src/` as `.d.ts` files (no package.json, not a workspace); runtime-value exports (`getAvailablePoolTypesMetadata`, `POOL_TYPES_METADATA`) moved to `packages/server/src/types/`; server's `@shared` path alias resolves to `../shared/src`; `tsc-alias` removed as declaration files are never emitted; client Vite alias updated to `packages/shared/src`
@@ -77,6 +78,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Docker Compose `defi` service now loads its settings from a `.env` file (create it from the new `.env.example` template); README and DEVELOPMENT docs describe the copy step and list the correct environment variables
 - CoinGecko requests failing with 403 Forbidden - requests now send an explicit User-Agent and an optional API key (`CoinGecko:ApiKey` in appsettings.json, sent as `x-cg-demo-api-key`); failed CoinGecko responses now log the status code and a truncated response body (#432)
 - DefiLlama hacks with a null amount no longer break deserialisation - hack Amount is now nullable end to end (API model, storage row and mapper, database table and table type, and a new migration) (#433)
+- Flaky CacheWarmerService test (#251)
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331

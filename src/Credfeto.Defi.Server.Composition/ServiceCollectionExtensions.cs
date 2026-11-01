@@ -11,6 +11,8 @@ using Credfeto.Defi.ApiClients.HoneypotIs;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
 using Credfeto.Defi.ApiClients.Pendle;
 using Credfeto.Defi.ApiClients.Pendle.Interfaces;
+using Credfeto.Defi.ApiClients.Webacy;
+using Credfeto.Defi.ApiClients.Webacy.Interfaces;
 using Credfeto.Defi.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -19,7 +21,7 @@ namespace Credfeto.Defi.Server.Composition;
 
 public static class ServiceCollectionExtensions
 {
-    // Callers must also call AddStorage() and bind RpcConfig and CoinGeckoOptions: the services
+    // Callers must also call AddStorage() and bind RpcConfig, CoinGeckoOptions and WebacyOptions: the services
     // registered here depend on them but none is registered by this method.
     public static IServiceCollection AddDefiBusinessServices(this IServiceCollection services)
     {
@@ -34,6 +36,14 @@ public static class ServiceCollectionExtensions
                         options: serviceProvider.GetRequiredService<IOptions<CoinGeckoOptions>>().Value
                     )
             )
+            .Services.AddHttpClient(nameof(WebacyRiskClient))
+            .ConfigureHttpClient(
+                static (serviceProvider, client) =>
+                    WebacyHttpClientConfiguration.Configure(
+                        client: client,
+                        options: serviceProvider.GetRequiredService<IOptions<WebacyOptions>>().Value
+                    )
+            )
             .Services.AddSingleton<IDefiLlamaPoolsClient, DefiLlamaPoolsClient>()
             .AddSingleton<IDefiLlamaHacksClient, DefiLlamaHacksClient>()
             .AddSingleton<IDefiLlamaProtocolsClient, DefiLlamaProtocolsClient>()
@@ -43,6 +53,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IPendleMarketsClient, PendleMarketsClient>()
             .AddSingleton<IGoPlusClient, GoPlusClient>()
             .AddSingleton<IHoneypotIsClient, HoneypotIsClient>()
+            .AddSingleton<IWebacyRiskClient, WebacyRiskClient>()
             .AddSingleton<ProxyResolverService>()
             .AddSingleton<ContractSecurityService>()
             .AddSingleton<PoolEnrichmentService>()

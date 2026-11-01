@@ -25,8 +25,6 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class CacheWarmerServiceTests : TestBase
 {
-    private static readonly TimeSpan WarmupDelay = TimeSpan.FromMilliseconds(500);
-
     private readonly ApiCacheService _apiCache;
     private readonly FakeDatabase _database;
     private readonly FakeTimeProvider _timeProvider;
@@ -134,15 +132,28 @@ public sealed class CacheWarmerServiceTests : TestBase
     {
         using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
 
-        CacheWarmerService warmer = this.CreateWarmer(handler);
+        IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
+        IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
+        IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
+        using StorageCallSignal storageCalls = new(
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage
+        );
+
+        CacheWarmerService warmer = this.CreateWarmer(
+            handler: handler,
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage
+        );
 
         Task result = warmer.StartAsync(this.CancellationToken());
 
         Assert.True(result.IsCompleted, userMessage: "StartAsync should return synchronously");
         await result;
 
-        // Give the background warming task time to complete
-        await Task.Delay(WarmupDelay, this.CancellationToken());
+        await storageCalls.WaitForStorageBackedFetchersAsync(this.CancellationToken());
     }
 
     [Fact]
@@ -155,6 +166,11 @@ public sealed class CacheWarmerServiceTests : TestBase
         IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
         IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
         IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
+        using StorageCallSignal storageCalls = new(
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage
+        );
 
         async Task RunWarmerAsync()
         {
@@ -168,7 +184,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             );
 
             await warmer.StartAsync(this.CancellationToken());
-            await Task.Delay(WarmupDelay, this.CancellationToken());
+            await storageCalls.WaitForStorageBackedFetchersAsync(this.CancellationToken());
         }
 
         await RunWarmerAsync();
@@ -206,6 +222,11 @@ public sealed class CacheWarmerServiceTests : TestBase
         ICoinGeckoStablecoinStorageService coinGeckoStablecoinStorage =
             GetSubstitute<ICoinGeckoStablecoinStorageService>();
         ICoinGeckoCoinStorageService coinGeckoStorage = GetSubstitute<ICoinGeckoCoinStorageService>();
+        using StorageCallSignal storageCalls = new(
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage
+        );
 
         using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
 
@@ -222,7 +243,7 @@ public sealed class CacheWarmerServiceTests : TestBase
         );
 
         await warmer.StartAsync(this.CancellationToken());
-        await Task.Delay(WarmupDelay, this.CancellationToken());
+        await storageCalls.WaitForStorageBackedFetchersAsync(this.CancellationToken());
 
         await llamaStablecoinsClient.DidNotReceive().FetchStablecoinsAsync(Arg.Any<CancellationToken>());
         await AssertGatedFetchersSkippedAsync(
@@ -366,6 +387,76 @@ public sealed class CacheWarmerServiceTests : TestBase
             };
 
             return Task.FromResult(response);
+        }
+    }
+
+    // StartAsync warms in a fire-and-forget task, so tests wait for each storage-backed fetcher
+    // to store rather than sleeping for a fixed time, which flaked when the machine was loaded.
+    private sealed class StorageCallSignal : IDisposable
+    {
+        private const int STORAGE_BACKED_FETCHER_COUNT = 3;
+
+        // Upper bound only: the wait ends as soon as the stores happen, normally in milliseconds.
+        private static readonly TimeSpan WarmupTimeout = TimeSpan.FromSeconds(30);
+
+        private readonly SemaphoreSlim _calls = new(initialCount: 0);
+
+        public StorageCallSignal(
+            IDefiLlamaPoolStorage poolStorage,
+            IPendleMarketStorageService pendleStorage,
+            IChainlinkPriceFeedStorageService chainlinkStorage
+        )
+        {
+            this.SignalOn(
+                poolStorage.StorePoolsAsync(
+                    pools: Arg.Any<IReadOnlyList<RawPool>>(),
+                    dataDate: Arg.Any<DateTimeOffset?>(),
+                    cancellationToken: Arg.Any<CancellationToken>()
+                )
+            );
+            this.SignalOn(
+                pendleStorage.StoreMarketsAsync(
+                    markets: Arg.Any<IReadOnlyList<PendleMarket>>(),
+                    dataDate: Arg.Any<DateTimeOffset?>(),
+                    cancellationToken: Arg.Any<CancellationToken>()
+                )
+            );
+            this.SignalOn(
+                chainlinkStorage.StoreAsync(
+                    feeds: Arg.Any<IReadOnlyList<ChainlinkPriceFeed>>(),
+                    dataDate: Arg.Any<DateTimeOffset?>(),
+                    cancellationToken: Arg.Any<CancellationToken>()
+                )
+            );
+        }
+
+        public void Dispose()
+        {
+            this._calls.Dispose();
+        }
+
+        private void SignalOn(ValueTask substituteCall)
+        {
+            substituteCall.Returns(_ => this.RecordAsync());
+        }
+
+        private ValueTask RecordAsync()
+        {
+            this._calls.Release();
+
+            return ValueTask.CompletedTask;
+        }
+
+        public async Task WaitForStorageBackedFetchersAsync(CancellationToken cancellationToken)
+        {
+            for (int call = 0; call < STORAGE_BACKED_FETCHER_COUNT; call++)
+            {
+                bool signalled = await this._calls.WaitAsync(
+                    timeout: WarmupTimeout,
+                    cancellationToken: cancellationToken
+                );
+                Assert.True(signalled, userMessage: "Timed out waiting for the cache warmer to store data");
+            }
         }
     }
 

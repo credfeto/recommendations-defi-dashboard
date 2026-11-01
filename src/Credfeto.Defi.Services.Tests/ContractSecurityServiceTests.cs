@@ -7,10 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.ApiClients.GoPlus;
 using Credfeto.Defi.ApiClients.HoneypotIs.Interfaces;
+using Credfeto.Defi.ApiClients.Webacy.Interfaces;
 using Credfeto.Defi.Data.Models.Config;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Server.Tests.Common;
-using Credfeto.Defi.Services;
 using Credfeto.Defi.Storage;
 using Credfeto.Defi.Storage.Database.Rows;
 using FunFair.Test.Common;
@@ -20,7 +20,7 @@ using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
 using Xunit;
 
-namespace Credfeto.Defi.Server.Tests;
+namespace Credfeto.Defi.Services.Tests;
 
 public sealed class ContractSecurityServiceTests : TestBase
 {
@@ -119,12 +119,14 @@ public sealed class ContractSecurityServiceTests : TestBase
     private ContractSecurityService CreateService(
         GoPlusClient goPlusClient,
         ProxyResolverService proxyResolver,
-        IHoneypotIsClient? honeypotIsClient = null
+        IHoneypotIsClient? honeypotIsClient = null,
+        IWebacyRiskClient? webacyRiskClient = null
     )
     {
         return new ContractSecurityService(
             goPlusClient: goPlusClient,
             honeypotIsClient: honeypotIsClient ?? NoOpHoneypotIsClientFactory.Create(),
+            webacyRiskClient: webacyRiskClient ?? NoOpWebacyRiskClientFactory.Create(),
             cache: this._cacheService,
             proxyResolver: proxyResolver
         );
@@ -539,6 +541,141 @@ public sealed class ContractSecurityServiceTests : TestBase
 
         Assert.Single(result);
         Assert.Equal(expected: ContractSecuritySource.GoPlus, actual: result[0].Source);
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_WebacyCacheMiss_FetchesAndReturnsRiskFieldsAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
+
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
+        using HttpClient httpClient = new(handler);
+
+        IWebacyRiskClient webacyRiskClient = GetSubstitute<IWebacyRiskClient>();
+        webacyRiskClient
+            .FetchTokenRiskAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
+            .Returns(
+                new Dictionary<string, WebacyResult>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [ADDRESS] = new()
+                    {
+                        RiskScore = 42.5,
+                        RiskLevel = "medium",
+                        IssueCount = 3,
+                        HighRiskIssueCount = 1,
+                        MediumRiskIssueCount = 2,
+                    },
+                }
+            );
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver(),
+            webacyRiskClient: webacyRiskClient
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: 2, actual: result.Count);
+
+        ContractSecurityInfo webacyInfo = Assert.Single(
+            result,
+            info => string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
+        );
+        Assert.Equal(expected: ADDRESS, actual: webacyInfo.Address);
+        Assert.Equal(expected: 42.5, actual: webacyInfo.RiskScore);
+        Assert.Equal(expected: "medium", actual: webacyInfo.RiskLevel);
+        Assert.Equal(expected: 3, actual: webacyInfo.IssueCount);
+        Assert.Equal(expected: 1, actual: webacyInfo.HighRiskIssueCount);
+        Assert.Equal(expected: 2, actual: webacyInfo.MediumRiskIssueCount);
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_WebacyCacheHit_DoesNotCallWebacyClientAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
+        this._database.WithReturn<WebacyTokenRiskRow?>(BuildWebacyRow(ADDRESS, riskScore: 10.0));
+
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
+        using HttpClient httpClient = new(handler);
+        IWebacyRiskClient webacyRiskClient = NoOpWebacyRiskClientFactory.Create();
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver(),
+            webacyRiskClient: webacyRiskClient
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        ContractSecurityInfo webacyInfo = Assert.Single(
+            result,
+            info => string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
+        );
+        Assert.Equal(expected: 10.0, actual: webacyInfo.RiskScore);
+        await webacyRiskClient
+            .DidNotReceive()
+            .FetchTokenRiskAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task GetContractSecurityForAddressesAsync_WebacyReturnsNoData_NoWebacyRowReturnedAsync()
+    {
+        const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
+        this._database.WithReturn<GoPlusTokenSecurityRow?>(BuildRow("Ethereum", ADDRESS, isProxy: false));
+
+        using FakeHttpHandler handler = new(new HttpResponseMessage(HttpStatusCode.OK));
+        using HttpClient httpClient = new(handler);
+        IWebacyRiskClient webacyRiskClient = NoOpWebacyRiskClientFactory.Create();
+
+        ContractSecurityService service = this.CreateService(
+            goPlusClient: CreateGoPlusClient(httpClient),
+            proxyResolver: CreateNoOpProxyResolver(),
+            webacyRiskClient: webacyRiskClient
+        );
+
+        IReadOnlyList<ContractSecurityInfo> result = await service.GetContractSecurityForAddressesAsync(
+            chain: "Ethereum",
+            addresses: [ADDRESS],
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.DoesNotContain(
+            result,
+            info => string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
+        );
+        await webacyRiskClient
+            .Received(1)
+            .FetchTokenRiskAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>());
+    }
+
+    private static WebacyTokenRiskRow BuildWebacyRow(string address, double? riskScore)
+    {
+        return new WebacyTokenRiskRow(
+            Chain: "Ethereum",
+            Address: address,
+            RiskScore: riskScore,
+            RiskLevel: "low",
+            IssueCount: 0,
+            HighRiskIssueCount: 0,
+            MediumRiskIssueCount: 0,
+            DateCreated: FixedNow - TimeSpan.FromHours(1),
+            DateUpdated: FixedNow - TimeSpan.FromHours(1),
+            DataDate: null
+        );
     }
 
     private static HoneypotIsTokenSecurityRow BuildHoneypotIsRow(string address, bool? isHoneypot)

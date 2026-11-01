@@ -10,6 +10,8 @@ internal static class TestAppFactory
 {
     public const string TEST_COINGECKO_API_KEY = "test-coingecko-api-key";
 
+    public const string TEST_WEBACY_API_KEY = "test-webacy-api-key";
+
     public static WebApplication BuildApp()
     {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
@@ -25,6 +27,7 @@ internal static class TestAppFactory
                 ["Rpc:Base"] = string.Empty,
                 ["Rpc:Bsc"] = string.Empty,
                 ["CoinGecko:ApiKey"] = TEST_COINGECKO_API_KEY,
+                ["Webacy:ApiKey"] = TEST_WEBACY_API_KEY,
             }
         );
 
