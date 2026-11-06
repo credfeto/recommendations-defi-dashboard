@@ -99,6 +99,8 @@ docs/                            Architecture, API reference, development guide
 
 For Docker, set these in `.env` (see [`.env.example`](./.env.example)). The HTTP/HTTPS ports (8080/8081) and the certificate path (`<AppContext.BaseDirectory>/server.pfx`) are hardcoded.
 
+The `watchtower` service in `docker-compose.yml` checks for a new `defi` image on a cron schedule and removes the old image after updating. Set `WATCHTOWER_SCHEDULE` in `.env` to change when it checks. It takes a 6-field cron expression with seconds first; the default `0 3/15 * * * *` checks every 15 minutes starting at minute 3 (:03, :18, :33, :48).
+
 ### CoinGecko API key
 
 CoinGecko can answer anonymous requests with `403 Forbidden`. To avoid that, set an optional free Demo plan key as `CoinGecko:ApiKey` in `appsettings.json`. It is sent in the `x-cg-demo-api-key` header. It is empty by default. See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#coingecko-api-key).
