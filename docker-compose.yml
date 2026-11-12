@@ -15,7 +15,8 @@ services:
     image: nickfedor/watchtower:latest
     container_name: watchtower
     environment:
-      - WATCHTOWER_POLL_INTERVAL=900
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE:-0 3/15 * * * *}
       - WATCHTOWER_CONTAINER_LIST=defi
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
