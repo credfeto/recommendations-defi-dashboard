@@ -41,7 +41,7 @@ public sealed class HoneypotIsClient : IHoneypotIsClient
         CancellationToken cancellationToken
     )
     {
-        Dictionary<string, HoneypotIsResult> result = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, HoneypotIsResult> result = [with(StringComparer.OrdinalIgnoreCase)];
 
         if (!ChainNameToId.TryGetValue(key: chain, out int chainId) || addresses.Count == 0)
         {

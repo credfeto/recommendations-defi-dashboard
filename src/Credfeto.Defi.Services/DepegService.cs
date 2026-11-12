@@ -21,7 +21,7 @@ public static partial class DepegService
 
     public static IReadOnlyDictionary<string, decimal> BuildStablecoinPriceMap(IReadOnlyList<CoinGeckoStablecoin> coins)
     {
-        Dictionary<string, decimal> map = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, decimal> map = [with(StringComparer.OrdinalIgnoreCase)];
 
         foreach (CoinGeckoStablecoin coin in coins)
         {
@@ -40,8 +40,8 @@ public static partial class DepegService
         IReadOnlyList<DefiLlamaStablecoin> defiLlamaStablecoins
     )
     {
-        Dictionary<string, decimal> prices = new(StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, StablecoinMetadata> metadata = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, decimal> prices = [with(StringComparer.OrdinalIgnoreCase)];
+        Dictionary<string, StablecoinMetadata> metadata = [with(StringComparer.OrdinalIgnoreCase)];
 
         // Sources are added in precedence order and TryAdd keeps the first price seen, so Chainlink (canonical
         // on-chain) wins over DefiLlama (aggregated), which wins over CoinGecko.
@@ -110,7 +110,7 @@ public static partial class DepegService
         IReadOnlyList<CoinGeckoCoinPlatforms> coinList
     )
     {
-        Dictionary<string, string> idToSymbol = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> idToSymbol = [with(StringComparer.OrdinalIgnoreCase)];
 
         foreach (CoinGeckoStablecoin coin in stablecoins)
         {
@@ -120,7 +120,7 @@ public static partial class DepegService
             }
         }
 
-        Dictionary<string, string> addressMap = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> addressMap = [with(StringComparer.OrdinalIgnoreCase)];
 
         foreach (CoinGeckoCoinPlatforms coin in coinList)
         {
@@ -187,7 +187,7 @@ public static partial class DepegService
     )
     {
         List<DepegAlert> alerts = [];
-        HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> seen = [with(StringComparer.OrdinalIgnoreCase)];
 
         // Symbol-based check
         foreach (string token in ParsePoolSymbols(poolSymbol))

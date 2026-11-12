@@ -10,7 +10,7 @@ public static class ProtocolsService
 {
     public static IReadOnlyDictionary<string, AuditInfo> BuildProtocolAuditMap(IReadOnlyList<RawProtocol> protocols)
     {
-        Dictionary<string, AuditInfo> map = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, AuditInfo> map = [with(StringComparer.OrdinalIgnoreCase)];
 
         foreach (RawProtocol p in protocols)
         {
