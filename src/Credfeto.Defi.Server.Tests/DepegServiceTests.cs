@@ -47,7 +47,7 @@ public sealed class DepegServiceTests : TestBase
     [Fact]
     public void CheckDepeg_NoPriceData_ReturnsNoAlerts()
     {
-        Dictionary<string, decimal> priceMap = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, decimal> priceMap = [with(StringComparer.OrdinalIgnoreCase)];
         IReadOnlyList<DepegAlert> alerts = DepegService.CheckDepeg(
             poolSymbol: "USDC-USDT",
             priceMap: priceMap,

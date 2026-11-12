@@ -353,7 +353,7 @@ public sealed class DepegServiceExtendedTests : TestBase
         const string USDC_ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
         // Address map maps the address to "usdc", but "usdc" is NOT in the price map
-        Dictionary<string, decimal> priceMap = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, decimal> priceMap = [with(StringComparer.OrdinalIgnoreCase)];
 
         Dictionary<string, string> addressMap = new(StringComparer.OrdinalIgnoreCase) { [USDC_ADDRESS] = "usdc" };
 
@@ -653,7 +653,7 @@ public sealed class DepegServiceExtendedTests : TestBase
     public void CheckDepeg_SymbolMissingFromMetadataMap_AlertHasNullMetadataFields()
     {
         Dictionary<string, decimal> priceMap = new(StringComparer.OrdinalIgnoreCase) { ["usdt"] = 0.95m };
-        Dictionary<string, StablecoinMetadata> metadataMap = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, StablecoinMetadata> metadataMap = [with(StringComparer.OrdinalIgnoreCase)];
 
         IReadOnlyList<DepegAlert> alerts = DepegService.CheckDepeg(
             poolSymbol: "USDT",

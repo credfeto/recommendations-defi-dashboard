@@ -1,10 +1,11 @@
-<Project Sdk="MSBuild.Sdk.SqlProj/4.4.0">
+﻿<Project Sdk="MSBuild.Sdk.SqlProj/4.4.0">
   <!-- SQLProj Github repo https://github.com/rr-wfm/MSBuild.Sdk.SqlProj -->
   <PropertyGroup>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <BackupDatabaseBeforeChanges>True</BackupDatabaseBeforeChanges>
     <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+    <BundledNETCoreAppTargetFrameworkVersion>10.0</BundledNETCoreAppTargetFrameworkVersion>
     <CodeAnalysisRules>
       -Microsoft.Rules.Data.SR0007;
       -SqlServer.Rules.SRD0003;

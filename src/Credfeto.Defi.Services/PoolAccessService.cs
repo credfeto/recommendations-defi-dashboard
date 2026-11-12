@@ -91,8 +91,9 @@ public static partial class PoolAccessService
     )]
     private static partial Regex MaturityPattern { get; }
 
-    private static readonly HashSet<string> SwapExitProjects = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> SwapExitProjects =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "uniswap-v2",
         "uniswap-v3",
         "uniswap-v4",
@@ -112,16 +113,17 @@ public static partial class PoolAccessService
         "orca",
         "raydium",
         "pendle",
-    };
+    ];
 
-    private static readonly HashSet<string> KycEntryProjects = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> KycEntryProjects =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "maple",
         "maple-v2",
         "centrifuge",
         "credix",
         "goldfinch",
-    };
+    ];
 
     public static PoolAccessInfo DerivePoolAccessInfo(string project, string? poolMeta)
     {

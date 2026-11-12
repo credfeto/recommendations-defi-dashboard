@@ -56,7 +56,7 @@ public sealed class WebacyRiskClient : IWebacyRiskClient
         CancellationToken cancellationToken
     )
     {
-        Dictionary<string, WebacyResult> result = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, WebacyResult> result = [with(StringComparer.OrdinalIgnoreCase)];
 
         // Webacy rejects every request without a key, so skip the calls entirely when none is configured.
         if (

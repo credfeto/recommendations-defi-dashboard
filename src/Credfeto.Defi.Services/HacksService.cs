@@ -10,7 +10,7 @@ public static class HacksService
 {
     public static IReadOnlyDictionary<string, List<HackInfo>> BuildHackMap(IReadOnlyList<RawHack> hacks)
     {
-        Dictionary<string, List<HackInfo>> map = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, List<HackInfo>> map = [with(StringComparer.OrdinalIgnoreCase)];
 
         foreach (RawHack h in hacks)
         {
@@ -48,7 +48,7 @@ public static class HacksService
         IReadOnlyDictionary<string, List<HackInfo>> hackMap
     )
     {
-        Dictionary<string, HackInfo> seen = new(StringComparer.Ordinal);
+        Dictionary<string, HackInfo> seen = [with(StringComparer.Ordinal)];
 
         Collect(key: projectSlug, hackMap: hackMap, seen: seen);
         Collect(key: SlugUtils.BaseSlug(projectSlug), hackMap: hackMap, seen: seen);
