@@ -9,8 +9,9 @@ public static class PoolFilterService
 {
     private const double MIN_TVL = 1_000_000;
 
-    private static readonly HashSet<string> ExcludedChains = new(StringComparer.OrdinalIgnoreCase)
-    {
+    private static readonly HashSet<string> ExcludedChains =
+    [
+        with(StringComparer.OrdinalIgnoreCase),
         "Aptos",
         "Avalanche",
         "Cardano",
@@ -23,7 +24,7 @@ public static class PoolFilterService
         "Ton",
         "Tron",
         "Venom",
-    };
+    ];
 
     private static readonly string[] LstSymbols =
     [

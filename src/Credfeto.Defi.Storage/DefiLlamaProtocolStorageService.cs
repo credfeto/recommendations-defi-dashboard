@@ -62,7 +62,7 @@ public sealed class DefiLlamaProtocolStorageService : IDefiLlamaProtocolStorageS
 
     private static IReadOnlyList<DefiLlamaProtocolSyncRow> BuildProtocolRows(IReadOnlyList<RawProtocol> protocols)
     {
-        List<DefiLlamaProtocolSyncRow> rows = new(protocols.Count);
+        List<DefiLlamaProtocolSyncRow> rows = [with(protocols.Count)];
         HashSet<string> seen = new(capacity: protocols.Count, comparer: StringComparer.Ordinal);
 
         foreach (RawProtocol protocol in protocols)

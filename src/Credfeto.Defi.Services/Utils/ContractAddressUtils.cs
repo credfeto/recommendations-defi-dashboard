@@ -22,7 +22,7 @@ public static partial class ContractAddressUtils
 
     public static string[] BuildContractAddresses(RawPool pool)
     {
-        HashSet<string> addresses = new(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> addresses = [with(StringComparer.OrdinalIgnoreCase)];
 
         IEnumerable<string> underlying = pool.UnderlyingTokens?.Where(IsContractAddress) ?? [];
 

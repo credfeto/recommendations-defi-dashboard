@@ -82,7 +82,7 @@ public sealed class GoPlusClient : IGoPlusClient
                 return new Dictionary<string, GoPlusTokenResult>(StringComparer.OrdinalIgnoreCase);
             }
 
-            Dictionary<string, GoPlusTokenResult> result = new(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, GoPlusTokenResult> result = [with(StringComparer.OrdinalIgnoreCase)];
 
             foreach (KeyValuePair<string, GoPlusTokenResult> kvp in response.Result)
             {
