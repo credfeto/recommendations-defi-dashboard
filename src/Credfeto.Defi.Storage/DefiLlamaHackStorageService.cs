@@ -46,8 +46,8 @@ public sealed class DefiLlamaHackStorageService : IDefiLlamaHackStorageService
 
     private static IReadOnlyList<DefiLlamaHackSyncRow> BuildHackRows(IReadOnlyList<RawHack> hacks)
     {
-        List<DefiLlamaHackSyncRow> rows = new(hacks.Count);
-        HashSet<(string Name, long Date)> seen = new(capacity: hacks.Count);
+        List<DefiLlamaHackSyncRow> rows = [with(hacks.Count)];
+        HashSet<(string Name, long Date)> seen = [with(capacity: hacks.Count)];
 
         foreach (RawHack hack in hacks)
         {
