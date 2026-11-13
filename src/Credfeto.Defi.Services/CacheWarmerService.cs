@@ -115,7 +115,19 @@ public sealed class CacheWarmerService : IHostedService
         CancellationToken cancellationToken
     )
     {
-        await fetcher(cancellationToken);
+        try
+        {
+            await fetcher(cancellationToken);
+        }
+        catch (Exception exception)
+            when (!(exception is OperationCanceledException && cancellationToken.IsCancellationRequested))
+        {
+            // Swallowed so one failing entry cannot fault Task.WhenAll and hide the others' outcome.
+            logger.CacheWarmFailed(key: key, exception: exception);
+
+            return;
+        }
+
         logger.CacheWarmed(key);
     }
 

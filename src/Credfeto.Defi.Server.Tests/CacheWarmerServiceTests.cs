@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -19,12 +20,15 @@ using FunFair.Test.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
+using NSubstitute.Core;
 using Xunit;
 
 namespace Credfeto.Defi.Server.Tests;
 
 public sealed class CacheWarmerServiceTests : TestBase
 {
+    private const int ALL_FETCHER_COUNT = 8;
+
     private readonly ApiCacheService _apiCache;
     private readonly FakeDatabase _database;
     private readonly FakeTimeProvider _timeProvider;
@@ -104,7 +108,8 @@ public sealed class CacheWarmerServiceTests : TestBase
         IDefiLlamaProtocolStorageService? protocolStorage = null,
         ICoinGeckoCoinStorageService? coinGeckoStorage = null,
         ICoinGeckoStablecoinStorageService? coinGeckoStablecoinStorage = null,
-        IDefiLlamaStablecoinsClient? llamaStablecoinsClient = null
+        IDefiLlamaStablecoinsClient? llamaStablecoinsClient = null,
+        ILogger<CacheWarmerService>? logger = null
     )
     {
         return new CacheWarmerService(
@@ -123,7 +128,7 @@ public sealed class CacheWarmerServiceTests : TestBase
             coinGeckoStorage: coinGeckoStorage ?? new FakeCoinGeckoCoinStorage(),
             coinGeckoStablecoinStorage: coinGeckoStablecoinStorage ?? new FakeCoinGeckoStablecoinStorage(),
             llamaStablecoinsClient: llamaStablecoinsClient ?? new FakeDefiLlamaStablecoinsClient(),
-            logger: this.GetTypedLogger<CacheWarmerService>()
+            logger: logger ?? this.GetTypedLogger<CacheWarmerService>()
         );
     }
 
@@ -258,6 +263,154 @@ public sealed class CacheWarmerServiceTests : TestBase
             chainlinkStorage: chainlinkStorage,
             expectedCalls: 1
         );
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenOneEntryFails_StillWarmsRemainingEntriesAsync()
+    {
+        IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
+        MockDefiLlamaPoolStorageStorePools(
+            poolStorage: poolStorage,
+            result: Task.FromException(new InvalidOperationException("Pool storage unavailable"))
+        );
+        IPendleMarketStorageService pendleStorage = GetSubstitute<IPendleMarketStorageService>();
+        IChainlinkPriceFeedStorageService chainlinkStorage = GetSubstitute<IChainlinkPriceFeedStorageService>();
+        ILogger<CacheWarmerService> logger = this.CreateEnabledLogger();
+        using LogCallSignal logCalls = new(logger);
+
+        using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
+
+        CacheWarmerService warmer = this.CreateWarmer(
+            handler: handler,
+            poolStorage: poolStorage,
+            pendleStorage: pendleStorage,
+            chainlinkStorage: chainlinkStorage,
+            logger: logger
+        );
+
+        await warmer.StartAsync(this.CancellationToken());
+        await logCalls.WaitForLogEntriesAsync(count: ALL_FETCHER_COUNT, cancellationToken: this.CancellationToken());
+
+        await pendleStorage
+            .Received(1)
+            .StoreMarketsAsync(
+                markets: Arg.Any<IReadOnlyList<PendleMarket>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        await chainlinkStorage
+            .Received(1)
+            .StoreAsync(
+                feeds: Arg.Any<IReadOnlyList<ChainlinkPriceFeed>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            );
+        AssertWarmedCount(expected: ALL_FETCHER_COUNT - 1, logger: logger);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenOneEntryFails_LogsErrorWithKeyAndExceptionAsync()
+    {
+        InvalidOperationException failure = new("Pool storage unavailable");
+        IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
+        MockDefiLlamaPoolStorageStorePools(poolStorage: poolStorage, result: Task.FromException(failure));
+        ILogger<CacheWarmerService> logger = this.CreateEnabledLogger();
+        using LogCallSignal logCalls = new(logger);
+
+        using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
+
+        CacheWarmerService warmer = this.CreateWarmer(handler: handler, poolStorage: poolStorage, logger: logger);
+
+        await warmer.StartAsync(this.CancellationToken());
+        await logCalls.WaitForLogEntriesAsync(count: ALL_FETCHER_COUNT, cancellationToken: this.CancellationToken());
+
+        ICall errorCall = Assert.Single(GetLogCalls(level: LogLevel.Error, logger: logger));
+        object?[] arguments = errorCall.GetArguments();
+        EventId eventId = Assert.IsType<EventId>(arguments[1]);
+        Assert.Equal(expected: 2, actual: eventId.Id);
+        IReadOnlyList<KeyValuePair<string, object?>> state = Assert.IsAssignableFrom<
+            IReadOnlyList<KeyValuePair<string, object?>>
+        >(arguments[2]);
+        KeyValuePair<string, object?> key = Assert.Single(
+            state,
+            predicate: static kvp => StringComparer.Ordinal.Equals(x: kvp.Key, y: "Key")
+        );
+        Assert.Equal(expected: "defillama_pools", actual: key.Value);
+        Assert.Same(expected: failure, actual: arguments[3]);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenCancelledDuringWarmup_DoesNotLogFailureAsync()
+    {
+        using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(this.CancellationToken());
+        TaskCompletionSource poolStoreGate = new();
+        IDefiLlamaPoolStorage poolStorage = GetSubstitute<IDefiLlamaPoolStorage>();
+        MockDefiLlamaPoolStorageStorePools(poolStorage: poolStorage, result: poolStoreGate.Task);
+        ILogger<CacheWarmerService> logger = this.CreateEnabledLogger();
+        using LogCallSignal logCalls = new(logger);
+
+        using FreshResponseHttpHandler handler = new(CreateAllFetcherResponses());
+
+        CacheWarmerService warmer = this.CreateWarmer(handler: handler, poolStorage: poolStorage, logger: logger);
+
+        await warmer.StartAsync(cts.Token);
+        await logCalls.WaitForLogEntriesAsync(
+            count: ALL_FETCHER_COUNT - 1,
+            cancellationToken: this.CancellationToken()
+        );
+
+        // Completing the gate normally runs the pool entry's continuation inline, so its catch
+        // filter has already been evaluated by the time TrySetCanceled returns.
+        await cts.CancelAsync();
+        bool cancelled = poolStoreGate.TrySetCanceled(cts.Token);
+
+        Assert.True(cancelled, userMessage: "Pool store should still have been pending");
+        Assert.Empty(GetLogCalls(level: LogLevel.Error, logger: logger));
+        AssertWarmedCount(expected: ALL_FETCHER_COUNT - 1, logger: logger);
+    }
+
+    private ILogger<CacheWarmerService> CreateEnabledLogger()
+    {
+        ILogger<CacheWarmerService> logger = this.GetTypedLogger<CacheWarmerService>();
+        logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
+
+        return logger;
+    }
+
+    private static void MockDefiLlamaPoolStorageStorePools(IDefiLlamaPoolStorage poolStorage, Task result)
+    {
+        ReturnFromStore(
+            storeCall: poolStorage.StorePoolsAsync(
+                pools: Arg.Any<IReadOnlyList<RawPool>>(),
+                dataDate: Arg.Any<DateTimeOffset?>(),
+                cancellationToken: Arg.Any<CancellationToken>()
+            ),
+            result: result
+        );
+    }
+
+    private static void ReturnFromStore(ValueTask storeCall, Task result)
+    {
+        storeCall.Returns(_ => new ValueTask(result));
+    }
+
+    private static void AssertWarmedCount(int expected, ILogger<CacheWarmerService> logger)
+    {
+        Assert.Equal(expected: expected, actual: GetLogCalls(level: LogLevel.Information, logger: logger).Count);
+    }
+
+    private static IReadOnlyList<ICall> GetLogCalls(LogLevel level, ILogger<CacheWarmerService> logger)
+    {
+        return
+        [
+            .. logger
+                .ReceivedCalls()
+                .Where(c =>
+                    StringComparer.Ordinal.Equals(x: c.GetMethodInfo().Name, y: nameof(ILogger.Log))
+                    && c.GetArguments()[0] is LogLevel callLevel
+                    && callLevel == level
+                ),
+        ];
     }
 
     private static async Task AssertGatedFetchersSkippedAsync(
@@ -456,6 +609,47 @@ public sealed class CacheWarmerServiceTests : TestBase
                     cancellationToken: cancellationToken
                 );
                 Assert.True(signalled, userMessage: "Timed out waiting for the cache warmer to store data");
+            }
+        }
+    }
+
+    // Every warmed entry logs exactly once, as warmed or failed, so tests wait for that many log
+    // entries instead of sleeping while the fire-and-forget warm-up runs.
+    private sealed class LogCallSignal : IDisposable
+    {
+        private static readonly TimeSpan WarmupTimeout = TimeSpan.FromSeconds(30);
+
+        private readonly SemaphoreSlim _calls = new(initialCount: 0);
+
+        public LogCallSignal(ILogger logger)
+        {
+            logger
+                .When(static logger =>
+                    logger.Log(
+                        logLevel: Arg.Any<LogLevel>(),
+                        eventId: Arg.Any<EventId>(),
+                        state: Arg.Any<Arg.AnyType>(),
+                        exception: Arg.Any<Exception?>(),
+                        formatter: Arg.Any<Func<Arg.AnyType, Exception?, string>>()
+                    )
+                )
+                .Do(_ => this._calls.Release());
+        }
+
+        public void Dispose()
+        {
+            this._calls.Dispose();
+        }
+
+        public async Task WaitForLogEntriesAsync(int count, CancellationToken cancellationToken)
+        {
+            for (int call = 0; call < count; call++)
+            {
+                bool signalled = await this._calls.WaitAsync(
+                    timeout: WarmupTimeout,
+                    cancellationToken: cancellationToken
+                );
+                Assert.True(signalled, userMessage: "Timed out waiting for the cache warmer to log");
             }
         }
     }

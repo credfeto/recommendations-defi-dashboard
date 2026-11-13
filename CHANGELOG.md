@@ -79,6 +79,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - CoinGecko requests failing with 403 Forbidden - requests now send an explicit User-Agent and an optional API key (`CoinGecko:ApiKey` in appsettings.json, sent as `x-cg-demo-api-key`); failed CoinGecko responses now log the status code and a truncated response body (#432)
 - DefiLlama hacks with a null amount no longer break deserialisation - hack Amount is now nullable end to end (API model, storage row and mapper, database table and table type, and a new migration) (#433)
 - Flaky CacheWarmerService test (#251)
+- CacheWarmerService now logs per-entry warm-up failures and continues warming the remaining entries (#427)
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
