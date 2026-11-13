@@ -80,6 +80,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - DefiLlama hacks with a null amount no longer break deserialisation - hack Amount is now nullable end to end (API model, storage row and mapper, database table and table type, and a new migration) (#433)
 - Flaky CacheWarmerService test (#251)
 - CacheWarmerService now logs per-entry warm-up failures and continues warming the remaining entries (#427)
+- TBD - to be finalized after review
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
