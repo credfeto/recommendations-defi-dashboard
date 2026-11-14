@@ -7,11 +7,6 @@
         <None Remove="coverage.settings.xml" />
     </ItemGroup>
 
-    <!-- Test projects target an older framework than the SDK pinned in global.json; let the test host roll forward to the newest installed major runtime -->
-    <PropertyGroup>
-        <RollForward>Major</RollForward>
-    </PropertyGroup>
-
     <!-- if building in github reference the github actions test logger -->
     <ItemGroup Condition="$(GITHUB_REF) != ''">
         <PackageReference Include="GitHubActionsTestLogger" Version="*" />
