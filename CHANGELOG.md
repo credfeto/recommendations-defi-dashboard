@@ -128,6 +128,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - SDK - Updated DotNet SDK to 10.0.403
 - Docker Compose watchtower now removes old images after updating (WATCHTOWER_CLEANUP=true) and uses a cron-style WATCHTOWER_SCHEDULE (default '0 3/15 * * * *', overridable) instead of WATCHTOWER_POLL_INTERVAL; documented in README and .env.example
 - SDK - Updated DotNet SDK to 11.0.100-rc.3.26522.148
+- Server Docker runtime image moved to Ubuntu 26.04 (resolute), pinned by digest, so it matches the glibc the server is built against; the image build now runs the server's new --self-test switch via an exec-form RUN step so a runtime incompatibility fails the build instead of failing at container start (#446). The change is documented in CONTRIBUTING and the AI instructions
 
 ### Deprecated
 ### Removed
