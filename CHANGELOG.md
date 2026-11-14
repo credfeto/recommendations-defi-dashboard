@@ -125,9 +125,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Updated MSBuild.Sdk.SqlProj from 4.3.0 to 4.4.0
 - Normalised MSBuild path separators to '/'
 - Removed redundant EnableMicrosoftExtensionsConfigurationBinderSourceGenerator property from Credfeto.Defi.Server; EnableConfigurationBindingGenerator already enables the configuration binding source generator
-- SDK - Updated DotNet SDK to 10.0.403
 - Docker Compose watchtower now removes old images after updating (WATCHTOWER_CLEANUP=true) and uses a cron-style WATCHTOWER_SCHEDULE (default '0 3/15 * * * *', overridable) instead of WATCHTOWER_POLL_INTERVAL; documented in README and .env.example
-- SDK - Updated DotNet SDK to 11.0.100-rc.3.26522.148
+- SDK - Updated DotNet SDK to 11.0.100
 
 ### Deprecated
 ### Removed
