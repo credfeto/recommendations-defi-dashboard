@@ -81,6 +81,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Flaky CacheWarmerService test (#251)
 - CacheWarmerService now logs per-entry warm-up failures and continues warming the remaining entries (#427)
 - Test projects roll forward to the newest installed .NET runtime so they run when only a newer shared runtime than net10.0 is available
+- Database options are now validated at host start and read-only lookup tables are frozen
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
