@@ -66,8 +66,8 @@
   <ItemGroup>
     <PackageReference Include="Credfeto.Docker.HealthCheck.Http.Client" Version="0.0.65.765" IncludeAssets="compile;runtime" />
     <PackageReference Include="Credfeto.Services.Startup" Version="1.1.145.1592" IncludeAssets="compile;runtime" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" IncludeAssets="compile;runtime" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.9" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" IncludeAssets="compile;runtime" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="11.0.0" IncludeAssets="compile;runtime" />
     <PackageReference Include="Serilog" Version="4.3.1" IncludeAssets="compile;runtime;build;buildTransitive" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" IncludeAssets="compile;runtime" />
     <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" IncludeAssets="compile;runtime" />
