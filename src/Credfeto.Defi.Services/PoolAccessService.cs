@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Credfeto.Defi.Data.Models.Models;
@@ -91,9 +92,8 @@ public static partial class PoolAccessService
     )]
     private static partial Regex MaturityPattern { get; }
 
-    private static readonly HashSet<string> SwapExitProjects =
-    [
-        with(StringComparer.OrdinalIgnoreCase),
+    private static readonly FrozenSet<string> SwapExitProjects = FrozenSet.Create(
+        equalityComparer: StringComparer.OrdinalIgnoreCase,
         "uniswap-v2",
         "uniswap-v3",
         "uniswap-v4",
@@ -112,18 +112,17 @@ public static partial class PoolAccessService
         "quickswap",
         "orca",
         "raydium",
-        "pendle",
-    ];
+        "pendle"
+    );
 
-    private static readonly HashSet<string> KycEntryProjects =
-    [
-        with(StringComparer.OrdinalIgnoreCase),
+    private static readonly FrozenSet<string> KycEntryProjects = FrozenSet.Create(
+        equalityComparer: StringComparer.OrdinalIgnoreCase,
         "maple",
         "maple-v2",
         "centrifuge",
         "credix",
-        "goldfinch",
-    ];
+        "goldfinch"
+    );
 
     public static PoolAccessInfo DerivePoolAccessInfo(string project, string? poolMeta)
     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -18,7 +19,7 @@ public sealed class GoPlusClient : IGoPlusClient
 {
     private const string GOPLUS_BASE = "https://api.gopluslabs.io/api/v1/token_security";
 
-    private static readonly IReadOnlyDictionary<string, int> ChainNameToId = new Dictionary<string, int>(
+    private static readonly FrozenDictionary<string, int> ChainNameToId = new Dictionary<string, int>(
         StringComparer.OrdinalIgnoreCase
     )
     {
@@ -26,7 +27,7 @@ public sealed class GoPlusClient : IGoPlusClient
         ["Arbitrum"] = 42161,
         ["Base"] = 8453,
         ["BSC"] = 56,
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<GoPlusClient> _logger;

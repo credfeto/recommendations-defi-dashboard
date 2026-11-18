@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using Credfeto.Defi.Data.Models.Models;
@@ -7,7 +8,7 @@ namespace Credfeto.Defi.Services;
 
 public static class PoolUrlService
 {
-    private static readonly IReadOnlyDictionary<string, int> PendleChainIds = new Dictionary<string, int>(
+    private static readonly FrozenDictionary<string, int> PendleChainIds = new Dictionary<string, int>(
         StringComparer.OrdinalIgnoreCase
     )
     {
@@ -15,7 +16,7 @@ public static class PoolUrlService
         ["arbitrum"] = 42161,
         ["base"] = 8453,
         ["bsc"] = 56,
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     public static Uri? GetPoolUrl(RawPool pool)
     {

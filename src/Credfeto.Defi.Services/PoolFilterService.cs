@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Credfeto.Defi.Data.Models.Models;
@@ -9,9 +10,8 @@ public static class PoolFilterService
 {
     private const double MIN_TVL = 1_000_000;
 
-    private static readonly HashSet<string> ExcludedChains =
-    [
-        with(StringComparer.OrdinalIgnoreCase),
+    private static readonly FrozenSet<string> ExcludedChains = FrozenSet.Create(
+        equalityComparer: StringComparer.OrdinalIgnoreCase,
         "Aptos",
         "Avalanche",
         "Cardano",
@@ -23,8 +23,8 @@ public static class PoolFilterService
         "Sui",
         "Ton",
         "Tron",
-        "Venom",
-    ];
+        "Venom"
+    );
 
     private static readonly string[] LstSymbols =
     [

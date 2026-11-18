@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
@@ -15,13 +16,13 @@ namespace Credfeto.Defi.Storage;
 
 public sealed class PendleMarketStorageService : IPendleMarketStorageService
 {
-    private static readonly IReadOnlyDictionary<int, string> ChainIdToName = new Dictionary<int, string>
+    private static readonly FrozenDictionary<int, string> ChainIdToName = new Dictionary<int, string>
     {
         [1] = "Ethereum",
         [42161] = "Arbitrum",
         [8453] = "Base",
         [56] = "BSC",
-    };
+    }.ToFrozenDictionary();
 
     private readonly IDatabase _database;
 

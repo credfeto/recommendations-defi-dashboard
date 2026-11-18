@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -22,7 +23,7 @@ public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
     private const string LATEST_ROUND_DATA_SELECTOR = "0x50d25bcd";
     private const decimal USD_DECIMAL_DIVISOR = 100_000_000m; // 10^8
 
-    private static readonly IReadOnlyDictionary<string, string> KnownFeeds = new Dictionary<string, string>(
+    private static readonly FrozenDictionary<string, string> KnownFeeds = new Dictionary<string, string>(
         StringComparer.OrdinalIgnoreCase
     )
     {
@@ -37,7 +38,7 @@ public sealed class ChainlinkStablecoinsClient : IChainlinkStablecoinsClient
         ["gusd"] = "0xa89f5d2365ce98B3cD68012b6f503ab1416245Fc",
         ["crvusd"] = "0xEEf0C605546958c1f899b6fB336C20671f9cD49F",
         ["pyusd"] = "0x8f1dF6D7F2db73eECE86a18b4381F4707b918FB",
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ChainlinkStablecoinsClient> _logger;
