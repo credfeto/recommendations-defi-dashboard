@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
@@ -17,14 +18,14 @@ public sealed class HoneypotIsClient : IHoneypotIsClient
 {
     private const string HONEYPOT_IS_BASE = "https://api.honeypot.is/v2/IsHoneypot";
 
-    private static readonly IReadOnlyDictionary<string, int> ChainNameToId = new Dictionary<string, int>(
+    private static readonly FrozenDictionary<string, int> ChainNameToId = new Dictionary<string, int>(
         StringComparer.OrdinalIgnoreCase
     )
     {
         ["Ethereum"] = 1,
         ["BSC"] = 56,
         ["Base"] = 8453,
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<HoneypotIsClient> _logger;
