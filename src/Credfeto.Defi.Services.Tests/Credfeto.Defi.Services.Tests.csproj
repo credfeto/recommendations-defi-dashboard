@@ -24,6 +24,7 @@
     <Nullable>enable</Nullable>
     <OptimizationPreference>speed</OptimizationPreference>
     <OutputType>Exe</OutputType>
+    <RollForward>Major</RollForward>
     <RunAOTCompilation>false</RunAOTCompilation>
     <TargetFramework>net10.0</TargetFramework>
     <TieredPGO>true</TieredPGO>
