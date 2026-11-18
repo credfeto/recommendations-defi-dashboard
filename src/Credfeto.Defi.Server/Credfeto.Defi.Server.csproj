@@ -11,7 +11,7 @@
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Features>strict;flow-analysis</Features>
+    <Features>strict;flow-analysis;runtime-async=on</Features>
     <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <IlcGenerateStackTraceData>false</IlcGenerateStackTraceData>
@@ -35,7 +35,7 @@
     <RunAOTCompilation>false</RunAOTCompilation>
     <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <TieredCompilation>true</TieredCompilation>
     <TieredPGO>true</TieredPGO>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

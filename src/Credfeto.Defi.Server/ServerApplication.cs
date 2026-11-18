@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Server.Endpoints;
@@ -14,17 +15,29 @@ namespace Credfeto.Defi.Server;
 
 internal static class ServerApplication
 {
-    public static Task<int> RunAsync(string[] args, Func<string[], WebApplication> createApplication, TextWriter error)
+    public static Task<int> RunAsync(
+        string[] args,
+        Func<string[], WebApplication> createApplication,
+        TextWriter error,
+        CancellationToken cancellationToken
+    )
     {
         // The self-test builds the application without command-line arguments so the switch itself is never
         // interpreted as a configuration key.
         return SelfTest.IsSelfTest(args)
             ? RunApplicationAsync(
                 createApplication: () => createApplication([]),
-                run: app => SelfTest.VerifyAsync(services: app.Services, error: error),
-                error: error
+                run: app =>
+                    SelfTest.VerifyAsync(services: app.Services, error: error, cancellationToken: cancellationToken),
+                error: error,
+                cancellationToken: cancellationToken
             )
-            : RunApplicationAsync(createApplication: () => createApplication(args), run: RunServerAsync, error: error);
+            : RunApplicationAsync(
+                createApplication: () => createApplication(args),
+                run: RunServerAsync,
+                error: error,
+                cancellationToken: cancellationToken
+            );
     }
 
     public static WebApplication Create(string[] args)
@@ -56,7 +69,8 @@ internal static class ServerApplication
     private static async Task<int> RunApplicationAsync(
         Func<WebApplication> createApplication,
         Func<WebApplication, Task<int>> run,
-        TextWriter error
+        TextWriter error,
+        CancellationToken cancellationToken
     )
     {
         try
@@ -67,9 +81,9 @@ internal static class ServerApplication
         }
         catch (Exception exception)
         {
-            await error.WriteLineAsync("Fatal error during startup:");
-            await error.WriteLineAsync(exception.Message);
-            await error.WriteLineAsync(exception.StackTrace);
+            await error.WriteLineAsync(value: "Fatal error during startup:", cancellationToken: cancellationToken);
+            await error.WriteLineAsync(value: exception.Message, cancellationToken: cancellationToken);
+            await error.WriteLineAsync(value: exception.StackTrace, cancellationToken: cancellationToken);
 
             return SelfTest.FAILURE;
         }
