@@ -14,6 +14,11 @@ internal static class TestAppFactory
 
     public static WebApplication BuildApp()
     {
+        return BuildApp(TestConnectionStrings.FakeSqlServer);
+    }
+
+    public static WebApplication BuildApp(string connectionString)
+    {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
 
         builder.Configuration.Sources.Clear();
@@ -21,7 +26,7 @@ internal static class TestAppFactory
             new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
             {
                 ["DatabaseConfiguration:Provider"] = "mssql",
-                ["DatabaseConfiguration:ConnectionString"] = TestConnectionStrings.FakeSqlServer,
+                ["DatabaseConfiguration:ConnectionString"] = connectionString,
                 ["Rpc:Ethereum"] = string.Empty,
                 ["Rpc:Arbitrum"] = string.Empty,
                 ["Rpc:Base"] = string.Empty,
