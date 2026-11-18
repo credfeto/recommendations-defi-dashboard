@@ -80,6 +80,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - DefiLlama hacks with a null amount no longer break deserialisation - hack Amount is now nullable end to end (API model, storage row and mapper, database table and table type, and a new migration) (#433)
 - Flaky CacheWarmerService test (#251)
 - CacheWarmerService now logs per-entry warm-up failures and continues warming the remaining entries (#427)
+- Test projects roll forward to the newest installed .NET runtime so they run when only a newer shared runtime than net10.0 is available
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
@@ -127,6 +128,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Removed redundant EnableMicrosoftExtensionsConfigurationBinderSourceGenerator property from Credfeto.Defi.Server; EnableConfigurationBindingGenerator already enables the configuration binding source generator
 - Docker Compose watchtower now removes old images after updating (WATCHTOWER_CLEANUP=true) and uses a cron-style WATCHTOWER_SCHEDULE (default '0 3/15 * * * *', overridable) instead of WATCHTOWER_POLL_INTERVAL; documented in README and .env.example
 - SDK - Updated DotNet SDK to 11.0.100
+- Server Docker runtime image moved to Ubuntu 26.04 (resolute), pinned by digest, so it matches the glibc the server is built against; the image build now runs the server's new --self-test switch via an exec-form RUN step so a runtime incompatibility fails the build instead of failing at container start (#446). The change is documented in CONTRIBUTING and the AI instructions
 
 ### Deprecated
 ### Removed
