@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
@@ -23,7 +24,7 @@ public sealed class WebacyRiskClient : IWebacyRiskClient
 
     private const double MEDIUM_RISK_MAX = 50;
 
-    private static readonly IReadOnlyDictionary<string, string> ChainNameToCode = new Dictionary<string, string>(
+    private static readonly FrozenDictionary<string, string> ChainNameToCode = new Dictionary<string, string>(
         StringComparer.OrdinalIgnoreCase
     )
     {
@@ -33,7 +34,7 @@ public sealed class WebacyRiskClient : IWebacyRiskClient
         ["BSC"] = "bsc",
         ["Polygon"] = "pol",
         ["Optimism"] = "opt",
-    };
+    }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<WebacyRiskClient> _logger;
