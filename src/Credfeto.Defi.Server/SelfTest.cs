@@ -55,9 +55,11 @@ internal static class SelfTest
 
             if (!hasIcuCultureData())
             {
+                // The failure reason must be written even when the caller's token is already cancelled, otherwise
+                // the write throws and the reason is replaced by a cancellation error.
                 await error.WriteLineAsync(
                     value: "Self-test failed: ICU culture data is not available",
-                    cancellationToken: cancellationToken
+                    cancellationToken: CancellationToken.None
                 );
 
                 return FAILURE;
@@ -67,8 +69,10 @@ internal static class SelfTest
         }
         catch (Exception exception)
         {
-            await error.WriteLineAsync(value: "Self-test failed:", cancellationToken: cancellationToken);
-            await error.WriteLineAsync(value: exception.ToString(), cancellationToken: cancellationToken);
+            // The diagnostics must be written even when the caller's token is already cancelled, otherwise the
+            // write throws out of the catch block, losing the error and the FAILURE exit code.
+            await error.WriteLineAsync(value: "Self-test failed:", cancellationToken: CancellationToken.None);
+            await error.WriteLineAsync(value: exception.ToString(), cancellationToken: CancellationToken.None);
 
             return FAILURE;
         }
