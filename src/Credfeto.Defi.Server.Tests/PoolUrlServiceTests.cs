@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services;
 using FunFair.Test.Common;
