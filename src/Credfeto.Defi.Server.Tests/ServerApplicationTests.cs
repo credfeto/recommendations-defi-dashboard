@@ -130,6 +130,39 @@ public sealed class ServerApplicationTests : TestBase
         Assert.Empty(error.ToString());
     }
 
+    [Fact]
+    public async Task RunAsync_NoSelfTestSwitchAndTokenCancelledOnceStarted_StopsServerAndReturnsSuccess()
+    {
+        using CancellationTokenSource shutdown = CancellationTokenSource.CreateLinkedTokenSource(
+            this.CancellationToken()
+        );
+        await using StringWriter error = new();
+
+        // Without the token reaching the server the run never ends, so bound it to fail rather than hang.
+        int result = await ServerApplication
+            .RunAsync(
+                args: [],
+                createApplication: _ => BuildServerThatCancelsOnceStarted(shutdown),
+                error: error,
+                cancellationToken: shutdown.Token
+            )
+            .WaitAsync(timeout: TimeSpan.FromSeconds(30), cancellationToken: this.CancellationToken());
+
+        Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
+        Assert.Empty(error.ToString());
+    }
+
+    private static WebApplication BuildServerThatCancelsOnceStarted(CancellationTokenSource shutdown)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
+        _ = builder.WebHost.UseUrls("http://127.0.0.1:0");
+
+        WebApplication app = builder.Build();
+        _ = app.Lifetime.ApplicationStarted.Register(shutdown.Cancel);
+
+        return app;
+    }
+
     private static WebApplication BuildServerThatStopsOnceStarted()
     {
         WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
