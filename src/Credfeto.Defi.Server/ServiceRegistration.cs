@@ -16,9 +16,10 @@ internal static class ServiceRegistration
 {
     public static WebApplicationBuilder AddDefiServices(this WebApplicationBuilder builder)
     {
-        _ = builder.Services.Configure<DatabaseConfiguration>(
-            builder.Configuration.GetSection("DatabaseConfiguration")
-        );
+        _ = builder
+            .Services.AddOptions<DatabaseConfiguration>()
+            .Bind(builder.Configuration.GetSection("DatabaseConfiguration"))
+            .ValidateOnStart();
 
         _ = builder.Services.AddOptions<RpcConfig>().BindConfiguration("Rpc");
 
