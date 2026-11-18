@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using FunFair.Test.Common;
 using Microsoft.AspNetCore.Builder;
@@ -75,6 +76,26 @@ public sealed class ServerApplicationTests : TestBase
             createApplication: _ => throw new InvalidOperationException("Broken configuration"),
             error: error,
             cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: SelfTest.FAILURE, actual: result);
+        Assert.Contains(
+            expectedSubstring: "Broken configuration",
+            actualString: error.ToString(),
+            comparisonType: StringComparison.Ordinal
+        );
+    }
+
+    [Fact]
+    public async Task RunAsync_CreateApplicationThrowsWithCancelledToken_StillReturnsFailureAndReportsError()
+    {
+        await using StringWriter error = new();
+
+        int result = await ServerApplication.RunAsync(
+            args: [],
+            createApplication: _ => throw new InvalidOperationException("Broken configuration"),
+            error: error,
+            cancellationToken: new CancellationToken(canceled: true)
         );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);

@@ -105,6 +105,52 @@ public sealed class SelfTestTests : TestBase
     }
 
     [Fact]
+    public async Task VerifyAsync_IcuCultureDataMissingWithCancelledToken_StillReturnsFailureAndReportsError()
+    {
+        await using WebApplication app = TestAppFactory.BuildApp();
+        await using StringWriter error = new();
+
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            hasIcuCultureData: () => false,
+            cancellationToken: new CancellationToken(canceled: true)
+        );
+
+        Assert.Equal(expected: SelfTest.FAILURE, actual: result);
+        Assert.Contains(
+            expectedSubstring: "ICU culture data is not available",
+            actualString: error.ToString(),
+            comparisonType: StringComparison.Ordinal
+        );
+    }
+
+    [Fact]
+    public async Task VerifyAsync_UnresolvableHostedServiceWithCancelledToken_StillReturnsFailureAndReportsError()
+    {
+        WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
+        _ = builder.Services.AddSingleton<IHostedService>(services => new HostedServiceWithMissingDependency(
+            services.GetRequiredService<IMissingDependency>()
+        ));
+
+        await using WebApplication app = builder.Build();
+        await using StringWriter error = new();
+
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            cancellationToken: new CancellationToken(canceled: true)
+        );
+
+        Assert.Equal(expected: SelfTest.FAILURE, actual: result);
+        Assert.Contains(
+            expectedSubstring: nameof(IMissingDependency),
+            actualString: error.ToString(),
+            comparisonType: StringComparison.Ordinal
+        );
+    }
+
+    [Fact]
     public async Task VerifyAsync_ApplicationWithoutDefiServices_ReturnsFailure()
     {
         await using WebApplication app = WebApplication.CreateSlimBuilder().Build();

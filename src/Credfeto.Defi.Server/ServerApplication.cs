@@ -29,15 +29,9 @@ internal static class ServerApplication
                 createApplication: () => createApplication([]),
                 run: app =>
                     SelfTest.VerifyAsync(services: app.Services, error: error, cancellationToken: cancellationToken),
-                error: error,
-                cancellationToken: cancellationToken
+                error: error
             )
-            : RunApplicationAsync(
-                createApplication: () => createApplication(args),
-                run: RunServerAsync,
-                error: error,
-                cancellationToken: cancellationToken
-            );
+            : RunApplicationAsync(createApplication: () => createApplication(args), run: RunServerAsync, error: error);
     }
 
     public static WebApplication Create(string[] args)
@@ -69,8 +63,7 @@ internal static class ServerApplication
     private static async Task<int> RunApplicationAsync(
         Func<WebApplication> createApplication,
         Func<WebApplication, Task<int>> run,
-        TextWriter error,
-        CancellationToken cancellationToken
+        TextWriter error
     )
     {
         try
@@ -81,9 +74,11 @@ internal static class ServerApplication
         }
         catch (Exception exception)
         {
-            await error.WriteLineAsync(value: "Fatal error during startup:", cancellationToken: cancellationToken);
-            await error.WriteLineAsync(value: exception.Message, cancellationToken: cancellationToken);
-            await error.WriteLineAsync(value: exception.StackTrace, cancellationToken: cancellationToken);
+            // The diagnostics must be written even when the caller's token is already cancelled, otherwise the
+            // write throws out of the catch block, losing the error and the FAILURE exit code.
+            await error.WriteLineAsync(value: "Fatal error during startup:", cancellationToken: CancellationToken.None);
+            await error.WriteLineAsync(value: exception.Message, cancellationToken: CancellationToken.None);
+            await error.WriteLineAsync(value: exception.StackTrace, cancellationToken: CancellationToken.None);
 
             return SelfTest.FAILURE;
         }
