@@ -19,8 +19,6 @@
 
     <!-- Generate a settings file that restricts coverage to the sister assembly, passed via coverage-settings flag -->
     <PropertyGroup>
-        <!-- Test projects target net10.0 but the pinned SDK (src/global.json) may only ship a newer shared runtime; roll forward so the test host runs on it instead of exiting 150 -->
-        <RollForward>Major</RollForward>
         <_CoverageSisterAssembly>$(MSBuildProjectName.Replace('.Tests', ''))</_CoverageSisterAssembly>
         <_CoverageSettingsFile>$(MSBuildProjectDirectory)/coverage.settings.xml</_CoverageSettingsFile>
         <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --coverage-settings "$(_CoverageSettingsFile)"</TestingPlatformCommandLineArguments>
