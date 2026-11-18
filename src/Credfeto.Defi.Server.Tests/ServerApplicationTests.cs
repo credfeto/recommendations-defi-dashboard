@@ -16,7 +16,11 @@ public sealed class ServerApplicationTests : TestBase
         await using WebApplication app = ServerApplication.Create(["--contentRoot", AppContext.BaseDirectory]);
         await using StringWriter error = new();
 
-        int result = await SelfTest.VerifyAsync(services: app.Services, error: error);
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            cancellationToken: this.CancellationToken()
+        );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
         Assert.Empty(error.ToString());
@@ -36,7 +40,8 @@ public sealed class ServerApplicationTests : TestBase
 
                 return TestAppFactory.BuildApp();
             },
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
@@ -52,7 +57,8 @@ public sealed class ServerApplicationTests : TestBase
         int result = await ServerApplication.RunAsync(
             args: ["--self-test"],
             createApplication: _ => WebApplication.CreateSlimBuilder().Build(),
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
@@ -67,7 +73,8 @@ public sealed class ServerApplicationTests : TestBase
         int result = await ServerApplication.RunAsync(
             args: [],
             createApplication: _ => throw new InvalidOperationException("Broken configuration"),
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
@@ -93,7 +100,8 @@ public sealed class ServerApplicationTests : TestBase
 
                 return BuildServerThatStopsOnceStarted();
             },
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);

@@ -14,7 +14,8 @@ internal static class Program
             : await ServerApplication.RunAsync(
                 args: args,
                 createApplication: ServerApplication.Create,
-                error: Console.Error
+                error: Console.Error,
+                cancellationToken: CancellationToken.None
             );
     }
 }

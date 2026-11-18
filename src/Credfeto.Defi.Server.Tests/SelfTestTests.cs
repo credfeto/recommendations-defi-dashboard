@@ -48,7 +48,11 @@ public sealed class SelfTestTests : TestBase
         await using WebApplication app = TestAppFactory.BuildApp();
         await using StringWriter error = new();
 
-        int result = await SelfTest.VerifyAsync(services: app.Services, error: error);
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            cancellationToken: this.CancellationToken()
+        );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
         Assert.Empty(error.ToString());
@@ -60,7 +64,12 @@ public sealed class SelfTestTests : TestBase
         await using WebApplication app = TestAppFactory.BuildApp();
         await using StringWriter error = new();
 
-        int result = await SelfTest.VerifyAsync(services: app.Services, error: error, hasIcuCultureData: () => false);
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            hasIcuCultureData: () => false,
+            cancellationToken: this.CancellationToken()
+        );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
         Assert.Contains(
@@ -81,7 +90,11 @@ public sealed class SelfTestTests : TestBase
         await using WebApplication app = builder.Build();
         await using StringWriter error = new();
 
-        int result = await SelfTest.VerifyAsync(services: app.Services, error: error);
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            cancellationToken: this.CancellationToken()
+        );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
         Assert.Contains(
@@ -97,7 +110,11 @@ public sealed class SelfTestTests : TestBase
         await using WebApplication app = WebApplication.CreateSlimBuilder().Build();
         await using StringWriter error = new();
 
-        int result = await SelfTest.VerifyAsync(services: app.Services, error: error);
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            cancellationToken: this.CancellationToken()
+        );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
         Assert.NotEmpty(error.ToString());
