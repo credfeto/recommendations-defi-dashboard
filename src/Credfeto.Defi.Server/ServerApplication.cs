@@ -7,6 +7,7 @@ using Credfeto.Defi.Server.Endpoints;
 using Credfeto.Defi.Server.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Core;
@@ -31,7 +32,11 @@ internal static class ServerApplication
                     SelfTest.VerifyAsync(services: app.Services, error: error, cancellationToken: cancellationToken),
                 error: error
             )
-            : RunApplicationAsync(createApplication: () => createApplication(args), run: RunServerAsync, error: error);
+            : RunApplicationAsync(
+                createApplication: () => createApplication(args),
+                run: app => RunServerAsync(app: app, cancellationToken: cancellationToken),
+                error: error
+            );
     }
 
     public static WebApplication Create(string[] args)
@@ -84,9 +89,11 @@ internal static class ServerApplication
         }
     }
 
-    private static async Task<int> RunServerAsync(WebApplication app)
+    private static async Task<int> RunServerAsync(WebApplication app, CancellationToken cancellationToken)
     {
-        await app.RunAsync();
+        // Cancelling the token requests a graceful shutdown once the server has started.
+        await app.StartAsync(cancellationToken);
+        await app.WaitForShutdownAsync(cancellationToken);
 
         return SelfTest.SUCCESS;
     }
