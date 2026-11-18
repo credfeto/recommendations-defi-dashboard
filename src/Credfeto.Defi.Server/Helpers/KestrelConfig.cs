@@ -29,9 +29,8 @@ internal static class KestrelConfig
 
         if (File.Exists(certPath))
         {
-            options.ListenAnyIP(
-                port: HTTPS_PORT,
-                configure: o => ConfigureHttpsEndpoint(listenOptions: o, certFile: certPath)
+            options.ListenAnyIP(port: HTTPS_PORT, configure: o =>
+                ConfigureHttpsEndpoint(listenOptions: o, certFile: certPath)
             );
         }
 
