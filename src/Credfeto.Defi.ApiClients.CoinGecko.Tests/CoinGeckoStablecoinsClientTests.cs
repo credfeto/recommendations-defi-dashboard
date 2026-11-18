@@ -374,11 +374,9 @@ public sealed class CoinGeckoStablecoinsClientTests : TestBase
         ILogger<CoinGeckoStablecoinsClient> logger
     )
     {
-        ICall call = Assert.Single(
-            collection: logger.ReceivedCalls(),
-            predicate: static c =>
-                StringComparer.Ordinal.Equals(x: c.GetMethodInfo().Name, y: nameof(ILogger.Log))
-                && c.GetArguments()[0] is LogLevel.Warning
+        ICall call = Assert.Single(collection: logger.ReceivedCalls(), predicate: static c =>
+            StringComparer.Ordinal.Equals(x: c.GetMethodInfo().Name, y: nameof(ILogger.Log))
+            && c.GetArguments()[0] is LogLevel.Warning
         );
 
         return Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object?>>>(call.GetArguments()[2]);

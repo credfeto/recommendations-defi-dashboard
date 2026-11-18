@@ -331,9 +331,8 @@ public sealed class CacheWarmerServiceTests : TestBase
         IReadOnlyList<KeyValuePair<string, object?>> state = Assert.IsAssignableFrom<
             IReadOnlyList<KeyValuePair<string, object?>>
         >(arguments[2]);
-        KeyValuePair<string, object?> key = Assert.Single(
-            state,
-            predicate: static kvp => StringComparer.Ordinal.Equals(x: kvp.Key, y: "Key")
+        KeyValuePair<string, object?> key = Assert.Single(state, predicate: static kvp =>
+            StringComparer.Ordinal.Equals(x: kvp.Key, y: "Key")
         );
         Assert.Equal(expected: "defillama_pools", actual: key.Value);
         Assert.Same(expected: failure, actual: arguments[3]);

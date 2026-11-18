@@ -1,4 +1,4 @@
-﻿using Credfeto.Defi.Storage.Configuration;
+using Credfeto.Defi.Storage.Configuration;
 using Credfeto.Services.Startup.Interfaces;
 using FunFair.Test.Common;
 using Microsoft.Extensions.DependencyInjection;
