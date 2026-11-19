@@ -109,7 +109,7 @@ public sealed class PoolFilterServiceExtendedTests : TestBase
     [Fact]
     public void ApplyBaseFilters_ExactMinTvl_Included()
     {
-        // MIN_TVL is 1_000_000 — exactly at threshold should pass
+        // MIN_TVL is 1_000_000; exactly at threshold should pass
         IReadOnlyList<RawPool> pools = [MakePool(tvlUsd: 1_000_000)];
         IReadOnlyList<RawPool> result = PoolFilterService.ApplyBaseFilters(pools);
         Assert.Single(result);

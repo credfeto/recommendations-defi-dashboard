@@ -1,4 +1,4 @@
-# MCP Server — HTTP Examples
+# MCP Server: HTTP Examples
 #
 # The MCP server is mounted on the ASP.NET Core server at POST /mcp.
 # It uses the MCP Streamable HTTP transport (stateless mode).
@@ -56,7 +56,7 @@ Content-Type: application/json
 
 ###
 
-# ── 4. get_pools — stablecoin pools, top 5 ──────────────────────────────────
+# ── 4. get_pools - stablecoin pools, top 5 ──────────────────────────────────
 POST {{baseUrl}}/mcp
 Content-Type: application/json
 
@@ -72,7 +72,7 @@ Content-Type: application/json
 
 ###
 
-# ── 5. get_pools — ETH / liquid staking pools ───────────────────────────────
+# ── 5. get_pools - ETH / liquid staking pools ───────────────────────────────
 POST {{baseUrl}}/mcp
 Content-Type: application/json
 
@@ -88,7 +88,7 @@ Content-Type: application/json
 
 ###
 
-# ── 6. check_contract_security — single address ──────────────────────────────
+# ── 6. check_contract_security - single address ──────────────────────────────
 POST {{baseUrl}}/mcp
 Content-Type: application/json
 
@@ -107,7 +107,7 @@ Content-Type: application/json
 
 ###
 
-# ── 7. check_contract_security — batch (up to 10 addresses) ─────────────────
+# ── 7. check_contract_security - batch (up to 10 addresses) ─────────────────
 POST {{baseUrl}}/mcp
 Content-Type: application/json
 

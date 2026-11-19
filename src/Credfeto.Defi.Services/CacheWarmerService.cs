@@ -74,7 +74,7 @@ public sealed class CacheWarmerService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // Fire and forget — warming is best-effort and must not block startup
+        // Fire and forget: warming is best-effort and must not block startup
         _ = Task.Run(() => this.WarmCacheAsync(cancellationToken), cancellationToken);
 
         return Task.CompletedTask;

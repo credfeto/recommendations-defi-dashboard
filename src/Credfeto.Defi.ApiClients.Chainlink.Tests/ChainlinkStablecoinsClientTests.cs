@@ -131,7 +131,7 @@ public sealed class ChainlinkStablecoinsClientTests : TestBase
     [Fact]
     public async Task FetchStablecoinsAsync_InvalidHexInAnswer_SkipsFeedAsync()
     {
-        // 'G' is not a valid hex character — BigInteger.TryParse will fail for the answer field
+        // 'G' is not a valid hex character, so BigInteger.TryParse will fail for the answer field
         // Response structure: roundId(64) + answer(64) + startedAt(64) + updatedAt(64) + answeredInRound(64) = 320 hex chars
         const string INVALID_HEX_JSON =
             """{"result":"0x0000000000000000000000000000000000000000000000000000000000000001GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001"}""";
