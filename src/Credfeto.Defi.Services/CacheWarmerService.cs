@@ -93,7 +93,10 @@ public sealed class CacheWarmerService : IHostedService
 
         foreach (FetcherRegistration registration in fetchers)
         {
-            if (registration.BypassFreshnessGate || !await this._apiCache.IsFreshAsync(registration.Key))
+            if (
+                registration.BypassFreshnessGate
+                || !await this._apiCache.IsFreshAsync(key: registration.Key, cancellationToken: cancellationToken)
+            )
             {
                 Task warmingTask = WarmEntryAsync(
                     key: registration.Key,
