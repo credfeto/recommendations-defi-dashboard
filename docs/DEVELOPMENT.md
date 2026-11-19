@@ -25,7 +25,7 @@ dotnet run --project Credfeto.Defi.Server
 
 The server listens on:
 
-- `http://localhost:8080` (plain HTTP, loopback only — used by the health check)
+- `http://localhost:8080` (plain HTTP, loopback only, used by the health check)
 - `https://localhost:8081` (HTTPS/HTTP/2/HTTP/3) when `server.pfx` is present
 
 Ports are hardcoded: HTTP on **8080**, HTTPS on **8081**. The certificate path is hardcoded to `<AppContext.BaseDirectory>/server.pfx` (not configurable via environment variable).
