@@ -81,6 +81,8 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Flaky CacheWarmerService test (#251)
 - CacheWarmerService now logs per-entry warm-up failures and continues warming the remaining entries (#427)
 - Test projects roll forward to the newest installed .NET runtime so they run when only a newer shared runtime than net10.0 is available
+- Failure diagnostics in the server and self-test are no longer lost when the cancellation token is cancelled (#443)
+- Cancelling the run token now stops the server (#443)
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
@@ -129,7 +131,10 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Docker Compose watchtower now removes old images after updating (WATCHTOWER_CLEANUP=true) and uses a cron-style WATCHTOWER_SCHEDULE (default '0 3/15 * * * *', overridable) instead of WATCHTOWER_POLL_INTERVAL; documented in README and .env.example
 - SDK - Updated DotNet SDK to 11.0.100
 - Server Docker runtime image moved to Ubuntu 26.04 (resolute), pinned by digest, so it matches the glibc the server is built against; the image build now runs the server's new --self-test switch via an exec-form RUN step so a runtime incompatibility fails the build instead of failing at container start (#446). The change is documented in CONTRIBUTING and the AI instructions
-- Projects now target .NET 11 with the C# runtime-async compiler feature enabled, and package references already supplied by the .NET 11 shared framework were removed (#443)
+- Projects now target .NET 11 with runtime-async enabled, and package references supplied by the .NET 11 shared framework were removed (#443)
+- Microsoft.Extensions.Http, Microsoft.AspNetCore.OpenApi and Microsoft.Extensions.Hosting.Systemd updated to 11.0.0 (#443)
+- Docker runtime image moved to runtime-deps 11.0-resolute, and docs updated for .NET 11 (#443)
+- ApiCacheService.IsFreshAsync now takes and honours a cancellation token, and remaining CancellationToken.None uses are documented (#454)
 
 ### Deprecated
 ### Removed
