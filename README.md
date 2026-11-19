@@ -11,7 +11,7 @@ A server-only application that aggregates and filters DeFi liquidity pools from 
 - Hack/exploit risk flagging from the DefiLlama hacks dataset
 - Server-side SQLite cache (1-hour TTL) to reduce external API calls
 - MCP server exposing `get_pool_types`, `get_pools`, and `check_contract_security` tools
-- Self-signed `server.pfx` generated at container startup — HTTPS and HTTP/3 with no nginx
+- Self-signed `server.pfx` generated at container startup, giving HTTPS and HTTP/3 with no nginx
 
 ## Quick Start
 
@@ -57,10 +57,10 @@ docker run -p 443:8081 -p 443:8081/udp \
 ## API
 
 ```text
-GET /api/pools              — list available pool types
-GET /api/pools/:poolName    — pools for a given type
-POST|GET|DELETE /mcp        — MCP Streamable HTTP endpoint
-GET /ping                   — health check -> 200 "pong"
+GET /api/pools              - list available pool types
+GET /api/pools/:poolName    - pools for a given type
+POST|GET|DELETE /mcp        - MCP Streamable HTTP endpoint
+GET /ping                   - health check -> 200 "pong"
 ```
 
 Supported pool types: `ETH`, `STABLES`, `HIGH_YIELD`, `LOW_TVL`, `BLUE_CHIP`
