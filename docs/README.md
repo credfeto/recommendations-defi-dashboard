@@ -38,7 +38,7 @@ See [Development Guide](./DEVELOPMENT.md#docker)
 
 ## Quick Stats
 
-- **Backend**: .NET 10, ASP.NET Core, native AOT
+- **Backend**: .NET 11, ASP.NET Core, native AOT
 - **Pool Types**: 5 built-in types
 - **Tests**: 268 passing (xunit v3)
 - **Cache**: SQLite, 1-hour TTL

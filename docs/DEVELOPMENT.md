@@ -2,7 +2,8 @@
 
 ## Prerequisites
 
-- .NET 10 SDK (`dotnet --version` should show `10.x`)
+- .NET 11 SDK (`dotnet --version` should show `11.x`)
+- .NET 10 runtime (the `Credfeto.Defi.Storage.Database` SqlProj project still targets `net10.0`, so its build needs it)
 - Docker (for container builds and deployment)
 
 ## Getting Started
