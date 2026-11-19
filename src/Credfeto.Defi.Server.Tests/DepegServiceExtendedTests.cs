@@ -256,7 +256,7 @@ public sealed class DepegServiceExtendedTests : TestBase
     {
         const string USDC_ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
 
-        // 0.988 → |0.988 - 1.0| / 1.0 = 0.012 = 1.2% — above warn (0.5%) but below critical (2%) → warning
+        // 0.988 → |0.988 - 1.0| / 1.0 = 0.012 = 1.2%, above warn (0.5%) but below critical (2%) → warning
         Dictionary<string, decimal> priceMap = new(StringComparer.OrdinalIgnoreCase) { ["usdc"] = 0.988m };
 
         Dictionary<string, string> addressMap = new(StringComparer.OrdinalIgnoreCase) { [USDC_ADDRESS] = "usdc" };

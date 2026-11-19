@@ -34,7 +34,7 @@ internal static class KestrelConfig
             );
         }
 
-        // Plain HTTP on loopback only — used by the health check
+        // Plain HTTP on loopback only, used by the health check
         options.Listen(address: IPAddress.Loopback, port: HTTP_PORT, configure: ConfigureHttpEndpoint);
     }
 
