@@ -143,7 +143,10 @@ public sealed class ApiCacheServiceTests : TestBase
     [Fact]
     public async Task IsFreshAsync_CacheMiss_ReturnsFalseAsync()
     {
-        bool result = await this._cache.IsFreshAsync("nonexistent-key");
+        bool result = await this._cache.IsFreshAsync(
+            key: "nonexistent-key",
+            cancellationToken: this.CancellationToken()
+        );
         Assert.False(result, userMessage: "A missing cache entry should not be considered fresh");
     }
 
@@ -154,7 +157,10 @@ public sealed class ApiCacheServiceTests : TestBase
         ApiCacheRow recentRow = new("fresh-check-key", cachedJson, FixedNow - TimeSpan.FromMinutes(10));
         this._database.WithReturn<ApiCacheRow?>(recentRow);
 
-        bool result = await this._cache.IsFreshAsync("fresh-check-key");
+        bool result = await this._cache.IsFreshAsync(
+            key: "fresh-check-key",
+            cancellationToken: this.CancellationToken()
+        );
         Assert.True(result, userMessage: "A recently cached entry should be considered fresh");
     }
 
@@ -165,7 +171,10 @@ public sealed class ApiCacheServiceTests : TestBase
         ApiCacheRow oldRow = new("stale-check-key", cachedJson, FixedNow - TimeSpan.FromHours(2));
         this._database.WithReturn<ApiCacheRow?>(oldRow);
 
-        bool result = await this._cache.IsFreshAsync("stale-check-key");
+        bool result = await this._cache.IsFreshAsync(
+            key: "stale-check-key",
+            cancellationToken: this.CancellationToken()
+        );
         Assert.False(result, userMessage: "An old cache entry should not be considered fresh");
     }
 }

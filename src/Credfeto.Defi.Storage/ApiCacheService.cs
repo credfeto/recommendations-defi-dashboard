@@ -81,13 +81,13 @@ public sealed class ApiCacheService
         }
     }
 
-    public async ValueTask<bool> IsFreshAsync(string key)
+    public async ValueTask<bool> IsFreshAsync(string key, CancellationToken cancellationToken)
     {
         DateTimeOffset now = this._timeProvider.GetUtcNow();
 
         ApiCacheRow? row = await this._database.ExecuteAsync(
             action: (c, ct) => DefiDatabase.ApiCache_GetByKeyAsync(connection: c, key: key, cancellationToken: ct),
-            cancellationToken: CancellationToken.None
+            cancellationToken: cancellationToken
         );
 
         return row is not null && now - row.FetchedAt < FreshTtl;
