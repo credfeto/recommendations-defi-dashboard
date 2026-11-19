@@ -2,7 +2,7 @@
 
 ## Overview
 
-The DeFi Dashboard is a native-AOT .NET 10 application. It aggregates liquidity pool data from external APIs, enriches it with hack/audit/depeg/contract-security information, and exposes the results via a REST API and an MCP server. A SQLite cache reduces external API calls. Kestrel handles TLS termination and HTTP/3 directly — no reverse proxy required.
+The DeFi Dashboard is a native-AOT .NET 11 application. It aggregates liquidity pool data from external APIs, enriches it with hack/audit/depeg/contract-security information, and exposes the results via a REST API and an MCP server. A SQLite cache reduces external API calls. Kestrel handles TLS termination and HTTP/3 directly — no reverse proxy required.
 
 ## Architecture Diagram
 
@@ -109,7 +109,7 @@ The cache warmer pre-fetches all entries in the background at startup.
 
 | Layer | Technology |
 | --- | --- |
-| Runtime | .NET 10, native AOT (`linux-x64`) |
+| Runtime | .NET 11, native AOT (`linux-x64`) |
 | HTTP server | ASP.NET Core / Kestrel |
 | TLS | PFX cert via `X509CertificateLoader` |
 | HTTP/3 | MsQuic (`libmsquic`) |
@@ -118,4 +118,4 @@ The cache warmer pre-fetches all entries in the background at startup.
 | MCP | `ModelContextProtocol.AspNetCore` (Streamable HTTP, stateless) |
 | Logging | Serilog with source-generated `LoggerMessage` extensions |
 | Testing | xunit v3 + `FunFair.Test.Common` + `NSubstitute` |
-| Container | `mcr.microsoft.com/dotnet/runtime-deps:10.0-noble` |
+| Container | `mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute` |
