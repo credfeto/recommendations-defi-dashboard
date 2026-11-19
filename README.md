@@ -17,7 +17,8 @@ A server-only application that aggregates and filters DeFi liquidity pools from 
 
 ### Prerequisites
 
-- .NET 10 SDK
+- .NET 11 SDK
+- .NET 10 runtime (the `Credfeto.Defi.Storage.Database` SqlProj project still targets `net10.0`)
 - Docker (for container deployment)
 
 ### Development
