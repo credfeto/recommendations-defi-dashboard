@@ -355,7 +355,7 @@ public sealed class ContractSecurityServiceTests : TestBase
     public async Task GetContractSecurityForAddressesAsync_NonNumericBoolField_ParsedAsNullAsync()
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        // "is_honeypot" has a non-numeric string value — ParseBool returns null for unparseable input
+        // "is_honeypot" has a non-numeric string value; ParseBool returns null for unparseable input
         const string JSON =
             "{\"code\":1,\"result\":{\""
             + ADDRESS
@@ -388,7 +388,7 @@ public sealed class ContractSecurityServiceTests : TestBase
     public async Task GetContractSecurityForAddressesAsync_NumericTaxFields_ParsedCorrectlyAsync()
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        // Tax fields with numeric string values — ParseNum returns the parsed double
+        // Tax fields with numeric string values; ParseNum returns the parsed double
         // Also tests ParseNum when value is non-parseable ("n/a" → null)
         const string JSON =
             "{\"code\":1,\"result\":{\""
