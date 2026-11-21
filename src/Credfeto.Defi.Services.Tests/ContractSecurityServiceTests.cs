@@ -355,7 +355,7 @@ public sealed class ContractSecurityServiceTests : TestBase
     public async Task GetContractSecurityForAddressesAsync_NonNumericBoolField_ParsedAsNullAsync()
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        // "is_honeypot" has a non-numeric string value — ParseBool returns null for unparseable input
+        // "is_honeypot" has a non-numeric string value; ParseBool returns null for unparseable input
         const string JSON =
             "{\"code\":1,\"result\":{\""
             + ADDRESS
@@ -388,7 +388,7 @@ public sealed class ContractSecurityServiceTests : TestBase
     public async Task GetContractSecurityForAddressesAsync_NumericTaxFields_ParsedCorrectlyAsync()
     {
         const string ADDRESS = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-        // Tax fields with numeric string values — ParseNum returns the parsed double
+        // Tax fields with numeric string values; ParseNum returns the parsed double
         // Also tests ParseNum when value is non-parseable ("n/a" → null)
         const string JSON =
             "{\"code\":1,\"result\":{\""
@@ -502,15 +502,13 @@ public sealed class ContractSecurityServiceTests : TestBase
 
         Assert.Equal(expected: 2, actual: result.Count);
 
-        ContractSecurityInfo goPlusInfo = Assert.Single(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.GoPlus, StringComparison.Ordinal)
+        ContractSecurityInfo goPlusInfo = Assert.Single(result, info =>
+            string.Equals(info.Source, ContractSecuritySource.GoPlus, StringComparison.Ordinal)
         );
         Assert.False(goPlusInfo.IsHoneypot);
 
-        ContractSecurityInfo honeypotIsInfo = Assert.Single(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
+        ContractSecurityInfo honeypotIsInfo = Assert.Single(result, info =>
+            string.Equals(info.Source, ContractSecuritySource.HoneypotIs, StringComparison.Ordinal)
         );
         Assert.Equal(expected: honeypotVerdict, actual: honeypotIsInfo.IsHoneypot);
         Assert.Equal(expected: buyTax / 100.0, actual: honeypotIsInfo.BuyTax);
@@ -584,9 +582,8 @@ public sealed class ContractSecurityServiceTests : TestBase
 
         Assert.Equal(expected: 2, actual: result.Count);
 
-        ContractSecurityInfo webacyInfo = Assert.Single(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
+        ContractSecurityInfo webacyInfo = Assert.Single(result, info =>
+            string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
         );
         Assert.Equal(expected: ADDRESS, actual: webacyInfo.Address);
         Assert.Equal(expected: 42.5, actual: webacyInfo.RiskScore);
@@ -620,9 +617,8 @@ public sealed class ContractSecurityServiceTests : TestBase
             cancellationToken: this.CancellationToken()
         );
 
-        ContractSecurityInfo webacyInfo = Assert.Single(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
+        ContractSecurityInfo webacyInfo = Assert.Single(result, info =>
+            string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
         );
         Assert.Equal(expected: 10.0, actual: webacyInfo.RiskScore);
         await webacyRiskClient
@@ -653,9 +649,8 @@ public sealed class ContractSecurityServiceTests : TestBase
             cancellationToken: this.CancellationToken()
         );
 
-        Assert.DoesNotContain(
-            result,
-            info => string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
+        Assert.DoesNotContain(result, info =>
+            string.Equals(info.Source, ContractSecuritySource.Webacy, StringComparison.Ordinal)
         );
         await webacyRiskClient
             .Received(1)

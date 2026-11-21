@@ -1,11 +1,13 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.Mcp;
 using Credfeto.Defi.Server.Endpoints;
 using Credfeto.Defi.Server.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Core;
@@ -14,17 +16,27 @@ namespace Credfeto.Defi.Server;
 
 internal static class ServerApplication
 {
-    public static Task<int> RunAsync(string[] args, Func<string[], WebApplication> createApplication, TextWriter error)
+    public static Task<int> RunAsync(
+        string[] args,
+        Func<string[], WebApplication> createApplication,
+        TextWriter error,
+        CancellationToken cancellationToken
+    )
     {
         // The self-test builds the application without command-line arguments so the switch itself is never
         // interpreted as a configuration key.
         return SelfTest.IsSelfTest(args)
             ? RunApplicationAsync(
                 createApplication: () => createApplication([]),
-                run: app => SelfTest.VerifyAsync(services: app.Services, error: error),
+                run: app =>
+                    SelfTest.VerifyAsync(services: app.Services, error: error, cancellationToken: cancellationToken),
                 error: error
             )
-            : RunApplicationAsync(createApplication: () => createApplication(args), run: RunServerAsync, error: error);
+            : RunApplicationAsync(
+                createApplication: () => createApplication(args),
+                run: app => RunServerAsync(app: app, cancellationToken: cancellationToken),
+                error: error
+            );
     }
 
     public static WebApplication Create(string[] args)
@@ -67,17 +79,21 @@ internal static class ServerApplication
         }
         catch (Exception exception)
         {
-            await error.WriteLineAsync("Fatal error during startup:");
-            await error.WriteLineAsync(exception.Message);
-            await error.WriteLineAsync(exception.StackTrace);
+            // The diagnostics must be written even when the caller's token is already cancelled, otherwise the
+            // write throws out of the catch block, losing the error and the FAILURE exit code.
+            await error.WriteLineAsync(value: "Fatal error during startup:", cancellationToken: CancellationToken.None);
+            await error.WriteLineAsync(value: exception.Message, cancellationToken: CancellationToken.None);
+            await error.WriteLineAsync(value: exception.StackTrace, cancellationToken: CancellationToken.None);
 
             return SelfTest.FAILURE;
         }
     }
 
-    private static async Task<int> RunServerAsync(WebApplication app)
+    private static async Task<int> RunServerAsync(WebApplication app, CancellationToken cancellationToken)
     {
-        await app.RunAsync();
+        // Cancelling the token requests a graceful shutdown once the server has started.
+        await app.StartAsync(cancellationToken);
+        await app.WaitForShutdownAsync(cancellationToken);
 
         return SelfTest.SUCCESS;
     }

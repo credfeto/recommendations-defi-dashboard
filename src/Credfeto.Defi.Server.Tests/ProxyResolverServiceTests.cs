@@ -220,7 +220,7 @@ public sealed class ProxyResolverServiceTests : TestBase
     [Fact]
     public async Task ResolveProxyImplementationAsync_WrongHexLength_ReturnsNullAsync()
     {
-        // 0x + 60 chars (not 64) — wrong length after stripping 0x
+        // 0x + 60 chars (not 64): wrong length after stripping 0x
         const string RESPONSE_JSON =
             """{"jsonrpc":"2.0","result":"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab","id":1}""";
         using FakeHttpHandler handler = new(

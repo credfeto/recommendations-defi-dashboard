@@ -1,6 +1,6 @@
 # The runtime base must be on the same Ubuntu release as the build environment: the native AOT binary links
 # against the build host's glibc and cannot load on an older one.
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-resolute@sha256:0b3fc2ffc701d6bb341a8112cd37edb148227920185dc2912fb3d49a86689ea5
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute@sha256:6d3e208d8f5ba599ad9e80c615b5c1a2e355fd903f585cb07342dde29441675a
 
 WORKDIR /usr/src/app
 

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using FunFair.Test.Common;
 using Microsoft.AspNetCore.Builder;
@@ -16,7 +17,11 @@ public sealed class ServerApplicationTests : TestBase
         await using WebApplication app = ServerApplication.Create(["--contentRoot", AppContext.BaseDirectory]);
         await using StringWriter error = new();
 
-        int result = await SelfTest.VerifyAsync(services: app.Services, error: error);
+        int result = await SelfTest.VerifyAsync(
+            services: app.Services,
+            error: error,
+            cancellationToken: this.CancellationToken()
+        );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
         Assert.Empty(error.ToString());
@@ -36,7 +41,8 @@ public sealed class ServerApplicationTests : TestBase
 
                 return TestAppFactory.BuildApp();
             },
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
@@ -52,7 +58,8 @@ public sealed class ServerApplicationTests : TestBase
         int result = await ServerApplication.RunAsync(
             args: ["--self-test"],
             createApplication: _ => WebApplication.CreateSlimBuilder().Build(),
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
@@ -67,7 +74,28 @@ public sealed class ServerApplicationTests : TestBase
         int result = await ServerApplication.RunAsync(
             args: [],
             createApplication: _ => throw new InvalidOperationException("Broken configuration"),
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
+        );
+
+        Assert.Equal(expected: SelfTest.FAILURE, actual: result);
+        Assert.Contains(
+            expectedSubstring: "Broken configuration",
+            actualString: error.ToString(),
+            comparisonType: StringComparison.Ordinal
+        );
+    }
+
+    [Fact]
+    public async Task RunAsync_CreateApplicationThrowsWithCancelledToken_StillReturnsFailureAndReportsError()
+    {
+        await using StringWriter error = new();
+
+        int result = await ServerApplication.RunAsync(
+            args: [],
+            createApplication: _ => throw new InvalidOperationException("Broken configuration"),
+            error: error,
+            cancellationToken: new CancellationToken(canceled: true)
         );
 
         Assert.Equal(expected: SelfTest.FAILURE, actual: result);
@@ -93,12 +121,46 @@ public sealed class ServerApplicationTests : TestBase
 
                 return BuildServerThatStopsOnceStarted();
             },
-            error: error
+            error: error,
+            cancellationToken: this.CancellationToken()
         );
 
         Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
         Assert.Equal(expected: expectedArgs, actual: received);
         Assert.Empty(error.ToString());
+    }
+
+    [Fact]
+    public async Task RunAsync_NoSelfTestSwitchAndTokenCancelledOnceStarted_StopsServerAndReturnsSuccess()
+    {
+        using CancellationTokenSource shutdown = CancellationTokenSource.CreateLinkedTokenSource(
+            this.CancellationToken()
+        );
+        await using StringWriter error = new();
+
+        // Without the token reaching the server the run never ends, so bound it to fail rather than hang.
+        int result = await ServerApplication
+            .RunAsync(
+                args: [],
+                createApplication: _ => BuildServerThatCancelsOnceStarted(shutdown),
+                error: error,
+                cancellationToken: shutdown.Token
+            )
+            .WaitAsync(timeout: TimeSpan.FromSeconds(30), cancellationToken: this.CancellationToken());
+
+        Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
+        Assert.Empty(error.ToString());
+    }
+
+    private static WebApplication BuildServerThatCancelsOnceStarted(CancellationTokenSource shutdown)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateSlimBuilder();
+        _ = builder.WebHost.UseUrls("http://127.0.0.1:0");
+
+        WebApplication app = builder.Build();
+        _ = app.Lifetime.ApplicationStarted.Register(shutdown.Cancel);
+
+        return app;
     }
 
     private static WebApplication BuildServerThatStopsOnceStarted()

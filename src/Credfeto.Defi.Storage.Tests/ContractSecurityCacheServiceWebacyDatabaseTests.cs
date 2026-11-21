@@ -58,14 +58,11 @@ public sealed class ContractSecurityCacheServiceWebacyDatabaseTests : TestBase
             actualString: execution.CommandText,
             comparisonType: StringComparison.Ordinal
         );
-        Assert.Contains(
-            execution.Parameters,
-            filter: p => string.Equals(p.Value as string, "Ethereum", StringComparison.Ordinal)
+        Assert.Contains(execution.Parameters, filter: p =>
+            string.Equals(p.Value as string, "Ethereum", StringComparison.Ordinal)
         );
-        Assert.Contains(
-            execution.Parameters,
-            filter: p =>
-                string.Equals(p.Value as string, "0xabcdef0000000000000000000000000000000001", StringComparison.Ordinal)
+        Assert.Contains(execution.Parameters, filter: p =>
+            string.Equals(p.Value as string, "0xabcdef0000000000000000000000000000000001", StringComparison.Ordinal)
         );
     }
 

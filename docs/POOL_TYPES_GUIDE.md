@@ -29,7 +29,7 @@ new PoolTypeDefinition(
 )
 ```
 
-1. The `GET /api/pools/BITCOIN` endpoint is created automatically — no changes to routing needed.
+1. The `GET /api/pools/BITCOIN` endpoint is created automatically; no changes to routing needed.
 
 ## Core Concepts
 
@@ -44,9 +44,9 @@ All pool types automatically exclude:
 
 Every pool is enriched with:
 
-- `Hacks` — matched against the DefiLlama hacks dataset
-- `DepegAlerts` — checked against CoinGecko stablecoin prices
-- `AuditInfo` — matched from DefiLlama protocol audit data
-- `AccessInfo` — derived from `poolMeta` text (KYC, liquidity flags)
-- `ContractAddresses` — aggregated from underlying/reward tokens
-- `ContractSecurity` — GoPlus security scores (24-hour SQLite cache)
+- `Hacks`: matched against the DefiLlama hacks dataset
+- `DepegAlerts`: checked against CoinGecko stablecoin prices
+- `AuditInfo`: matched from DefiLlama protocol audit data
+- `AccessInfo`: derived from `poolMeta` text (KYC, liquidity flags)
+- `ContractAddresses`: aggregated from underlying/reward tokens
+- `ContractSecurity`: GoPlus security scores (24-hour SQLite cache)

@@ -2,7 +2,8 @@
 
 ## Prerequisites
 
-- .NET 10 SDK (`dotnet --version` should show `10.x`)
+- .NET 11 SDK (`dotnet --version` should show `11.x`)
+- .NET 10 runtime (the `Credfeto.Defi.Storage.Database` SqlProj project still targets `net10.0`, so its build needs it)
 - Docker (for container builds and deployment)
 
 ## Getting Started
@@ -24,7 +25,7 @@ dotnet run --project Credfeto.Defi.Server
 
 The server listens on:
 
-- `http://localhost:8080` (plain HTTP, loopback only — used by the health check)
+- `http://localhost:8080` (plain HTTP, loopback only, used by the health check)
 - `https://localhost:8081` (HTTPS/HTTP/2/HTTP/3) when `server.pfx` is present
 
 Ports are hardcoded: HTTP on **8080**, HTTPS on **8081**. The certificate path is hardcoded to `<AppContext.BaseDirectory>/server.pfx` (not configurable via environment variable).
