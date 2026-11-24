@@ -91,8 +91,21 @@ internal static class ServerApplication
 
     private static async Task<int> RunServerAsync(WebApplication app, CancellationToken cancellationToken)
     {
+        try
+        {
+            await app.StartAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // A cancelled token is a shutdown request, not a startup failure. The stop uses CancellationToken.None
+            // because the run token is already cancelled, and hosted services that had started must still be
+            // given the chance to stop; disposing the application does not stop them.
+            await app.StopAsync(CancellationToken.None);
+
+            return SelfTest.SUCCESS;
+        }
+
         // Cancelling the token requests a graceful shutdown once the server has started.
-        await app.StartAsync(cancellationToken);
         await app.WaitForShutdownAsync(cancellationToken);
 
         return SelfTest.SUCCESS;
