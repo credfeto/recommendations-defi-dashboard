@@ -1,4 +1,4 @@
-﻿using Credfeto.Defi.Storage.Configuration;
+using Credfeto.Defi.Storage.Configuration;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Options;
 using Xunit;

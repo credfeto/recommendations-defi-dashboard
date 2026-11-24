@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Credfeto.Defi.Storage.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,12 +27,26 @@ internal static class SelfTest
         return args.Contains(value: SWITCH, comparer: StringComparer.Ordinal);
     }
 
-    public static Task<int> VerifyAsync(IServiceProvider services, TextWriter error)
+    public static Task<int> VerifyAsync(
+        IServiceProvider services,
+        TextWriter error,
+        CancellationToken cancellationToken
+    )
     {
-        return VerifyAsync(services: services, error: error, hasIcuCultureData: HasIcuCultureData);
+        return VerifyAsync(
+            services: services,
+            error: error,
+            hasIcuCultureData: HasIcuCultureData,
+            cancellationToken: cancellationToken
+        );
     }
 
-    public static async Task<int> VerifyAsync(IServiceProvider services, TextWriter error, Func<bool> hasIcuCultureData)
+    public static async Task<int> VerifyAsync(
+        IServiceProvider services,
+        TextWriter error,
+        Func<bool> hasIcuCultureData,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -40,7 +55,12 @@ internal static class SelfTest
 
             if (!hasIcuCultureData())
             {
-                await error.WriteLineAsync("Self-test failed: ICU culture data is not available");
+                // The failure reason must be written even when the caller's token is already cancelled, otherwise
+                // the write throws and the reason is replaced by a cancellation error.
+                await error.WriteLineAsync(
+                    value: "Self-test failed: ICU culture data is not available",
+                    cancellationToken: CancellationToken.None
+                );
 
                 return FAILURE;
             }
@@ -49,8 +69,10 @@ internal static class SelfTest
         }
         catch (Exception exception)
         {
-            await error.WriteLineAsync("Self-test failed:");
-            await error.WriteLineAsync(exception.ToString());
+            // The diagnostics must be written even when the caller's token is already cancelled, otherwise the
+            // write throws out of the catch block, losing the error and the FAILURE exit code.
+            await error.WriteLineAsync(value: "Self-test failed:", cancellationToken: CancellationToken.None);
+            await error.WriteLineAsync(value: exception.ToString(), cancellationToken: CancellationToken.None);
 
             return FAILURE;
         }

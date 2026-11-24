@@ -74,7 +74,7 @@ public sealed class CacheWarmerService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // Fire and forget — warming is best-effort and must not block startup
+        // Fire and forget: warming is best-effort and must not block startup
         _ = Task.Run(() => this.WarmCacheAsync(cancellationToken), cancellationToken);
 
         return Task.CompletedTask;
@@ -93,7 +93,10 @@ public sealed class CacheWarmerService : IHostedService
 
         foreach (FetcherRegistration registration in fetchers)
         {
-            if (registration.BypassFreshnessGate || !await this._apiCache.IsFreshAsync(registration.Key))
+            if (
+                registration.BypassFreshnessGate
+                || !await this._apiCache.IsFreshAsync(key: registration.Key, cancellationToken: cancellationToken)
+            )
             {
                 Task warmingTask = WarmEntryAsync(
                     key: registration.Key,

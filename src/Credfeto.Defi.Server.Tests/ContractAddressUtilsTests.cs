@@ -1,4 +1,4 @@
-﻿using Credfeto.Defi.Data.Models.Models;
+using Credfeto.Defi.Data.Models.Models;
 using Credfeto.Defi.Services.Utils;
 using FunFair.Test.Common;
 using Xunit;

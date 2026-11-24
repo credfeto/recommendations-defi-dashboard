@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Credfeto.Defi.Storage.Configuration;
 using FunFair.Test.Common;
 using Microsoft.Extensions.Options;

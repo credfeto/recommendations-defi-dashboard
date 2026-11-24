@@ -68,25 +68,27 @@ public sealed class ServiceRegistrationTests : TestBase
     }
 
     [Fact]
-    public void AddDefiServices_MissingDatabaseConnectionString_FailsStartupValidation()
+    public async Task AddDefiServices_MissingDatabaseConnectionString_FailsStartupValidationAsync()
     {
-        using WebApplication app = TestAppFactory.BuildApp(connectionString: string.Empty);
+        await using WebApplication app = TestAppFactory.BuildApp(connectionString: string.Empty);
 
-        IStartupValidator validator = app.Services.GetRequiredService<IStartupValidator>();
+        IAsyncStartupValidator validator = app.Services.GetRequiredService<IAsyncStartupValidator>();
 
-        OptionsValidationException exception = Assert.Throws<OptionsValidationException>(validator.Validate);
+        OptionsValidationException exception = await Assert.ThrowsAsync<OptionsValidationException>(() =>
+            validator.ValidateAsync(this.CancellationToken())
+        );
 
         Assert.Equal(expected: typeof(DatabaseConfiguration), actual: exception.OptionsType);
     }
 
     [Fact]
-    public void AddDefiServices_ValidDatabaseConnectionString_PassesStartupValidation()
+    public async Task AddDefiServices_ValidDatabaseConnectionString_PassesStartupValidationAsync()
     {
-        using WebApplication app = TestAppFactory.BuildApp();
+        await using WebApplication app = TestAppFactory.BuildApp();
 
-        IStartupValidator validator = app.Services.GetRequiredService<IStartupValidator>();
+        IAsyncStartupValidator validator = app.Services.GetRequiredService<IAsyncStartupValidator>();
 
-        Exception? exception = Record.Exception(validator.Validate);
+        Exception? exception = await Record.ExceptionAsync(() => validator.ValidateAsync(this.CancellationToken()));
 
         Assert.Null(exception);
     }
