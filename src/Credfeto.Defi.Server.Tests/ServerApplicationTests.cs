@@ -117,7 +117,7 @@ public sealed class ServerApplicationTests : TestBase
         string[]? received = null;
         await using StringWriter error = new();
 
-        int result = await ServerApplication.RunAsync(
+        int result = await this.RunServerWithTimeoutAsync(
             args: expectedArgs,
             createApplication: args =>
             {
@@ -158,7 +158,7 @@ public sealed class ServerApplicationTests : TestBase
     {
         await using StringWriter error = new();
 
-        int result = await ServerApplication.RunAsync(
+        int result = await this.RunServerWithTimeoutAsync(
             args: [],
             createApplication: _ => BuildServer(),
             error: error,
@@ -198,7 +198,7 @@ public sealed class ServerApplicationTests : TestBase
     {
         await using StringWriter error = new();
 
-        int result = await ServerApplication.RunAsync(
+        int result = await this.RunServerWithTimeoutAsync(
             args: [],
             createApplication: _ => BuildServerWithFailingHostedService(),
             error: error,
