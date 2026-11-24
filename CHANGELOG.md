@@ -84,6 +84,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Database options are now validated at host start and read-only lookup tables are frozen
 - Failure diagnostics in the server and self-test are no longer lost when the cancellation token is cancelled (#443)
 - Cancelling the run token now stops the server (#443)
+- Cancelling the run token during startup now shuts the server down cleanly and returns success, instead of reporting a fatal startup error (#443)
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
