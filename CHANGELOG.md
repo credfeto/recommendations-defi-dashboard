@@ -82,9 +82,6 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - CacheWarmerService now logs per-entry warm-up failures and continues warming the remaining entries (#427)
 - Test projects roll forward to the newest installed .NET runtime so they run when only a newer shared runtime than net10.0 is available
 - Database options are now validated at host start and read-only lookup tables are frozen
-- Failure diagnostics in the server and self-test are no longer lost when the cancellation token is cancelled (#443)
-- Cancelling the run token now stops the server (#443)
-- Cancelling the run token during startup now shuts the server down cleanly and returns success, instead of reporting a fatal startup error (#443)
 
 ### Changed
 - Bump electron-to-chromium from 1.5.330 to 1.5.331
@@ -137,6 +134,7 @@ Please ADD ALL Changes to the UNRELEASED SECTION and not a specific release
 - Microsoft.Extensions.Http, Microsoft.AspNetCore.OpenApi and Microsoft.Extensions.Hosting.Systemd updated to 11.0.0 (#443)
 - Docker runtime image moved to runtime-deps 11.0-resolute, and docs updated for .NET 11 (#443)
 - ApiCacheService.IsFreshAsync now takes and honours a cancellation token, and remaining CancellationToken.None uses are documented (#454)
+- Server entry points (ServerApplication.RunAsync, SelfTest.VerifyAsync) now take a cancellation token; cancelling it during or after startup stops the server cleanly (#443)
 
 ### Deprecated
 ### Removed
