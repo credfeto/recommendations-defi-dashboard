@@ -13,6 +13,8 @@ namespace Credfeto.Defi.Server.Tests;
 
 public sealed class ServerApplicationTests : TestBase
 {
+    private static readonly TimeSpan ServerRunTimeout = TimeSpan.FromSeconds(30);
+
     [Fact]
     public async Task Create_ContentRootWithAppSettings_BuildsApplicationThatPassesSelfTest()
     {
@@ -139,36 +141,16 @@ public sealed class ServerApplicationTests : TestBase
             this.CancellationToken()
         );
         await using StringWriter error = new();
-        IHostApplicationLifetime? lifetime = null;
 
-        try
-        {
-            // Without the token reaching the server the run never ends, so bound it to fail rather than hang.
-            int result = await ServerApplication
-                .RunAsync(
-                    args: [],
-                    createApplication: _ =>
-                    {
-                        WebApplication server = BuildServerThatCancelsOnceStarted(shutdown);
-                        lifetime = server.Lifetime;
+        int result = await this.RunServerWithTimeoutAsync(
+            args: [],
+            createApplication: _ => BuildServerThatCancelsOnceStarted(shutdown),
+            error: error,
+            cancellationToken: shutdown.Token
+        );
 
-                        return server;
-                    },
-                    error: error,
-                    cancellationToken: shutdown.Token
-                )
-                .WaitAsync(timeout: TimeSpan.FromSeconds(30), cancellationToken: this.CancellationToken());
-
-            Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
-            Assert.Empty(error.ToString());
-        }
-        finally
-        {
-            // A run that timed out is still serving, so stop it rather than leave Kestrel listening for the rest
-            // of the test run. The lifetime is used because the token may be the very thing that failed to reach
-            // the server; stopping an already stopped lifetime does nothing.
-            lifetime?.StopApplication();
-        }
+        Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
+        Assert.Empty(error.ToString());
     }
 
     [Fact]
@@ -196,7 +178,7 @@ public sealed class ServerApplicationTests : TestBase
         await using StringWriter error = new();
         bool startedServiceStopped = false;
 
-        int result = await ServerApplication.RunAsync(
+        int result = await this.RunServerWithTimeoutAsync(
             args: [],
             createApplication: _ =>
                 BuildServerThatCancelsDuringStartup(shutdown: shutdown, onStartedServiceStopped: () =>
@@ -229,6 +211,42 @@ public sealed class ServerApplicationTests : TestBase
             actualString: error.ToString(),
             comparisonType: StringComparison.Ordinal
         );
+    }
+
+    private async Task<int> RunServerWithTimeoutAsync(
+        string[] args,
+        Func<string[], WebApplication> createApplication,
+        TextWriter error,
+        CancellationToken cancellationToken
+    )
+    {
+        IHostApplicationLifetime? lifetime = null;
+
+        try
+        {
+            // A server that never sees its stop request runs forever, so bound the run to fail rather than hang.
+            return await ServerApplication
+                .RunAsync(
+                    args: args,
+                    createApplication: arguments =>
+                    {
+                        WebApplication server = createApplication(arguments);
+                        lifetime = server.Lifetime;
+
+                        return server;
+                    },
+                    error: error,
+                    cancellationToken: cancellationToken
+                )
+                .WaitAsync(timeout: ServerRunTimeout, cancellationToken: this.CancellationToken());
+        }
+        finally
+        {
+            // A run that timed out is still serving, so stop it rather than leave Kestrel listening for the rest
+            // of the test run. The lifetime is used because the token may be the very thing that failed to reach
+            // the server; stopping an already stopped lifetime does nothing.
+            lifetime?.StopApplication();
+        }
     }
 
     private static WebApplication BuildServerWithFailingHostedService()
