@@ -139,19 +139,36 @@ public sealed class ServerApplicationTests : TestBase
             this.CancellationToken()
         );
         await using StringWriter error = new();
+        IHostApplicationLifetime? lifetime = null;
 
-        // Without the token reaching the server the run never ends, so bound it to fail rather than hang.
-        int result = await ServerApplication
-            .RunAsync(
-                args: [],
-                createApplication: _ => BuildServerThatCancelsOnceStarted(shutdown),
-                error: error,
-                cancellationToken: shutdown.Token
-            )
-            .WaitAsync(timeout: TimeSpan.FromSeconds(30), cancellationToken: this.CancellationToken());
+        try
+        {
+            // Without the token reaching the server the run never ends, so bound it to fail rather than hang.
+            int result = await ServerApplication
+                .RunAsync(
+                    args: [],
+                    createApplication: _ =>
+                    {
+                        WebApplication server = BuildServerThatCancelsOnceStarted(shutdown);
+                        lifetime = server.Lifetime;
 
-        Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
-        Assert.Empty(error.ToString());
+                        return server;
+                    },
+                    error: error,
+                    cancellationToken: shutdown.Token
+                )
+                .WaitAsync(timeout: TimeSpan.FromSeconds(30), cancellationToken: this.CancellationToken());
+
+            Assert.Equal(expected: SelfTest.SUCCESS, actual: result);
+            Assert.Empty(error.ToString());
+        }
+        finally
+        {
+            // A run that timed out is still serving, so stop it rather than leave Kestrel listening for the rest
+            // of the test run. The lifetime is used because the token may be the very thing that failed to reach
+            // the server; stopping an already stopped lifetime does nothing.
+            lifetime?.StopApplication();
+        }
     }
 
     [Fact]
